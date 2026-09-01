@@ -1,0 +1,79 @@
+## ----------------------------------------------------------------------
+## Visual Studio / .NET Core .gitignore
+## ----------------------------------------------------------------------
+
+# Build results and binaries
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+build/
+artifacts/
+
+# Visual Studio cache, options, and user settings
+.vs/
+*.user
+*.userosv
+*.suo
+*.userprefs
+*.sln.docstates
+*.cache
+*.dtbcache
+*.pvkg
+
+# User-specific configuration files
+*.local.json
+appsettings.*.local.json
+
+# Rider / JetBrains IDEs
+.idea/
+*.sln.iml
+*.DotSettings.user
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# NuGet Packages & Caches
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+project.lock.json
+project.assets.json
+*.nuget.props
+*.nuget.targets
+
+# Test Results & Code Coverage
+[Tt]est[Rr]esult*/
+[Cc]overage/
+*.coverage
+*.coveragexml
+
+# SQL Server / LocalDB database files
+*.mdf
+*.ldf
+*.ndf
+
+# Operating System Files (Windows / macOS / Linux)
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.stackdump
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
