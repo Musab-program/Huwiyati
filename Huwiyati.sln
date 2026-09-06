@@ -20,6 +20,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Structure", "Structure", "{
 		Docs\Structure\README.md = Docs\Structure\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plans", "Plans", "{C941D2A1-94B6-4E87-9878-3F174BCEB291}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Plans\Backend_Implementation_Plan.md = Docs\Plans\Backend_Implementation_Plan.md
+		Docs\Plans\Plan1_Foundation_Design.md = Docs\Plans\Plan1_Foundation_Design.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -84,6 +90,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{87925128-47CF-93EC-0ACE-D0E1A780FDF4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{C941D2A1-94B6-4E87-9878-3F174BCEB291} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B2E82FCB-F67C-4885-A98B-35537AB29DE5}
