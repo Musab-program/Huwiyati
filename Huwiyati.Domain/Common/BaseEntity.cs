@@ -1,6 +1,7 @@
-﻿namespace Huwiyati.Domain.Common;
+namespace Huwiyati.Domain.Common;
 
 public abstract class BaseEntity
 {
-    public int Id { get; set; }
+    // Use Guid.CreateVersion7() to generate a new GUID with a timestamp component mean mix two thing Guid and time
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 }
