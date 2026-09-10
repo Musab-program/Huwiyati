@@ -16,11 +16,11 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
             .HasMaxLength(30)
             .IsRequired();
 
-        // 1-to-0..1 Unidirectional Relationship between ApplicationUser and Person
+        // Required 1-to-0..1 Relationship (Every ApplicationUser MUST have a Person)
         builder.HasOne(u => u.Person)
             .WithOne()
             .HasForeignKey<ApplicationUser>(u => u.PersonId)
-            .IsRequired(false)
+            .IsRequired(true)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
