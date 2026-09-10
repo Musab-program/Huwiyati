@@ -70,12 +70,13 @@
 
 ### س5: كيف تم ضبط علاقة (1 إلى 0..1) بين `ApplicationUser` و `Person`؟
 - في المعمارية النظيفة، كلاس `Person` في الـ `Domain` لا يعرف `ApplicationUser`.
-- لذلك أنشأنا خاصية التنقل من طرف واحد داخل `ApplicationUser` وضبطناها في `ApplicationUserConfiguration` عبر:
+- المواطن (`Person`) قد لا يكون لديه حساب مستخدم (مثل المواليد والوفيات)؛ ولكن **كل حساب مستخدم (`ApplicationUser`) يجب بالضرورة أن يكون مرتبطاً بمواطن حقيقي** (`PersonId` إجباري `IsRequired(true)`).
+- لذلك أنشأنا خاصية التنقل من طرف واحد الإجبارية داخل `ApplicationUser` وضبطناها في `ApplicationUserConfiguration` عبر:
   ```csharp
   builder.HasOne(u => u.Person)
          .WithOne()
          .HasForeignKey<ApplicationUser>(u => u.PersonId)
-         .IsRequired(false);
+         .IsRequired(true);
   ```
 
 ---

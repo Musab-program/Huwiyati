@@ -23,6 +23,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plans", "Plans", "{C941D2A1-94B6-4E87-9878-3F174BCEB291}"
 	ProjectSection(SolutionItems) = preProject
 		Docs\Plans\Backend_Implementation_Plan.md = Docs\Plans\Backend_Implementation_Plan.md
+		Docs\Plans\Phase1_Completion_Log.md = Docs\Plans\Phase1_Completion_Log.md
 		Docs\Plans\Plan1_Foundation_Design.md = Docs\Plans\Plan1_Foundation_Design.md
 	EndProjectSection
 EndProject
