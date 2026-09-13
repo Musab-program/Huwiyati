@@ -4,11 +4,16 @@ using Microsoft.AspNetCore.Identity;
 using Huwiyati.Domain.Entities.CivilRegistry;
 using Huwiyati.Domain.Enums;
 
+using Huwiyati.Domain.Entities.Authentication;
+
 public class ApplicationUser : IdentityUser<Guid>
 {
     // Foreign Key and Unidirectional Navigation Property to Person entity in Domain
     public Guid PersonId { get; set; }
     public Person Person { get; set; } = null!;
+
+    // Navigation Property to UserDevices in Domain
+    public ICollection<UserDevice> Devices { get; set; } = new List<UserDevice>();
 
     // Custom Account Status and Audit Properties
     public AccountStatus Status { get; set; } = AccountStatus.PendingActivation;

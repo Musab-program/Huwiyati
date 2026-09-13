@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Infrastructure.Identity;
 using Huwiyati.Infrastructure.Persistence;
 
@@ -42,8 +43,16 @@ public static class DependencyInjection
         })
         .AddRoles<IdentityRole<Guid>>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
-        //Token providers are used for generating tokens for password reset, email confirmation, etc.
         .AddDefaultTokenProviders();
+
+        // 4. Register IdentityService Implementation
+        services.AddTransient<IIdentityService, IdentityService>();
+
+        // 5. Register IApplicationDbContext mapping to ApplicationDbContext
+        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+
+        // 6. Register TokenService Implementation
+        services.AddTransient<ITokenService, TokenService>();
 
         return services;
     }
