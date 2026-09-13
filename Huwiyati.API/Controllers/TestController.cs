@@ -1,4 +1,5 @@
-﻿using Huwiyati.Infrastructure.Persistence;
+﻿using Huwiyati.Application.Common.Interfaces;
+using Huwiyati.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,10 +10,25 @@ namespace Huwiyati.API.Controllers
     public class TestController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IIdentityService _identityService;
 
-        public TestController(ApplicationDbContext context)
+        public TestController(ApplicationDbContext context , IIdentityService identityService)
         {
             _context = context;
+            _identityService = identityService;
+        }
+
+        [HttpGet("latest-otp/{nationalNumber}")]
+        public async Task<IActionResult> GetLatestOtp(string nationalNumber, CancellationToken cancellationToken)
+        {
+            var userId = await _identityService.GetUserIdByNationalNumberAsync(nationalNumber, cancellationToken);
+            if (!userId.HasValue) return NotFound("User not found.");
+            var code = await _context.VerificationCodes
+                .Where(vc => vc.UserId == userId.Value && !vc.IsUsed)
+                .OrderByDescending(vc => vc.CreatedAt)
+                .Select(vc => vc.Code)
+                .FirstOrDefaultAsync(cancellationToken);
+            return Ok(new { NationalNumber = nationalNumber, LatestOTP = code });
         }
 
         [HttpGet("db-check")]
