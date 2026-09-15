@@ -11,11 +11,16 @@ public class RegisterHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
+    private readonly IEmailService _emailService;
 
-    public RegisterHandler(IApplicationDbContext context, IIdentityService identityService)
+    public RegisterHandler(
+        IApplicationDbContext context,
+        IIdentityService identityService,
+        IEmailService emailService)
     {
         _context = context;
         _identityService = identityService;
+        _emailService = emailService;
     }
 
     public async Task<ApiResponse<RegisterResultDto>> CreateAccountAsync(
@@ -59,7 +64,7 @@ public class RegisterHandler
                 statusCode: 400);
         }
 
-        // 4. Create ApplicationUser account using IIdentityService
+        // 5. Create ApplicationUser account using IIdentityService
         var createUserResult = await _identityService.CreateUserAsync(
              person.Id,
              person.NationalNumber,
@@ -76,7 +81,7 @@ public class RegisterHandler
                 statusCode: 400);
         }
 
-        // 5. Generate 6-digit OTP verification code valid for 5 minutes
+        // 6. Generate 6-digit OTP verification code valid for 5 minutes
         var otpCode = new Random().Next(100000, 999999).ToString();
         var verificationCode = new VerificationCode
         {
@@ -90,7 +95,15 @@ public class RegisterHandler
         await _context.VerificationCodes.AddAsync(verificationCode, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        // 6. Return success response with UserId and PendingActivation status
+        // 7. Send OTP code via Email Service securely
+        await _emailService.SendOtpEmailAsync(
+            command.Email,
+            "رمز التحقق - تفعيل حساب هويتي",
+            otpCode,
+            "تفعيل الحساب",
+            cancellationToken);
+
+        // 8. Return secure success response without exposing OTP code
         return ApiResponse<RegisterResultDto>.Success(
             new RegisterResultDto
             {
@@ -98,6 +111,6 @@ public class RegisterHandler
                 NationalNumber = person.NationalNumber,
                 AccountStatus = AccountStatus.PendingActivation.ToString()
             },
-            message: $"Account created successfully. Verification OTP code generated: {otpCode}");
+            message: "Account created successfully. A verification OTP code has been sent to your registered email.");
     }
 }

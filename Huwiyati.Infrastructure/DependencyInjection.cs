@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Infrastructure.Identity;
 using Huwiyati.Infrastructure.Persistence;
+using Huwiyati.Infrastructure.Services;
 
 public static class DependencyInjection
 {
@@ -53,6 +54,12 @@ public static class DependencyInjection
 
         // 6. Register TokenService Implementation
         services.AddTransient<ITokenService, TokenService>();
+
+        // 7. Register EmployeeNumberGenerator Implementation
+        services.AddScoped<IEmployeeNumberGenerator, EmployeeNumberGenerator>();
+
+        // 8. Register EmailService Implementation
+        services.AddTransient<IEmailService, EmailService>();
 
         return services;
     }

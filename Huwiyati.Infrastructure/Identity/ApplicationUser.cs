@@ -1,10 +1,10 @@
 namespace Huwiyati.Infrastructure.Identity;
 
-using Microsoft.AspNetCore.Identity;
-using Huwiyati.Domain.Entities.CivilRegistry;
-using Huwiyati.Domain.Enums;
-
 using Huwiyati.Domain.Entities.Authentication;
+using Huwiyati.Domain.Entities.CivilRegistry;
+using Huwiyati.Domain.Entities.Organizations;
+using Huwiyati.Domain.Enums;
+using Microsoft.AspNetCore.Identity;
 
 public class ApplicationUser : IdentityUser<Guid>
 {
@@ -19,6 +19,9 @@ public class ApplicationUser : IdentityUser<Guid>
     public AccountStatus Status { get; set; } = AccountStatus.PendingActivation;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ActivatedAt { get; set; }
+
+    // Navigation Property to Employee entity in Domain (if applicable) expected to be null if the user is not an employee
+    public Employee? Employee { get; set; }
 
     ///Notes:
     ///refresh token must be stored in DB

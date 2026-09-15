@@ -17,6 +17,10 @@ public class AccountController : ControllerBase
     private readonly VerifyResetHandler _verifyResetHandler;
     private readonly ResetPasswordHandler _resetPasswordHandler;
     private readonly VerifyDeviceHandler _verifyDeviceHandler;
+    private readonly RemoveDeviceHandler _removeDeviceHandler;
+    private readonly DeactivateAccountHandler _deactivateAccountHandler;
+    private readonly ReactivateAccountHandler _reactivateAccountHandler;
+    private readonly RequestAccountOtpHandler _requestAccountOtpHandler;
 
     public AccountController(
         RegisterHandler registerHandler,
@@ -25,7 +29,11 @@ public class AccountController : ControllerBase
         ForgotPasswordHandler forgotPasswordHandler,
         VerifyResetHandler verifyResetHandler,
         ResetPasswordHandler resetPasswordHandler,
-        VerifyDeviceHandler verifyDeviceHandler)
+        VerifyDeviceHandler verifyDeviceHandler,
+        RemoveDeviceHandler removeDeviceHandler,
+        DeactivateAccountHandler deactivateAccountHandler,
+        ReactivateAccountHandler reactivateAccountHandler,
+        RequestAccountOtpHandler requestAccountOtpHandler)
     {
         _registerHandler = registerHandler;
         _verifyOtpHandler = verifyOtpHandler;
@@ -34,6 +42,10 @@ public class AccountController : ControllerBase
         _verifyResetHandler = verifyResetHandler;
         _resetPasswordHandler = resetPasswordHandler;
         _verifyDeviceHandler = verifyDeviceHandler;
+        _removeDeviceHandler = removeDeviceHandler;
+        _deactivateAccountHandler = deactivateAccountHandler;
+        _reactivateAccountHandler = reactivateAccountHandler;
+        _requestAccountOtpHandler = requestAccountOtpHandler;
     }
 
     [HttpPost("register")]
@@ -82,6 +94,34 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand command, CancellationToken cancellationToken)
     {
         var result = await _resetPasswordHandler.ResetPasswordAsync(command, cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    [HttpPost("remove-device")]
+    public async Task<IActionResult> RemoveDevice([FromBody] RemoveDeviceCommand command, CancellationToken cancellationToken)
+    {
+        var result = await _removeDeviceHandler.RemoveDeviceAsync(command, cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    [HttpPost("request-otp")]
+    public async Task<IActionResult> RequestOtp([FromBody] RequestAccountOtpCommand command, CancellationToken cancellationToken)
+    {
+        var result = await _requestAccountOtpHandler.RequestOtpAsync(command, cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    [HttpPost("deactivate")]
+    public async Task<IActionResult> DeactivateAccount([FromBody] DeactivateAccountCommand command, CancellationToken cancellationToken)
+    {
+        var result = await _deactivateAccountHandler.DeactivateAccountAsync(command, cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    [HttpPost("reactivate")]
+    public async Task<IActionResult> ReactivateAccount([FromBody] ReactivateAccountCommand command, CancellationToken cancellationToken)
+    {
+        var result = await _reactivateAccountHandler.ReactivateAccountAsync(command, cancellationToken);
         return StatusCode(result.StatusCode, result);
     }
 }
