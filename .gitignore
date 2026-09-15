@@ -25,6 +25,8 @@ artifacts/
 # User-specific configuration files
 *.local.json
 appsettings.*.local.json
+local-secrets.md
+*.local.md
 
 # Rider / JetBrains IDEs
 .idea/

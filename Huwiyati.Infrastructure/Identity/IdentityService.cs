@@ -6,6 +6,9 @@ using Huwiyati.Domain.Constants;
 using Huwiyati.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 
+/// <summary>
+/// Implementation of IIdentityService providing identity management operations backed by ASP.NET Core Identity.
+/// </summary>
 public class IdentityService : IIdentityService
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -15,18 +18,27 @@ public class IdentityService : IIdentityService
         _userManager = userManager;
     }
 
+    /// <summary>
+    /// Checks if a user already exists with the specified email.
+    /// </summary>
     public async Task<bool> UserExistsWithEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(email);
         return user != null;
     }
 
+    /// <summary>
+    /// Checks if a user already exists with the specified National Number.
+    /// </summary>
     public async Task<bool> UserExistsWithNationalNumberAsync(string nationalNumber, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByNameAsync(nationalNumber);
         return user != null;
     }
 
+    /// <summary>
+    /// Creates a new user account linked to a Person ID and assigns the default Citizen role.
+    /// </summary>
     public async Task<CreateUserResultModel> CreateUserAsync(
         Guid personId,
         string nationalNumber,
@@ -54,7 +66,6 @@ public class IdentityService : IIdentityService
                 Errors = result.Errors.Select(e => e.Description).ToList()
             };
         }
-        // Assign the "Citizen" role to the newly created user as default
         await _userManager.AddToRoleAsync(user, AppRoles.Citizen);
 
         return new CreateUserResultModel
@@ -64,26 +75,25 @@ public class IdentityService : IIdentityService
         };
     }
 
+    /// <summary>
+    /// Validates user credentials (National Number and Password) and returns login metadata.
+    /// </summary>
     public async Task<UserLoginInfoModel?> CheckUserExistAsync(string nationalNumber, string password, CancellationToken cancellationToken = default)
     {
-        // 1. Search for ApplicationUser by National Number (UserName)
         var user = await _userManager.FindByNameAsync(nationalNumber);
         if (user == null)
         {
             return null;
         }
 
-        // 2. Validate Password
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, password);
         if (!isPasswordValid)
         {
             return null;
         }
 
-        //3. Get user roles (if needed for further processing)
         var roles = await _userManager.GetRolesAsync(user);
 
-        // 4. Return user login details
         return new UserLoginInfoModel
         {
             Succeeded = true,
@@ -94,12 +104,73 @@ public class IdentityService : IIdentityService
         };
     }
 
+    /// <summary>
+    /// Finds the User ID for a user identified by their National Number.
+    /// </summary>
     public async Task<Guid?> GetUserIdByNationalNumberAsync(string nationalNumber, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByNameAsync(nationalNumber);
         return user?.Id;
     }
 
+    /// <summary>
+    /// Retrieves contact details (Email, Phone) and Person ID for a specified user.
+    /// </summary>
+    public async Task<(Guid PersonId, string Email, string PhoneNumber)?> GetUserContactAndPersonIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return null;
+        var email = !string.IsNullOrWhiteSpace(user.Email) ? user.Email : string.Empty;
+        return (user.PersonId, email, user.PhoneNumber ?? string.Empty);
+    }
+
+    /// <summary>
+    /// Verifies if a user's account status is currently Active.
+    /// </summary>
+    public async Task<bool> IsUserActiveAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        return user != null && user.Status == AccountStatus.Active;
+    }
+
+    /// <summary>
+    /// Assigns a set of roles to a specified user account.
+    /// </summary>
+    public async Task<bool> AssignUserRolesAsync(Guid userId, string[] roles, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return false;
+
+        foreach (var role in roles)
+        {
+            if (!await _userManager.IsInRoleAsync(user, role))
+            {
+                await _userManager.AddToRoleAsync(user, role);
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Removes a specific role from a user account.
+    /// </summary>
+    public async Task<bool> RemoveUserRoleAsync(Guid userId, string role, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return false;
+
+        if (await _userManager.IsInRoleAsync(user, role))
+        {
+            await _userManager.RemoveFromRoleAsync(user, role);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Resets the password for a specified user ID.
+    /// </summary>
     public async Task<bool> ResetPasswordAsync(Guid userId, string newPassword, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
@@ -108,21 +179,32 @@ public class IdentityService : IIdentityService
         if (!removeResult.Succeeded && user.PasswordHash != null) return false;
         var addResult = await _userManager.AddPasswordAsync(user, newPassword);
         return addResult.Succeeded;
-
     }
 
+    /// <summary>
+    /// Gets all roles assigned to a specified user.
+    /// </summary>
     public async Task<IList<string>> GetUserRolesAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        // 1. Search for ApplicationUser by Id
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
         {
             return new List<string>();
         }
 
-        // 2. Get user roles
         return await _userManager.GetRolesAsync(user);
     }
 
+    /// <summary>
+    /// Updates the AccountStatus enum value (Active, Deactivated, Suspended) for a user.
+    /// </summary>
+    public async Task<bool> ChangeAccountStatusAsync(Guid userId, AccountStatus status, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return false;
 
+        user.Status = status;
+        var result = await _userManager.UpdateAsync(user);
+        return result.Succeeded;
+    }
 }

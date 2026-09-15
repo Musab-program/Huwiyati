@@ -19,5 +19,6 @@ public class Person : AuditableEntity
     public string District { get; set; } = string.Empty;
     public string AddressDetails { get; set; } = string.Empty;
     public string? PhotoUrl { get; set; }
+    public BloodGroup? BloodGroup { get; set; }
     public PersonStatus PersonStatus { get; set; }
 }
