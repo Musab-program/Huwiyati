@@ -1,4 +1,6 @@
 using Huwiyati.Application.Authentication.Commands;
+using Huwiyati.Application.Documents.BirthCertificate.Commands;
+using Huwiyati.Application.Documents.BirthCertificate.Queries;
 using Huwiyati.Application.Documents.NationalIdCard.Commands;
 using Huwiyati.Application.Documents.NationalIdCard.Queries;
 using Huwiyati.Application.Family.Commands;
@@ -63,6 +65,13 @@ namespace Huwiyati.Application
             services.AddScoped<GetNationalIdCardsHandler>();
             services.AddScoped<GetNationalIdCardByIdHandler>();
             services.AddScoped<GetPersonNationalIdCardHistoryHandler>();
+
+            // Register Birth Certificate Handlers
+            services.AddScoped<IssueBirthCertificateHandler>();
+            services.AddScoped<UpdateChildDataHandler>();
+            services.AddScoped<GetBirthCertificateByIdHandler>();
+            services.AddScoped<GetBirthCertificatesByFatherNationalNumberHandler>();
+            services.AddScoped<GetAllBirthCertificatesHandler>();
 
             // Register Family Handlers
             services.AddScoped<CreateFamilyCardHandler>();

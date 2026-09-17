@@ -23,6 +23,11 @@ public class DocumentNumberGenerator : IDocumentNumberGenerator
         return GenerateDocumentNumberInternalAsync("02", branchId, cancellationToken);
     }
 
+    public Task<string> GenerateBirthCertificateNumberAsync(Guid branchId, CancellationToken cancellationToken = default)
+    {
+        return GenerateDocumentNumberInternalAsync("03", branchId, cancellationToken);
+    }
+
     private async Task<string> GenerateDocumentNumberInternalAsync(string serviceCode, Guid branchId, CancellationToken cancellationToken)
     {
         // 1. Fetch branch data with projection via Select instead of Include for optimal performance
@@ -55,11 +60,17 @@ public class DocumentNumberGenerator : IDocumentNumberGenerator
         string branchCodeStr = (branchOrdinal % 999).ToString("D3");
 
         // 3. Sequential Number calculation (6 digits)
+        // For Birth Certificate Number ("03"), count total birth certificates in database.
         // For Family Number ("02"), count distinct existing families in database.
         // For National Number ("01"), count total persons registered in Civil Registry.
         int existingCount;
 
-        if (serviceCode == "02")
+        if (serviceCode == "03")
+        {
+            existingCount = await _context.BirthCertificates
+                .CountAsync(cancellationToken);
+        }
+        else if (serviceCode == "02")
         {
             existingCount = await _context.Families
                 .Select(f => f.FamilyNumber)

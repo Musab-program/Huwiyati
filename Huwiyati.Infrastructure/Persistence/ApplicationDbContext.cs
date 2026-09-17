@@ -27,6 +27,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<OrganizationBranch> OrganizationBranches { get; set; } = null!;
     public DbSet<Employee> Employees { get; set; } = null!;
     public DbSet<NationalIdCard> NationalIdCards { get; set; } = null!;
+    public DbSet<BirthCertificate> BirthCertificates { get; set; } = null!;
     public DbSet<Family> Families { get; set; } = null!;
     public DbSet<FamilyMember> FamilyMembers { get; set; } = null!;
     public DbSet<MarriageContract> MarriageContracts { get; set; } = null!;

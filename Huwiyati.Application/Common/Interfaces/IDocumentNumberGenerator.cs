@@ -5,4 +5,5 @@ public interface IDocumentNumberGenerator
 {
     Task<string> GenerateNationalNumberAsync(Guid branchId, CancellationToken cancellationToken = default);
     Task<string> GenerateFamilyNumberAsync(Guid branchId, CancellationToken cancellationToken = default);
+    Task<string> GenerateBirthCertificateNumberAsync(Guid branchId, CancellationToken cancellationToken = default);
 }
