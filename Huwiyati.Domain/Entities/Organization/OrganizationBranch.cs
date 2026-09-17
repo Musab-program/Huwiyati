@@ -1,6 +1,7 @@
 ﻿namespace Huwiyati.Domain.Entities.Organizations;
 
 using Huwiyati.Domain.Common;
+using Huwiyati.Domain.Entities.Documents;
 
 public class OrganizationBranch : AuditableEntity
 {
@@ -15,4 +16,6 @@ public class OrganizationBranch : AuditableEntity
     // Navigation property
     public Organization Organization { get; set; } = null!;
     public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+    public ICollection<NationalIdCard> NationalIdCards { get; set; } = new List<NationalIdCard>();
+
 }

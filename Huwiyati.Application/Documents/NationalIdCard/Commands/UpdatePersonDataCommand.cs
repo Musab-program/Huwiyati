@@ -1,10 +1,9 @@
-namespace Huwiyati.Domain.Entities.CivilRegistry;
+namespace Huwiyati.Application.Documents.NationalIdCard.Commands;
 
-using Huwiyati.Domain.Common;
-using Huwiyati.Domain.Entities.Documents;
 using Huwiyati.Domain.Enums;
 
-public class Person : AuditableEntity
+// Command model containing all required Person fields to update a citizen's profile from Dashboard
+public class UpdatePersonDataCommand
 {
     public string NationalNumber { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
@@ -13,18 +12,10 @@ public class Person : AuditableEntity
     public string FamilyName { get; set; } = string.Empty;
     public DateOnly DateOfBirth { get; set; }
     public string PlaceOfBirth { get; set; } = string.Empty;
-    public Gender Gender { get; set; }
-    public string Nationality { get; set; } = string.Empty;
     public MaritalStatus MaritalStatus { get; set; }
     public string Governorate { get; set; } = string.Empty;
     public string District { get; set; } = string.Empty;
     public string AddressDetails { get; set; } = string.Empty;
     public string? PhotoUrl { get; set; }
     public BloodGroup BloodGroup { get; set; }
-    public PersonStatus PersonStatus { get; set; }
-
-
-    //Naviagation property
-    public ICollection<NationalIdCard> NationalIdCards { get; set; } = new List<NationalIdCard>();
-
 }

@@ -35,10 +35,10 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
         // Convert BloodGroup enum to standard symbol ("O+", "O-", etc.) in DB
         builder.Property(p => p.BloodGroup)
             .HasConversion(
-                v => v.HasValue ? v.Value.ToString().Replace("Positive", "+").Replace("Negative", "-") : null,
-                v => !string.IsNullOrEmpty(v) ? Enum.Parse<BloodGroup>(v.Replace("+", "Positive").Replace("-", "Negative")) : (BloodGroup?)null)
+                v => v.ToString().Replace("Positive", "+").Replace("Negative", "-"),
+                v => Enum.Parse<BloodGroup>(v.Replace("+", "Positive").Replace("-", "Negative")))
             .HasMaxLength(10)
-            .IsRequired(false);
+            .IsRequired();
 
         // Convert Enums to string in DB
         builder.Property(p => p.Gender).HasConversion<string>().HasMaxLength(20).IsRequired();

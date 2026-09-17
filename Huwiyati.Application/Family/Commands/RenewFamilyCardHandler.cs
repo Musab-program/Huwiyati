@@ -1,0 +1,147 @@
+namespace Huwiyati.Application.Family.Commands;
+
+using Microsoft.EntityFrameworkCore;
+using Huwiyati.Application.Common;
+using Huwiyati.Application.Common.Interfaces;
+using Huwiyati.Application.Family.DTOs;
+using Huwiyati.Domain.Entities.Family;
+using Huwiyati.Domain.Enums;
+
+public class RenewFamilyCardHandler
+{
+    private readonly IApplicationDbContext _context;
+
+    public RenewFamilyCardHandler(IApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<ApiResponse<FamilyDto>> RenewAsync(
+        RenewFamilyCardCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        // 1. Verify issuing branch exists, is active, and belongs to Civil Registry ("الأحوال المدنية") via Select
+        var branchData = await _context.OrganizationBranches
+            .AsNoTracking()
+            .Where(b => b.Id == command.IssuingBranchId)
+            .Select(b => new
+            {
+                b.Id,
+                b.BranchName,
+                b.IsActive,
+                OrganizationIsActive = b.Organization.IsActive,
+                OrganizationName = b.Organization.Name
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (branchData == null || !branchData.IsActive || !branchData.OrganizationIsActive)
+        {
+            return ApiResponse<FamilyDto>.Failure(
+                "Specified issuing branch is invalid or inactive.", statusCode: 400);
+        }
+
+        if (!branchData.OrganizationName.Contains("الأحوال المدنية"))
+        {
+            return ApiResponse<FamilyDto>.Failure(
+                "Family Cards can only be renewed by Civil Registry branches (الأحوال المدنية).", statusCode: 400);
+        }
+
+        // 2. Find target Family record by FamilyNumber
+        var existingFamily = await _context.Families
+            .FirstOrDefaultAsync(f => f.FamilyNumber == command.FamilyNumber && f.Status == FamilyStatus.Active, cancellationToken)
+            ?? await _context.Families.FirstOrDefaultAsync(f => f.FamilyNumber == command.FamilyNumber, cancellationToken);
+
+        if (existingFamily == null)
+        {
+            return ApiResponse<FamilyDto>.Failure(
+                "No Family record found with the provided Family Number.", statusCode: 404);
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        // 3. If the card is currently Active, check if it is within 90 days of expiry
+        if (existingFamily.Status == FamilyStatus.Active)
+        {
+            var daysRemaining = existingFamily.ExpiryDate.DayNumber - today.DayNumber;
+
+            if (daysRemaining > 90)
+            {
+                return ApiResponse<FamilyDto>.Failure(
+                    $"Family card cannot be renewed yet. Renewal is only allowed within 3 months (90 days) prior to expiry date. Remaining valid days: {daysRemaining}.",
+                    statusCode: 400);
+            }
+
+            // Mark previous active Family record as Expired
+            existingFamily.Status = FamilyStatus.Expired;
+        }
+
+        // 4. Create NEW Family card entity with renewed 10-year validity dates
+        var newFamily = new Family
+        {
+            FamilyNumber = existingFamily.FamilyNumber,
+            HeadOfFamilyPersonId = existingFamily.HeadOfFamilyPersonId,
+            IssuingBranchId = command.IssuingBranchId,
+            IssueDate = today,
+            ExpiryDate = today.AddYears(10),
+            QrCodePayload = $"FAM-{existingFamily.FamilyNumber}",
+            Status = FamilyStatus.Active,
+            CreatedAt = DateTime.UtcNow,
+        };
+
+        await _context.Families.AddAsync(newFamily, cancellationToken);
+
+        // 5. Re-link active members to the new Family Card by updating their FamilyId directly
+        var activeMembers = await _context.FamilyMembers
+            .Where(m => m.FamilyId == existingFamily.Id && m.Status == FamilyMemberStatus.Active)
+            .ToListAsync(cancellationToken);
+
+        foreach (var member in activeMembers)
+        {
+            member.FamilyId = newFamily.Id;
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        // 6. Fetch updated members for response projection via Select (Zero Include)
+        var responseMembersDtoList = await _context.FamilyMembers
+            .AsNoTracking()
+            .Where(m => m.FamilyId == newFamily.Id && m.Status == FamilyMemberStatus.Active)
+            .Select(m => new FamilyMemberDto
+            {
+                Id = m.Id,
+                PersonId = m.PersonId,
+                NationalNumber = m.Person.NationalNumber,
+                FullName = $"{m.Person.FirstName} {m.Person.FatherName} {m.Person.GrandfatherName} {m.Person.FamilyName}".Trim(),
+                DateOfBirth = m.Person.DateOfBirth,
+                RelationshipType = m.RelationshipType.ToString(),
+                Status = m.Status.ToString(),
+                MarriageContractId = m.MarriageContractId,
+                JoinedAt = m.JoinedAt,
+                LeftAt = m.LeftAt
+            })
+            .ToListAsync(cancellationToken);
+
+        // 7. Get Head of Family details for response projection
+        var headMemberDto = responseMembersDtoList.FirstOrDefault(m => m.RelationshipType == RelationshipType.Head.ToString());
+
+        var responseDto = new FamilyDto
+        {
+            Id = newFamily.Id,
+            FamilyNumber = newFamily.FamilyNumber,
+            HeadOfFamilyPersonId = newFamily.HeadOfFamilyPersonId,
+            HeadOfFamilyNationalNumber = headMemberDto?.NationalNumber ?? string.Empty,
+            HeadOfFamilyFullName = headMemberDto?.FullName ?? string.Empty,
+            IssuingBranchId = branchData.Id,
+            BranchName = branchData.BranchName,
+            IssueDate = newFamily.IssueDate,
+            ExpiryDate = newFamily.ExpiryDate,
+            QrCodePayload = newFamily.QrCodePayload,
+            Status = newFamily.Status.ToString(),
+            CreatedAt = newFamily.CreatedAt,
+            Members = responseMembersDtoList
+        };
+
+        return ApiResponse<FamilyDto>.Success(
+            responseDto, message: "Family Card renewed successfully with a new 10-year validity period.", statusCode: 200);
+    }
+}

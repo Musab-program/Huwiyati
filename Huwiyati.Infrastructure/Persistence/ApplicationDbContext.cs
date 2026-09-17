@@ -1,8 +1,11 @@
 namespace Huwiyati.Infrastructure.Persistence;
 
 using Huwiyati.Application.Common.Interfaces;
+using Huwiyati.Domain.Common;
 using Huwiyati.Domain.Entities.Authentication;
 using Huwiyati.Domain.Entities.CivilRegistry;
+using Huwiyati.Domain.Entities.Documents;
+using Huwiyati.Domain.Entities.Family;
 using Huwiyati.Domain.Entities.Organizations;
 using Huwiyati.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -23,6 +26,31 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Organization> Organizations { get; set; } = null!;
     public DbSet<OrganizationBranch> OrganizationBranches { get; set; } = null!;
     public DbSet<Employee> Employees { get; set; } = null!;
+    public DbSet<NationalIdCard> NationalIdCards { get; set; } = null!;
+    public DbSet<Family> Families { get; set; } = null!;
+    public DbSet<FamilyMember> FamilyMembers { get; set; } = null!;
+    public DbSet<MarriageContract> MarriageContracts { get; set; } = null!;
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+        foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                if (entry.Entity.CreatedAt == default)
+                {
+                    entry.Entity.CreatedAt = now;
+                }
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.LastModifiedAt = now;
+            }
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

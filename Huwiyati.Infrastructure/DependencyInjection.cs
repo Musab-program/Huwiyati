@@ -61,6 +61,9 @@ public static class DependencyInjection
         // 8. Register EmailService Implementation
         services.AddTransient<IEmailService, EmailService>();
 
+        // 9. Register DocumentNumberGenerator Implementation
+        services.AddScoped<IDocumentNumberGenerator, DocumentNumberGenerator>();
+
         return services;
     }
 }
