@@ -4,6 +4,7 @@ using Huwiyati.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Huwiyati.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260916055310_EditNationalNumberCardTable")]
+    partial class EditNationalNumberCardTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -246,183 +249,6 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
                     b.HasIndex("PersonId");
 
                     b.ToTable("NationalIdCards", (string)null);
-                });
-
-            modelBuilder.Entity("Huwiyati.Domain.Entities.Family.Family", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateOnly>("ExpiryDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("FamilyNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<Guid>("HeadOfFamilyPersonId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateOnly>("IssueDate")
-                        .HasColumnType("date");
-
-                    b.Property<Guid>("IssuingBranchId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("QrCodePayload")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Active");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FamilyNumber");
-
-                    b.HasIndex("HeadOfFamilyPersonId");
-
-                    b.HasIndex("IssuingBranchId");
-
-                    b.ToTable("Families", (string)null);
-                });
-
-            modelBuilder.Entity("Huwiyati.Domain.Entities.Family.FamilyMember", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid>("FamilyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("JoinedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("LeftAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("MarriageContractId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PersonId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("RelationshipType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Active");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FamilyId");
-
-                    b.HasIndex("MarriageContractId");
-
-                    b.HasIndex("PersonId");
-
-                    b.ToTable("FamilyMembers", (string)null);
-                });
-
-            modelBuilder.Entity("Huwiyati.Domain.Entities.Family.MarriageContract", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ApprovedByUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ContractNumber")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("DocumentPhotoUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<Guid>("HusbandPersonId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateOnly>("MarriageDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Active");
-
-                    b.Property<Guid>("WifePersonId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContractNumber")
-                        .IsUnique();
-
-                    b.HasIndex("HusbandPersonId");
-
-                    b.HasIndex("WifePersonId");
-
-                    b.ToTable("MarriageContracts", (string)null);
                 });
 
             modelBuilder.Entity("Huwiyati.Domain.Entities.Organizations.Employee", b =>
@@ -787,70 +613,6 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
                     b.Navigation("Person");
                 });
 
-            modelBuilder.Entity("Huwiyati.Domain.Entities.Family.Family", b =>
-                {
-                    b.HasOne("Huwiyati.Domain.Entities.CivilRegistry.Person", "HeadOfFamily")
-                        .WithMany()
-                        .HasForeignKey("HeadOfFamilyPersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Huwiyati.Domain.Entities.Organizations.OrganizationBranch", "IssuingBranch")
-                        .WithMany()
-                        .HasForeignKey("IssuingBranchId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("HeadOfFamily");
-
-                    b.Navigation("IssuingBranch");
-                });
-
-            modelBuilder.Entity("Huwiyati.Domain.Entities.Family.FamilyMember", b =>
-                {
-                    b.HasOne("Huwiyati.Domain.Entities.Family.Family", "Family")
-                        .WithMany("FamilyMembers")
-                        .HasForeignKey("FamilyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Huwiyati.Domain.Entities.Family.MarriageContract", "MarriageContract")
-                        .WithMany()
-                        .HasForeignKey("MarriageContractId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Huwiyati.Domain.Entities.CivilRegistry.Person", "Person")
-                        .WithMany()
-                        .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Family");
-
-                    b.Navigation("MarriageContract");
-
-                    b.Navigation("Person");
-                });
-
-            modelBuilder.Entity("Huwiyati.Domain.Entities.Family.MarriageContract", b =>
-                {
-                    b.HasOne("Huwiyati.Domain.Entities.CivilRegistry.Person", "HusbandPerson")
-                        .WithMany()
-                        .HasForeignKey("HusbandPersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Huwiyati.Domain.Entities.CivilRegistry.Person", "WifePerson")
-                        .WithMany()
-                        .HasForeignKey("WifePersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("HusbandPerson");
-
-                    b.Navigation("WifePerson");
-                });
-
             modelBuilder.Entity("Huwiyati.Domain.Entities.Organizations.Employee", b =>
                 {
                     b.HasOne("Huwiyati.Domain.Entities.Organizations.OrganizationBranch", "Branch")
@@ -944,11 +706,6 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Huwiyati.Domain.Entities.CivilRegistry.Person", b =>
                 {
                     b.Navigation("NationalIdCards");
-                });
-
-            modelBuilder.Entity("Huwiyati.Domain.Entities.Family.Family", b =>
-                {
-                    b.Navigation("FamilyMembers");
                 });
 
             modelBuilder.Entity("Huwiyati.Domain.Entities.Organizations.Organization", b =>

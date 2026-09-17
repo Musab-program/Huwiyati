@@ -1,8 +1,14 @@
 using Huwiyati.Application.Authentication.Commands;
+using Huwiyati.Application.Documents.NationalIdCard.Commands;
+using Huwiyati.Application.Documents.NationalIdCard.Queries;
+using Huwiyati.Application.Family.Commands;
+using Huwiyati.Application.Family.Queries;
 using Huwiyati.Application.Organizations.Admins.Commands;
 using Huwiyati.Application.Organizations.Admins.Queries;
 using Huwiyati.Application.Organizations.Branches.Commands;
 using Huwiyati.Application.Organizations.Branches.Queries;
+using Huwiyati.Application.Organizations.Employees.Commands;
+using Huwiyati.Application.Organizations.Employees.Queries;
 using Huwiyati.Application.Organizations.Queries;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -43,12 +49,29 @@ namespace Huwiyati.Application
             services.AddScoped<RestoreAdminHandler>();
 
             // Register Organization Employee Handlers
-            services.AddScoped<Huwiyati.Application.Organizations.Employees.Commands.AssignEmployeeHandler>();
-            services.AddScoped<Huwiyati.Application.Organizations.Employees.Commands.UpdateEmployeeHandler>();
-            services.AddScoped<Huwiyati.Application.Organizations.Employees.Queries.GetEmployeesHandler>();
-            services.AddScoped<Huwiyati.Application.Organizations.Employees.Queries.GetEmployeeByIdHandler>();
-            services.AddScoped<Huwiyati.Application.Organizations.Employees.Commands.DeactivateEmployeeHandler>();
-            services.AddScoped<Huwiyati.Application.Organizations.Employees.Commands.ActivateEmployeeHandler>();
+            services.AddScoped<AssignEmployeeHandler>();
+            services.AddScoped<UpdateEmployeeHandler>();
+            services.AddScoped<GetEmployeesHandler>();
+            services.AddScoped<GetEmployeeByIdHandler>();
+            services.AddScoped<DeactivateEmployeeHandler>();
+            services.AddScoped<ActivateEmployeeHandler>();
+
+            // Register National ID Card Handlers
+            services.AddScoped<IssueNationalIdCardHandler>();
+            services.AddScoped<RenewNationalIdCardHandler>();
+            services.AddScoped<UpdatePersonDataHandler>();
+            services.AddScoped<GetNationalIdCardsHandler>();
+            services.AddScoped<GetNationalIdCardByIdHandler>();
+            services.AddScoped<GetPersonNationalIdCardHistoryHandler>();
+
+            // Register Family Handlers
+            services.AddScoped<CreateFamilyCardHandler>();
+            services.AddScoped<RenewFamilyCardHandler>();
+            services.AddScoped<AddWifeHandler>();
+            services.AddScoped<UpdateFamilyMemberStatusHandler>();
+            services.AddScoped<GetActiveFamiliesHandler>();
+            services.AddScoped<GetFamilyByIdHandler>();
+            services.AddScoped<GetFamilyHistoryByFamilyNumberHandler>();
 
             return services;
         }

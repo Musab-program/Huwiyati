@@ -55,14 +55,6 @@ public class DbInitializer
                 CreatedAt = DateTime.UtcNow
             });
         }
-        else
-        {
-            var p1 = await context.Persons.FindAsync(p1Id);
-            if (p1 != null && p1.BloodGroup == null)
-            {
-                p1.BloodGroup = BloodGroup.OPositive;
-            }
-        }
 
         if (!await context.Persons.AnyAsync(p => p.Id == p2Id))
         {
@@ -87,14 +79,6 @@ public class DbInitializer
                 CreatedAt = DateTime.UtcNow
             });
         }
-        else
-        {
-            var p2 = await context.Persons.FindAsync(p2Id);
-            if (p2 != null && p2.BloodGroup == null)
-            {
-                p2.BloodGroup = BloodGroup.OPositive;
-            }
-        }
 
         if (!await context.Persons.AnyAsync(p => p.Id == p3Id))
         {
@@ -118,14 +102,6 @@ public class DbInitializer
                 PersonStatus = PersonStatus.Active,
                 CreatedAt = DateTime.UtcNow
             });
-        }
-        else
-        {
-            var p3 = await context.Persons.FindAsync(p3Id);
-            if (p3 != null && p3.BloodGroup == null)
-            {
-                p3.BloodGroup = BloodGroup.OPositive;
-            }
         }
 
         await context.SaveChangesAsync();
