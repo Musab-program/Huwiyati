@@ -7,6 +7,7 @@ using Huwiyati.Domain.Entities.CivilRegistry;
 using Huwiyati.Domain.Entities.Documents;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Application.Documents.NationalIdCard.DTOs;
+using Huwiyati.Application.Common.Extensions;
 
 // Handler implementing the business logic for renewing a National ID Card according to 3-month eligibility rules
 public class RenewNationalIdCardHandler
@@ -33,15 +34,15 @@ public class RenewNationalIdCardHandler
         }
 
         // 2. Verify issuing branch exists
-        var branch = await _context.OrganizationBranches
-            .FirstOrDefaultAsync(b => b.Id == command.IssuingBranchId, cancellationToken);
-
-        if (branch == null)
+        var branch = await _context.ValidateCivilRegistryBranchAsync(command.IssuingBranchId, cancellationToken);
+        if (!branch.IsValid)
         {
             return ApiResponse<NationalIdCardDto>.Failure(
-                "Specified issuing branch does not exist.", statusCode: 404);
+                branch.ErrorMessage,
+                statusCode: branch.StatusCode
+                );
         }
-
+        
         // 3. Find existing Active National ID Card for this Person
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var activeCard = await _context.NationalIdCards
@@ -92,7 +93,7 @@ public class RenewNationalIdCardHandler
             PersonId = person.Id,
             NationalNumber = person.NationalNumber,
             FullName = $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}".Trim(),
-            IssuingBranchId = branch.Id,
+            IssuingBranchId = branch.BranchId,
             BranchName = branch.BranchName,
             IssueDate = newCard.IssueDate,
             ExpiryDate = newCard.ExpiryDate,

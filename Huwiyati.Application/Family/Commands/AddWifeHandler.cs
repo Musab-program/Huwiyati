@@ -6,6 +6,7 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Family.DTOs;
 using Huwiyati.Domain.Entities.Family;
 using Huwiyati.Domain.Enums;
+using Huwiyati.Application.Common.Extensions;
 
 public class AddWifeHandler
 {
@@ -21,29 +22,14 @@ public class AddWifeHandler
         CancellationToken cancellationToken = default)
     {
         // 1. Verify issuing branch exists, is active, and belongs to Civil Registry ("الأحوال المدنية") using Select
-        var branchData = await _context.OrganizationBranches
-            .AsNoTracking()
-            .Where(b => b.Id == command.IssuingBranchId)
-            .Select(b => new
-            {
-                b.Id,
-                b.IsActive,
-                OrganizationIsActive = b.Organization.IsActive,
-                OrganizationName = b.Organization.Name
-            })
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (branchData == null || !branchData.IsActive || !branchData.OrganizationIsActive)
+        var branchData = await _context.ValidateCivilRegistryBranchAsync(command.IssuingBranchId, cancellationToken);
+        if (!branchData.IsValid)
         {
             return ApiResponse<FamilyMemberDto>.Failure(
-                "Specified issuing branch is invalid or inactive.", statusCode: 400);
+                     branchData.ErrorMessage,
+                    statusCode: branchData.StatusCode);
         }
-
-        if (!branchData.OrganizationName.Contains("الأحوال المدنية"))
-        {
-            return ApiResponse<FamilyMemberDto>.Failure(
-                "Service only available through Civil Registry branches (الأحوال المدنية).", statusCode: 400);
-        }
+        
 
         // 2. Fetch Husband citizen record
         var husband = await _context.Persons
@@ -86,6 +72,15 @@ public class AddWifeHandler
         {
             return ApiResponse<FamilyMemberDto>.Failure(
                 "The specified wife is currently registered as an active wife in another family record.", statusCode: 400);
+        }
+
+        // 5.1 Verify the ContractNumber has not been used
+        var isExistContractNumber = await _context.MarriageContracts.
+                AnyAsync(x => x.ContractNumber == command.MarriageContractNumber);
+        if (isExistContractNumber)
+        {
+            return ApiResponse<FamilyMemberDto>.Failure(
+                "The ContractNumber is currently used with another Marriage contranct record.", statusCode: 400);
         }
 
         // 6. Create new MarriageContract record

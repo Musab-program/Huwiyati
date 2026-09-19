@@ -28,38 +28,7 @@ public class IssueNationalIdCardHandler
         IssueNationalIdCardCommand command,
         CancellationToken cancellationToken = default)
     {
-        //// 1. Verify issuing branch exists
-        //    var branch = await _context.OrganizationBranches
-        //.AsNoTracking()
-        //.Where(b => b.Id == command.IssuingBranchId)
-        //.Select(b => new
-        //{
-        //    b.Id,
-        //    b.BranchName,
-        //    b.IsActive,
-        //    OrganizationIsActive = b.Organization.IsActive,
-        //    OrganizationName = b.Organization.Name
-        //})
-        //.FirstOrDefaultAsync(cancellationToken);
-
-        //    if (branch == null)
-        //    {
-        //        return ApiResponse<NationalIdCardDto>.Failure(
-        //            "Specified issuing branch does not exist.", statusCode: 404);
-        //    }
-
-        //    if (!branch.IsActive || !branch.OrganizationIsActive)
-        //    {
-        //        return ApiResponse<NationalIdCardDto>.Failure(
-        //            "Specified issuing branch or its parent organization is inactive.", statusCode: 400);
-        //    }
-
-        //    if (!branch.OrganizationName.Contains("الأحوال المدنية"))
-        //    {
-        //        return ApiResponse<NationalIdCardDto>.Failure(
-        //            "Document cards can only be processed by Civil Registry branches (الأحوال المدنية).", statusCode: 400);
-        //    }
-
+        
         // 1. Validate Civil Registry Issuing Branch via central extension method
         var branchResult = await _context.ValidateCivilRegistryBranchAsync(command.IssuingBranchId, cancellationToken);
         if (!branchResult.IsValid)

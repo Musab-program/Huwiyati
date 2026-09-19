@@ -6,6 +6,7 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Family.DTOs;
 using Huwiyati.Domain.Entities.Family;
 using Huwiyati.Domain.Enums;
+using Huwiyati.Application.Common.Extensions;
 
 public class CreateFamilyCardHandler
 {
@@ -25,36 +26,43 @@ public class CreateFamilyCardHandler
         CancellationToken cancellationToken = default)
     {
         // 1. Verify issuing branch exists, is active, and belongs to Civil Registry organization ("الأحوال المدنية") using Select
-        var branchData = await _context.OrganizationBranches
-            .AsNoTracking()
-            .Where(b => b.Id == command.IssuingBranchId)
-            .Select(b => new
-            {
-                b.Id,
-                b.BranchName,
-                b.IsActive,
-                OrganizationIsActive = b.Organization.IsActive,
-                OrganizationName = b.Organization.Name
-            })
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (branchData == null)
+        var branchData = await _context.ValidateCivilRegistryBranchAsync(command.IssuingBranchId, cancellationToken);
+        if(!branchData.IsValid)
         {
-            return ApiResponse<FamilyDto>.Failure(
-                "Specified issuing branch does not exist.", statusCode: 404);
+            ApiResponse<FamilyDto>.Failure(
+                branchData.ErrorMessage,
+                statusCode: branchData.StatusCode);
         }
+        //var branchData = await _context.OrganizationBranches
+        //    .AsNoTracking()
+        //    .Where(b => b.Id == command.IssuingBranchId)
+        //    .Select(b => new
+        //    {
+        //        b.Id,
+        //        b.BranchName,
+        //        b.IsActive,
+        //        OrganizationIsActive = b.Organization.IsActive,
+        //        OrganizationName = b.Organization.Name
+        //    })
+        //    .FirstOrDefaultAsync(cancellationToken);
 
-        if (!branchData.IsActive || !branchData.OrganizationIsActive)
-        {
-            return ApiResponse<FamilyDto>.Failure(
-                "Specified issuing branch or its parent organization is inactive.", statusCode: 400);
-        }
+        //if (branchData == null)
+        //{
+        //    return ApiResponse<FamilyDto>.Failure(
+        //        "Specified issuing branch does not exist.", statusCode: 404);
+        //}
 
-        if (!branchData.OrganizationName.Contains("الأحوال المدنية"))
-        {
-            return ApiResponse<FamilyDto>.Failure(
-                "Family Cards can only be issued by Civil Registry branches (الأحوال المدنية).", statusCode: 400);
-        }
+        //if (!branchData.IsActive || !branchData.OrganizationIsActive)
+        //{
+        //    return ApiResponse<FamilyDto>.Failure(
+        //        "Specified issuing branch or its parent organization is inactive.", statusCode: 400);
+        //}
+
+        //if (!branchData.OrganizationName.Contains("الأحوال المدنية"))
+        //{
+        //    return ApiResponse<FamilyDto>.Failure(
+        //        "Family Cards can only be issued by Civil Registry branches (الأحوال المدنية).", statusCode: 400);
+        //}
 
         // 2. Fetch Husband record from Civil Registry
         var husband = await _context.Persons
@@ -102,6 +110,15 @@ public class CreateFamilyCardHandler
 
         // 6. Generate unique 11-digit Family Number starting with '02'
         var familyNumber = await _documentNumberGenerator.GenerateFamilyNumberAsync(command.IssuingBranchId, cancellationToken);
+
+        // 6.1 Verify the ContractNumber has not been used
+        var isExistContractNumber = await _context.MarriageContracts.
+                AnyAsync(x => x.ContractNumber == command.MarriageContractNumber);
+        if (isExistContractNumber)
+        {
+            return ApiResponse<FamilyDto>.Failure(
+                "The ContractNumber is currently used with another Marriage contranct record.", statusCode: 400);
+        }
 
         // 7. Create MarriageContract document
         var marriageContract = new MarriageContract
@@ -177,7 +194,7 @@ public class CreateFamilyCardHandler
             HeadOfFamilyPersonId = husband.Id,
             HeadOfFamilyNationalNumber = husband.NationalNumber,
             HeadOfFamilyFullName = $"{husband.FirstName} {husband.FatherName} {husband.GrandfatherName} {husband.FamilyName}".Trim(),
-            IssuingBranchId = branchData.Id,
+            IssuingBranchId = branchData.BranchId,
             BranchName = branchData.BranchName,
             IssueDate = family.IssueDate,
             ExpiryDate = family.ExpiryDate,

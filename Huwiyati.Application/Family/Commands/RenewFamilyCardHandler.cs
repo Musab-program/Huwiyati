@@ -6,6 +6,7 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Family.DTOs;
 using Huwiyati.Domain.Entities.Family;
 using Huwiyati.Domain.Enums;
+using Huwiyati.Application.Common.Extensions;
 
 public class RenewFamilyCardHandler
 {
@@ -21,29 +22,13 @@ public class RenewFamilyCardHandler
         CancellationToken cancellationToken = default)
     {
         // 1. Verify issuing branch exists, is active, and belongs to Civil Registry ("الأحوال المدنية") via Select
-        var branchData = await _context.OrganizationBranches
-            .AsNoTracking()
-            .Where(b => b.Id == command.IssuingBranchId)
-            .Select(b => new
-            {
-                b.Id,
-                b.BranchName,
-                b.IsActive,
-                OrganizationIsActive = b.Organization.IsActive,
-                OrganizationName = b.Organization.Name
-            })
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (branchData == null || !branchData.IsActive || !branchData.OrganizationIsActive)
+        var branchData = await _context.ValidateCivilRegistryBranchAsync(command.IssuingBranchId, cancellationToken);
+        if(!branchData.IsValid)
         {
             return ApiResponse<FamilyDto>.Failure(
-                "Specified issuing branch is invalid or inactive.", statusCode: 400);
-        }
-
-        if (!branchData.OrganizationName.Contains("الأحوال المدنية"))
-        {
-            return ApiResponse<FamilyDto>.Failure(
-                "Family Cards can only be renewed by Civil Registry branches (الأحوال المدنية).", statusCode: 400);
+                branchData.ErrorMessage,
+                statusCode: branchData.StatusCode
+                );
         }
 
         // 2. Find target Family record by FamilyNumber
@@ -131,7 +116,7 @@ public class RenewFamilyCardHandler
             HeadOfFamilyPersonId = newFamily.HeadOfFamilyPersonId,
             HeadOfFamilyNationalNumber = headMemberDto?.NationalNumber ?? string.Empty,
             HeadOfFamilyFullName = headMemberDto?.FullName ?? string.Empty,
-            IssuingBranchId = branchData.Id,
+            IssuingBranchId = branchData.BranchId,
             BranchName = branchData.BranchName,
             IssueDate = newFamily.IssueDate,
             ExpiryDate = newFamily.ExpiryDate,
