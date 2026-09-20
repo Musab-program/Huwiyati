@@ -1,12 +1,14 @@
 ﻿namespace Huwiyati.Application.Documents.NationalIdCard.Commands;
 
-using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common;
+using Huwiyati.Application.Common.Extensions;
 using Huwiyati.Application.Common.Interfaces;
+using Huwiyati.Application.Documents.BirthCertificate.DTOs;
+using Huwiyati.Application.Documents.NationalIdCard.DTOs;
 using Huwiyati.Domain.Entities.CivilRegistry;
 using Huwiyati.Domain.Entities.Documents;
 using Huwiyati.Domain.Enums;
-using Huwiyati.Application.Documents.NationalIdCard.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 // Handler implementing the business logic for issuing a National ID Card
 public class IssueNationalIdCardHandler
@@ -26,37 +28,13 @@ public class IssueNationalIdCardHandler
         IssueNationalIdCardCommand command,
         CancellationToken cancellationToken = default)
     {
-        // 1. Verify issuing branch exists
-            var branch = await _context.OrganizationBranches
-        .AsNoTracking()
-        .Where(b => b.Id == command.IssuingBranchId)
-        .Select(b => new
+        
+        // 1. Validate Civil Registry Issuing Branch via central extension method
+        var branchResult = await _context.ValidateCivilRegistryBranchAsync(command.IssuingBranchId, cancellationToken);
+        if (!branchResult.IsValid)
         {
-            b.Id,
-            b.BranchName,
-            b.IsActive,
-            OrganizationIsActive = b.Organization.IsActive,
-            OrganizationName = b.Organization.Name
-        })
-        .FirstOrDefaultAsync(cancellationToken);
-
-            if (branch == null)
-            {
-                return ApiResponse<NationalIdCardDto>.Failure(
-                    "Specified issuing branch does not exist.", statusCode: 404);
-            }
-
-            if (!branch.IsActive || !branch.OrganizationIsActive)
-            {
-                return ApiResponse<NationalIdCardDto>.Failure(
-                    "Specified issuing branch or its parent organization is inactive.", statusCode: 400);
-            }
-
-            if (!branch.OrganizationName.Contains("الأحوال المدنية"))
-            {
-                return ApiResponse<NationalIdCardDto>.Failure(
-                    "Document cards can only be processed by Civil Registry branches (الأحوال المدنية).", statusCode: 400);
-            }
+            return ApiResponse<NationalIdCardDto>.Failure(branchResult.ErrorMessage, statusCode: branchResult.StatusCode);
+        }
 
         Person person;
 
@@ -137,8 +115,8 @@ public class IssueNationalIdCardHandler
             PersonId = person.Id,
             NationalNumber = person.NationalNumber,
             FullName = $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}".Trim(),
-            IssuingBranchId = branch.Id,
-            BranchName = branch.BranchName,
+            IssuingBranchId = branchResult.BranchId,
+            BranchName = branchResult.BranchName,
             IssueDate = card.IssueDate,
             ExpiryDate = card.ExpiryDate,
             QrCodePayload = card.QrCodePayload,

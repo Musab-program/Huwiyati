@@ -104,7 +104,7 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    await DbInitializer.SeedAsync(context, roleManager, userManager);
+    //await DbInitializer.SeedAsync(context, roleManager, userManager);
 }
 
 app.Run();
