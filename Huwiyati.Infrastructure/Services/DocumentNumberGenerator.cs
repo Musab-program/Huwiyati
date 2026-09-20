@@ -3,7 +3,6 @@ namespace Huwiyati.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common.Interfaces;
 
-// Service generating official document numbers (01 for National ID, 02 for Family Card) enforcing Civil Registry branch check
 public class DocumentNumberGenerator : IDocumentNumberGenerator
 {
     private readonly IApplicationDbContext _context;
@@ -59,32 +58,49 @@ public class DocumentNumberGenerator : IDocumentNumberGenerator
             .CountAsync(b => b.CreatedAt <= branchData.CreatedAt, cancellationToken);
         string branchCodeStr = (branchOrdinal % 999).ToString("D3");
 
-        // 3. Sequential Number calculation (6 digits)
-        // For Birth Certificate Number ("03"), count total birth certificates in database.
-        // For Family Number ("02"), count distinct existing families in database.
-        // For National Number ("01"), count total persons registered in Civil Registry.
-        int existingCount;
+        // 3. Sequential Number calculation with do-while verification against existing DB records
+        int countOffset = 0;
+        string candidateNumber;
+        bool exists;
 
-        if (serviceCode == "03")
+        do
         {
-            existingCount = await _context.BirthCertificates
-                .CountAsync(cancellationToken);
-        }
-        else if (serviceCode == "02")
-        {
-            existingCount = await _context.Families
-                .Select(f => f.FamilyNumber)
-                .Distinct()
-                .CountAsync(cancellationToken);
-        }
-        else
-        {
-            existingCount = await _context.Persons.CountAsync(cancellationToken);
-        }
+            int baseCount;
+            if (serviceCode == "03")
+            {
+                baseCount = await _context.BirthCertificates.CountAsync(cancellationToken);
+            }
+            else if (serviceCode == "02")
+            {
+                baseCount = await _context.Families.Select(f => f.FamilyNumber).Distinct().CountAsync(cancellationToken);
+            }
+            else
+            {
+                baseCount = await _context.Persons.CountAsync(cancellationToken);
+            }
 
-        var sequenceNumber = (existingCount + 1).ToString("D6");
+            var sequenceNumber = (baseCount + 1 + countOffset).ToString("D6");
+            candidateNumber = $"{serviceCode}{branchCodeStr}{sequenceNumber}";
 
-        // Combine into 11-digit document number (e.g. "01001000001" or "02001000001")
-        return $"{serviceCode}{branchCodeStr}{sequenceNumber}";
+            if (serviceCode == "03")
+            {
+                exists = await _context.BirthCertificates.AnyAsync(b => b.CertificateNumber == candidateNumber, cancellationToken);
+            }
+            else if (serviceCode == "02")
+            {
+                exists = await _context.Families.AnyAsync(f => f.FamilyNumber == candidateNumber, cancellationToken);
+            }
+            else
+            {
+                exists = await _context.Persons.AnyAsync(p => p.NationalNumber == candidateNumber, cancellationToken);
+            }
+
+            if (exists)
+            {
+                countOffset++;
+            }
+        } while (exists);
+
+        return candidateNumber;
     }
 }

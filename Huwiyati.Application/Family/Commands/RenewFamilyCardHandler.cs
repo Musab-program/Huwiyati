@@ -75,16 +75,23 @@ public class RenewFamilyCardHandler
 
         await _context.Families.AddAsync(newFamily, cancellationToken);
 
-        // 5. Re-link active members to the new Family Card by updating their FamilyId directly
+        // 5. Re-link active members to the new Family Card by cloning FamilyMember records for historical integrity
         var activeMembers = await _context.FamilyMembers
             .Where(m => m.FamilyId == existingFamily.Id && m.Status == FamilyMemberStatus.Active)
             .ToListAsync(cancellationToken);
 
-        foreach (var member in activeMembers)
+        var newMembers = activeMembers.Select(m => new FamilyMember
         {
-            member.FamilyId = newFamily.Id;
-        }
+            Id = Guid.NewGuid(),
+            FamilyId = newFamily.Id,
+            PersonId = m.PersonId,
+            MarriageContractId = m.MarriageContractId,
+            RelationshipType = m.RelationshipType,
+            Status = FamilyMemberStatus.Active,
+            JoinedAt = today.ToDateTime(TimeOnly.MinValue)
+        }).ToList();
 
+        await _context.FamilyMembers.AddRangeAsync(newMembers, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
         // 6. Fetch updated members for response projection via Select (Zero Include)
