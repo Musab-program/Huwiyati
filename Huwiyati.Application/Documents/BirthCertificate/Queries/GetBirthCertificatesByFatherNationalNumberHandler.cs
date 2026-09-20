@@ -5,6 +5,8 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.BirthCertificate.DTOs;
 
+using Huwiyati.Domain.Enums;
+
 public class GetBirthCertificatesByFatherNationalNumberHandler
 {
     private readonly IApplicationDbContext _context;
@@ -18,13 +20,18 @@ public class GetBirthCertificatesByFatherNationalNumberHandler
         string fatherNationalNumber,
         CancellationToken cancellationToken = default)
     {
-        var fatherExists = await _context.Persons
+        var father = await _context.Persons
             .AsNoTracking()
-            .AnyAsync(p => p.NationalNumber == fatherNationalNumber, cancellationToken);
+            .FirstOrDefaultAsync(p => p.NationalNumber == fatherNationalNumber, cancellationToken);
 
-        if (!fatherExists)
+        if (father == null)
         {
-            return ApiResponse<List<BirthCertificateDto>>.Failure("No father person record found with the provided national number.", statusCode: 404);
+            return ApiResponse<List<BirthCertificateDto>>.Failure("No person record found with the provided national number.", statusCode: 404);
+        }
+
+        if (father.Gender != Gender.Male)
+        {
+            return ApiResponse<List<BirthCertificateDto>>.Failure("The provided national number does not belong to a male father.", statusCode: 400);
         }
 
         var certificates = await _context.BirthCertificates
