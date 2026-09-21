@@ -27,6 +27,11 @@ public class DocumentNumberGenerator : IDocumentNumberGenerator
         return GenerateDocumentNumberInternalAsync("03", branchId, cancellationToken);
     }
 
+    public Task<string> GenerateDeathCertificateNumberAsync(Guid branchId, CancellationToken cancellationToken = default)
+    {
+        return GenerateDocumentNumberInternalAsync("04", branchId, cancellationToken);
+    }
+
     private async Task<string> GenerateDocumentNumberInternalAsync(string serviceCode, Guid branchId, CancellationToken cancellationToken)
     {
         // 1. Fetch branch data with projection via Select instead of Include for optimal performance
@@ -66,7 +71,11 @@ public class DocumentNumberGenerator : IDocumentNumberGenerator
         do
         {
             int baseCount;
-            if (serviceCode == "03")
+            if (serviceCode == "04")
+            {
+                baseCount = await _context.DeathCertificates.CountAsync(cancellationToken);
+            }
+            else if (serviceCode == "03")
             {
                 baseCount = await _context.BirthCertificates.CountAsync(cancellationToken);
             }
@@ -82,7 +91,11 @@ public class DocumentNumberGenerator : IDocumentNumberGenerator
             var sequenceNumber = (baseCount + 1 + countOffset).ToString("D6");
             candidateNumber = $"{serviceCode}{branchCodeStr}{sequenceNumber}";
 
-            if (serviceCode == "03")
+            if (serviceCode == "04")
+            {
+                exists = await _context.DeathCertificates.AnyAsync(d => d.CertificateNumber == candidateNumber, cancellationToken);
+            }
+            else if (serviceCode == "03")
             {
                 exists = await _context.BirthCertificates.AnyAsync(b => b.CertificateNumber == candidateNumber, cancellationToken);
             }

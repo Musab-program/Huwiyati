@@ -152,6 +152,7 @@ public class DbInitializer
         var pMotherId     = Guid.Parse("018f7d9a-3000-7000-8000-000000000005");
         var pSonId        = Guid.Parse("018f7d9a-3000-7000-8000-000000000006");
         var pDauId        = Guid.Parse("018f7d9a-3000-7000-8000-000000000007");
+        var pDeceasedId   = Guid.Parse("018f7d9a-3000-7000-8000-000000000008");
 
         var seedPersonsList = new List<Person>
         {
@@ -294,6 +295,26 @@ public class DbInitializer
                 AddressDetails = "حي حدة - شارع أربيل",
                 PersonStatus = PersonStatus.Active,
                 CreatedAt = DateTime.UtcNow
+            },
+            new Person
+            {
+                Id = pDeceasedId,
+                NationalNumber = "01001000005",
+                FirstName = "عمر",
+                FatherName = "علي",
+                GrandfatherName = "عبد الله",
+                FamilyName = "الشامي",
+                DateOfBirth = new DateOnly(1950, 1, 1),
+                PlaceOfBirth = "صنعاء",
+                BloodGroup = BloodGroup.OPositive,
+                Gender = Gender.Male,
+                Nationality = "يمني",
+                MaritalStatus = MaritalStatus.Married,
+                Governorate = "أمانة العاصمة",
+                District = "السبعين",
+                AddressDetails = "حي حدة",
+                PersonStatus = PersonStatus.Deceased,
+                CreatedAt = DateTime.UtcNow
             }
         };
 
@@ -314,6 +335,7 @@ public class DbInitializer
         var motherPerson     = await context.Persons.FirstOrDefaultAsync(p => p.NationalNumber == "01001000002") ?? await context.Persons.FirstOrDefaultAsync(p => p.Id == pMotherId);
         var sonPerson        = await context.Persons.FirstOrDefaultAsync(p => p.NationalNumber == "01001000003") ?? await context.Persons.FirstOrDefaultAsync(p => p.Id == pSonId);
         var daughterPerson   = await context.Persons.FirstOrDefaultAsync(p => p.NationalNumber == "01001000004") ?? await context.Persons.FirstOrDefaultAsync(p => p.Id == pDauId);
+        var deceasedPerson   = await context.Persons.FirstOrDefaultAsync(p => p.NationalNumber == "01001000005") ?? await context.Persons.FirstOrDefaultAsync(p => p.Id == pDeceasedId);
 
         // -------------------------------------------------------------
         // 5. Seed ApplicationUsers
@@ -555,5 +577,30 @@ public class DbInitializer
             }
         }
         await context.SaveChangesAsync();
+
+        // -------------------------------------------------------------
+        // 11. Seed Death Certificates (Guaranteed Valid Person, Hospital & Branch FKs)
+        // -------------------------------------------------------------
+        if (deceasedPerson != null)
+        {
+            if (!await context.DeathCertificates.AnyAsync(d => d.PersonId == deceasedPerson.Id || d.CertificateNumber == "04001000001"))
+            {
+                await context.DeathCertificates.AddAsync(new DeathCertificate
+                {
+                    Id = Guid.NewGuid(),
+                    PersonId = deceasedPerson.Id,
+                    HospitalBranchId = thawraHospitalBranchId,
+                    IssuingBranchId = sanaaBranchId,
+                    CertificateNumber = "04001000001",
+                    IssueDate = new DateOnly(2025, 2, 1),
+                    DeathDate = new DateOnly(2025, 1, 28),
+                    PlaceOfDeath = "مستشفى الثورة العام - صنعاء",
+                    CauseOfDeath = "سكتة قلبية",
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = createdByUserId
+                });
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }

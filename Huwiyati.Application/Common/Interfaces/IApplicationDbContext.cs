@@ -17,6 +17,7 @@ public interface IApplicationDbContext
     DbSet<Employee> Employees { get; set; }
     DbSet<NationalIdCard> NationalIdCards { get; set; }
     DbSet<BirthCertificate> BirthCertificates { get; set; }
+    DbSet<DeathCertificate> DeathCertificates { get; set; }
     DbSet<Family> Families { get; set; }
     DbSet<FamilyMember> FamilyMembers { get; set; }
     DbSet<MarriageContract> MarriageContracts { get; set; }
