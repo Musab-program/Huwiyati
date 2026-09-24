@@ -59,9 +59,11 @@ public class DbInitializer
         // Fetch actual Organization IDs from DB
         var civilRegistryOrg = await context.Organizations.FirstOrDefaultAsync(o => o.Name.Contains("الأحوال المدنية"));
         var hospitalsOrg = await context.Organizations.FirstOrDefaultAsync(o => o.Name.Contains("المستشفيات"));
+        var passportsOrg = await context.Organizations.FirstOrDefaultAsync(o => o.Name.Contains("الجوازات"));
 
         var civilRegistryOrgId = civilRegistryOrg?.Id ?? orgCivilRegistryId;
         var hospitalsOrgId = hospitalsOrg?.Id ?? orgHospitalsId;
+        var passportsOrgId = passportsOrg?.Id ?? orgPassportsId;
 
         // -------------------------------------------------------------
         // 3. Seed Organization Branches
@@ -70,6 +72,7 @@ public class DbInitializer
         var branchCivilRegistryAdenId  = Guid.Parse("018f7d9a-2000-7000-8000-000000000002");
         var branchHospitalThawraId     = Guid.Parse("018f7d9a-2000-7000-8000-000000000003");
         var branchHospitalJumhuriId    = Guid.Parse("018f7d9a-2000-7000-8000-000000000004");
+        var branchImmigrationSanaaId   = Guid.Parse("018f7d9a-2000-7000-8000-000000000005");
 
         var seedBranches = new List<OrganizationBranch>
         {
@@ -116,6 +119,17 @@ public class DbInitializer
                 AddressDetails = "شارع الزبيري",
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
+            },
+            new OrganizationBranch
+            {
+                Id = branchImmigrationSanaaId,
+                OrganizationId = passportsOrgId,
+                BranchName = "مصلحة الهجرة والجوازات والجنسية - صنعاء",
+                Governorate = "أمانة العاصمة",
+                District = "شعوب",
+                AddressDetails = "شارع الجزائر",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
             }
         };
 
@@ -129,7 +143,7 @@ public class DbInitializer
         await context.SaveChangesAsync();
 
         // Fetch actual Branch IDs from DB
-        var sanaaBranch = await context.OrganizationBranches.FirstOrDefaultAsync(b => b.BranchName.Contains("صنعاء"))
+        var sanaaBranch = await context.OrganizationBranches.FirstOrDefaultAsync(b => b.BranchName.Contains("الأحوال المدنية") && b.BranchName.Contains("صنعاء"))
             ?? await context.OrganizationBranches.FirstOrDefaultAsync(b => b.Id == branchCivilRegistrySanaaId);
 
         var adenBranch = await context.OrganizationBranches.FirstOrDefaultAsync(b => b.BranchName.Contains("عدن"))
@@ -138,9 +152,13 @@ public class DbInitializer
         var thawraHospitalBranch = await context.OrganizationBranches.FirstOrDefaultAsync(b => b.BranchName.Contains("الثورة"))
             ?? await context.OrganizationBranches.FirstOrDefaultAsync(b => b.Id == branchHospitalThawraId);
 
+        var immigrationBranch = await context.OrganizationBranches.FirstOrDefaultAsync(b => b.BranchName.Contains("الجوازات"))
+            ?? await context.OrganizationBranches.FirstOrDefaultAsync(b => b.Id == branchImmigrationSanaaId);
+
         var sanaaBranchId = sanaaBranch?.Id ?? branchCivilRegistrySanaaId;
         var adenBranchId = adenBranch?.Id ?? branchCivilRegistryAdenId;
         var thawraHospitalBranchId = thawraHospitalBranch?.Id ?? branchHospitalThawraId;
+        var immigrationBranchId = immigrationBranch?.Id ?? branchImmigrationSanaaId;
 
         // -------------------------------------------------------------
         // 4. Seed Persons & Retrieve Actual Database Person Entities
@@ -602,5 +620,123 @@ public class DbInitializer
                 await context.SaveChangesAsync();
             }
         }
+
+        // -------------------------------------------------------------
+        // 12. Seed Passports (Guaranteed Valid Person & Immigration Branch FKs)
+        // -------------------------------------------------------------
+        Passport? superAdminPassport = null;
+        Passport? fatherOldPassport = null;
+        Passport? fatherActivePassport = null;
+
+        if (superAdminPerson != null)
+        {
+            superAdminPassport = await context.Passports.FirstOrDefaultAsync(p => p.PersonId == superAdminPerson.Id && p.Status == PassportStatus.Active);
+            if (superAdminPassport == null)
+            {
+                superAdminPassport = new Passport
+                {
+                    Id = Guid.Parse("018f7d9a-5000-7000-8000-000000000001"),
+                    PersonId = superAdminPerson.Id,
+                    IssuingBranchId = immigrationBranchId,
+                    PassportNumber = "05001000001",
+                    PassportType = PassportType.Regular,
+                    IssueDate = new DateOnly(2023, 1, 15),
+                    ExpiryDate = new DateOnly(2029, 1, 15),
+                    QrCodePayload = "PASS-05001000001",
+                    Status = PassportStatus.Active,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await context.Passports.AddAsync(superAdminPassport);
+            }
+        }
+
+        if (fatherPerson != null)
+        {
+            fatherOldPassport = await context.Passports.FirstOrDefaultAsync(p => p.PassportNumber == "05001000002");
+            if (fatherOldPassport == null)
+            {
+                fatherOldPassport = new Passport
+                {
+                    Id = Guid.Parse("018f7d9a-5000-7000-8000-000000000002"),
+                    PersonId = fatherPerson.Id,
+                    IssuingBranchId = immigrationBranchId,
+                    PassportNumber = "05001000002",
+                    PassportType = PassportType.Regular,
+                    IssueDate = new DateOnly(2017, 5, 10),
+                    ExpiryDate = new DateOnly(2023, 5, 10),
+                    QrCodePayload = "PASS-05001000002",
+                    Status = PassportStatus.Expired,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await context.Passports.AddAsync(fatherOldPassport);
+            }
+
+            fatherActivePassport = await context.Passports.FirstOrDefaultAsync(p => p.PassportNumber == "05001000003");
+            if (fatherActivePassport == null)
+            {
+                fatherActivePassport = new Passport
+                {
+                    Id = Guid.Parse("018f7d9a-5000-7000-8000-000000000003"),
+                    PersonId = fatherPerson.Id,
+                    IssuingBranchId = immigrationBranchId,
+                    PassportNumber = "05001000003",
+                    PassportType = PassportType.Regular,
+                    IssueDate = new DateOnly(2023, 5, 12),
+                    ExpiryDate = new DateOnly(2029, 5, 12),
+                    QrCodePayload = "PASS-05001000003",
+                    Status = PassportStatus.Active,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await context.Passports.AddAsync(fatherActivePassport);
+            }
+        }
+        await context.SaveChangesAsync();
+
+        // -------------------------------------------------------------
+        // 13. Seed Travel Records (Guaranteed Valid Passport & Branch FKs)
+        // -------------------------------------------------------------
+        if (fatherOldPassport != null && !await context.TravelRecords.AnyAsync(t => t.PassportId == fatherOldPassport.Id))
+        {
+            await context.TravelRecords.AddAsync(new TravelRecord
+            {
+                Id = Guid.NewGuid(),
+                PassportId = fatherOldPassport.Id,
+                IssuingBranchId = immigrationBranchId,
+                Country = "المملكة العربية السعودية",
+                EntryDate = new DateOnly(2018, 6, 1),
+                ExitDate = new DateOnly(2018, 6, 25),
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        if (fatherActivePassport != null && !await context.TravelRecords.AnyAsync(t => t.PassportId == fatherActivePassport.Id))
+        {
+            await context.TravelRecords.AddAsync(new TravelRecord
+            {
+                Id = Guid.NewGuid(),
+                PassportId = fatherActivePassport.Id,
+                IssuingBranchId = immigrationBranchId,
+                Country = "الإمارات العربية المتحدة",
+                EntryDate = new DateOnly(2024, 2, 10),
+                ExitDate = new DateOnly(2024, 2, 20),
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        if (superAdminPassport != null && !await context.TravelRecords.AnyAsync(t => t.PassportId == superAdminPassport.Id))
+        {
+            await context.TravelRecords.AddAsync(new TravelRecord
+            {
+                Id = Guid.NewGuid(),
+                PassportId = superAdminPassport.Id,
+                IssuingBranchId = immigrationBranchId,
+                Country = "جمهورية مصر العربية",
+                EntryDate = new DateOnly(2023, 9, 5),
+                ExitDate = new DateOnly(2023, 9, 18),
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        await context.SaveChangesAsync();
     }
 }

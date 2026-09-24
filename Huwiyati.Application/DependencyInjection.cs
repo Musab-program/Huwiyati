@@ -5,6 +5,8 @@ using Huwiyati.Application.Documents.DeathCertificate.Commands;
 using Huwiyati.Application.Documents.DeathCertificate.Queries;
 using Huwiyati.Application.Documents.NationalIdCard.Commands;
 using Huwiyati.Application.Documents.NationalIdCard.Queries;
+using Huwiyati.Application.Documents.Passport.Commands;
+using Huwiyati.Application.Documents.Passport.Queries;
 using Huwiyati.Application.Family.Commands;
 using Huwiyati.Application.Family.Queries;
 using Huwiyati.Application.Organizations.Admins.Commands;
@@ -89,6 +91,17 @@ namespace Huwiyati.Application
             services.AddScoped<GetActiveFamiliesHandler>();
             services.AddScoped<GetFamilyByIdHandler>();
             services.AddScoped<GetFamilyHistoryByFamilyNumberHandler>();
+
+            // Register Passport Handlers
+            services.AddScoped<IssuePassportHandler>();
+            services.AddScoped<RenewPassportHandler>();
+            services.AddScoped<GetActivePassportsHandler>();
+            services.AddScoped<GetPassportByIdHandler>();
+            services.AddScoped<GetPersonPassportHistoryHandler>();
+            services.AddScoped<AddTravelRecordHandler>();
+            services.AddScoped<GetPassportTravelRecordsHandler>();
+            services.AddScoped<GetTravelRecordByIdHandler>();
+            services.AddScoped<GetPersonTravelHistoryHandler>();
 
             return services;
         }

@@ -21,6 +21,8 @@ public interface IApplicationDbContext
     DbSet<Family> Families { get; set; }
     DbSet<FamilyMember> FamilyMembers { get; set; }
     DbSet<MarriageContract> MarriageContracts { get; set; }
+    DbSet<Passport> Passports { get; set; }
+    DbSet<TravelRecord> TravelRecords { get; set; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

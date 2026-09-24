@@ -26,5 +26,5 @@ public class Person : AuditableEntity
 
     //Naviagation property
     public ICollection<NationalIdCard> NationalIdCards { get; set; } = new List<NationalIdCard>();
-
+    public ICollection<Passport> Passports { get; set; } = new List<Passport>();
 }

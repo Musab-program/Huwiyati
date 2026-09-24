@@ -32,6 +32,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Family> Families { get; set; } = null!;
     public DbSet<FamilyMember> FamilyMembers { get; set; } = null!;
     public DbSet<MarriageContract> MarriageContracts { get; set; } = null!;
+    public DbSet<Passport> Passports { get; set; } = null!;
+    public DbSet<TravelRecord> TravelRecords { get; set; } = null!;
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

@@ -4,6 +4,7 @@ using Huwiyati.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Huwiyati.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260921085420_AddPassportTable")]
+    partial class AddPassportTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -427,50 +430,6 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
                     b.HasIndex("PersonId");
 
                     b.ToTable("Passports", (string)null);
-                });
-
-            modelBuilder.Entity("Huwiyati.Domain.Entities.Documents.TravelRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateOnly>("EntryDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateOnly?>("ExitDate")
-                        .HasColumnType("date");
-
-                    b.Property<Guid>("IssuingBranchId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("PassportId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IssuingBranchId");
-
-                    b.HasIndex("PassportId");
-
-                    b.ToTable("TravelRecords", (string)null);
                 });
 
             modelBuilder.Entity("Huwiyati.Domain.Entities.Family.Family", b =>
@@ -1091,25 +1050,6 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
                     b.Navigation("IssuingBranch");
 
                     b.Navigation("Person");
-                });
-
-            modelBuilder.Entity("Huwiyati.Domain.Entities.Documents.TravelRecord", b =>
-                {
-                    b.HasOne("Huwiyati.Domain.Entities.Organizations.OrganizationBranch", "IssuingBranch")
-                        .WithMany()
-                        .HasForeignKey("IssuingBranchId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Huwiyati.Domain.Entities.Documents.Passport", "Passport")
-                        .WithMany()
-                        .HasForeignKey("PassportId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("IssuingBranch");
-
-                    b.Navigation("Passport");
                 });
 
             modelBuilder.Entity("Huwiyati.Domain.Entities.Family.Family", b =>
