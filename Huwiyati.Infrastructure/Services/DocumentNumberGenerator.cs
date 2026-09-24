@@ -32,6 +32,11 @@ public class DocumentNumberGenerator : IDocumentNumberGenerator
         return GenerateDocumentNumberInternalAsync("04", branchId, cancellationToken);
     }
 
+    public Task<string> GeneratePassportNumberAsync(Guid branchId, CancellationToken cancellationToken = default)
+    {
+        return GenerateDocumentNumberInternalAsync("05", branchId, cancellationToken);
+    }
+
     private async Task<string> GenerateDocumentNumberInternalAsync(string serviceCode, Guid branchId, CancellationToken cancellationToken)
     {
         // 1. Fetch branch data with projection via Select instead of Include for optimal performance
@@ -52,10 +57,23 @@ public class DocumentNumberGenerator : IDocumentNumberGenerator
             throw new InvalidOperationException("Specified organization branch was not found or is inactive.");
         }
 
-        // Enforce Civil Registry organization validation rule
-        if (!branchData.OrganizationName.Contains("الأحوال المدنية") && !branchData.OrganizationName.Contains("Civil Registry"))
+        // Enforce organization validation rule based on service type
+        if (serviceCode == "05")
         {
-            throw new InvalidOperationException("Document numbers can only be issued by Civil Registry branches.");
+            if (!branchData.OrganizationName.Contains("الجوازات") &&
+                !branchData.OrganizationName.Contains("الهجرة") &&
+                !branchData.OrganizationName.Contains("Passport") &&
+                !branchData.OrganizationName.Contains("Immigration"))
+            {
+                throw new InvalidOperationException("Passport numbers can only be issued by Immigration and Passports branches.");
+            }
+        }
+        else
+        {
+            if (!branchData.OrganizationName.Contains("الأحوال المدنية") && !branchData.OrganizationName.Contains("Civil Registry"))
+            {
+                throw new InvalidOperationException("Document numbers can only be issued by Civil Registry branches.");
+            }
         }
 
         // 2. Branch Ordinal Code (3 digits)
@@ -71,7 +89,11 @@ public class DocumentNumberGenerator : IDocumentNumberGenerator
         do
         {
             int baseCount;
-            if (serviceCode == "04")
+            if (serviceCode == "05")
+            {
+                baseCount = await _context.Passports.CountAsync(cancellationToken);
+            }
+            else if (serviceCode == "04")
             {
                 baseCount = await _context.DeathCertificates.CountAsync(cancellationToken);
             }
@@ -91,7 +113,11 @@ public class DocumentNumberGenerator : IDocumentNumberGenerator
             var sequenceNumber = (baseCount + 1 + countOffset).ToString("D6");
             candidateNumber = $"{serviceCode}{branchCodeStr}{sequenceNumber}";
 
-            if (serviceCode == "04")
+            if (serviceCode == "05")
+            {
+                exists = await _context.Passports.AnyAsync(p => p.PassportNumber == candidateNumber, cancellationToken);
+            }
+            else if (serviceCode == "04")
             {
                 exists = await _context.DeathCertificates.AnyAsync(d => d.CertificateNumber == candidateNumber, cancellationToken);
             }

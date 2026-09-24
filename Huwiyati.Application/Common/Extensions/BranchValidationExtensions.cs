@@ -65,4 +65,67 @@ public static class BranchValidationExtensions
             OrganizationName = branchData.OrganizationName
         };
     }
+
+    public static async Task<BranchValidationModel> ValidateImmigrationBranchAsync(
+        this IApplicationDbContext context,
+        Guid branchId,
+        CancellationToken cancellationToken = default)
+    {
+        var branchData = await context.OrganizationBranches
+            .AsNoTracking()
+            .Where(b => b.Id == branchId)
+            .Select(b => new
+            {
+                b.Id,
+                b.BranchName,
+                b.IsActive,
+                b.OrganizationId,
+                OrganizationIsActive = b.Organization.IsActive,
+                OrganizationName = b.Organization.Name
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (branchData == null)
+        {
+            return new BranchValidationModel
+            {
+                IsValid = false,
+                ErrorMessage = "Specified issuing branch does not exist.",
+                StatusCode = 404
+            };
+        }
+
+        if (!branchData.IsActive || !branchData.OrganizationIsActive)
+        {
+            return new BranchValidationModel
+            {
+                IsValid = false,
+                ErrorMessage = "Specified issuing branch or its parent organization is inactive.",
+                StatusCode = 400
+            };
+        }
+
+        if (!branchData.OrganizationName.Contains("الجوازات") &&
+            !branchData.OrganizationName.Contains("الهجرة") &&
+            !branchData.OrganizationName.Contains("Passport") &&
+            !branchData.OrganizationName.Contains("Immigration"))
+        {
+            return new BranchValidationModel
+            {
+                IsValid = false,
+                ErrorMessage = "Passport operations can only be processed by Immigration and Passports branches.",
+                StatusCode = 400
+            };
+        }
+
+        return new BranchValidationModel
+        {
+            IsValid = true,
+            StatusCode = 200,
+            BranchId = branchData.Id,
+            BranchName = branchData.BranchName,
+            OrganizationId = branchData.OrganizationId,
+            OrganizationName = branchData.OrganizationName
+        };
+    }
 }
