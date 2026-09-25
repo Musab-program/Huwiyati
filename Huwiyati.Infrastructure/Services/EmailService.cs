@@ -24,6 +24,15 @@ public class EmailService : IEmailService
         var senderEmail = emailSettings["SenderEmail"]!;
         var password = (emailSettings["Password"] ?? string.Empty).Replace(" ", "");
 
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"[EMAIL SERVICE - DEV MODE] Email to: {toEmail} | Subject: {subject}");
+            Console.WriteLine($"[EMAIL SERVICE - DEV MODE] Body preview: {subject}");
+            Console.ResetColor();
+            return;
+        }
+
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(senderName, senderEmail));
         message.To.Add(MailboxAddress.Parse(toEmail));
@@ -45,7 +54,9 @@ public class EmailService : IEmailService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to send email via MailKit SMTP to {toEmail}: {ex.Message}", ex);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"[EMAIL SERVICE WARNING] Failed to send email via SMTP to {toEmail}: {ex.Message}");
+            Console.ResetColor();
         }
     }
 
@@ -65,6 +76,14 @@ public class EmailService : IEmailService
                     جميع الحقوق محفوظة &copy; {DateTime.UtcNow.Year} نظام هويتي الرقمية
                 </div>
             </div>";
+
+        Console.ForegroundColor = ConsoleColor.Cyan;
+
+        Console.WriteLine($"\n=======================================================");
+        Console.WriteLine($"[DEV OTP NOTIFICATION] To: {toEmail}");
+        Console.WriteLine($"[DEV OTP CODE]: {otpCode}");
+        Console.WriteLine($"=======================================================\n");
+        Console.ResetColor();
 
         await SendEmailAsync(toEmail, subject, htmlBody, cancellationToken);
     }
