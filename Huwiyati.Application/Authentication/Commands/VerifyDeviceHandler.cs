@@ -53,7 +53,7 @@ public class VerifyDeviceHandler
         await _context.SaveChangesAsync(cancellationToken);
 
         // 3. Get Citizen Name and Issue JWT Token
-        var person = await _context.Persons.FirstOrDefaultAsync(p => p.Id == userId.Value, cancellationToken);
+        var person = await _context.Persons.FirstOrDefaultAsync(p => p.NationalNumber == command.NationalNumber, cancellationToken);
         var fullName = person != null ? $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}".Trim() : command.NationalNumber;
         var roles = await _identityService.GetUserRolesAsync(userId.Value, cancellationToken);
 

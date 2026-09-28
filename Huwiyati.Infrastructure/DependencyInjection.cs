@@ -64,6 +64,12 @@ public static class DependencyInjection
         // 9. Register DocumentNumberGenerator Implementation
         services.AddScoped<IDocumentNumberGenerator, DocumentNumberGenerator>();
 
+        // 10. Register RequestNumberGenerator Implementation
+        services.AddScoped<IRequestNumberGenerator, RequestNumberGenerator>();
+
+        // 11. Register ServicePayloadValidator Implementation
+        services.AddScoped<IServicePayloadValidator, ServicePayloadValidator>();
+
         return services;
     }
 }

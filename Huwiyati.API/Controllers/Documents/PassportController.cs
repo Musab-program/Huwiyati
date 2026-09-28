@@ -1,11 +1,14 @@
 namespace Huwiyati.API.Controllers.Documents;
 
-using Microsoft.AspNetCore.Mvc;
 using Huwiyati.Application.Documents.Passport.Commands;
 using Huwiyati.Application.Documents.Passport.Queries;
+using Huwiyati.Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/v1/passports")]
+[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
 public class PassportController : ControllerBase
 {
     private readonly IssuePassportHandler _issuePassportHandler;

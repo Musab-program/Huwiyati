@@ -96,12 +96,19 @@ public class RegisterHandler
         await _context.SaveChangesAsync(cancellationToken);
 
         // 7. Send OTP code via Email Service securely
-        await _emailService.SendOtpEmailAsync(
+        var emailSent = await _emailService.SendOtpEmailAsync(
             command.Email,
             "رمز التحقق - تفعيل حساب هويتي",
             otpCode,
             "تفعيل الحساب",
             cancellationToken);
+
+        if (!emailSent)
+        {
+            return ApiResponse<RegisterResultDto>.Failure(
+                "Failed to send verification OTP email. Please check email service configuration.",
+                statusCode: 500);
+        }
 
         // 8. Return secure success response without exposing OTP code
         return ApiResponse<RegisterResultDto>.Success(

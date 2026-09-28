@@ -125,12 +125,19 @@ public class LoginHandler
         var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(userLoginInfo.UserId, cancellation);
         if (contactInfo.HasValue && !string.IsNullOrWhiteSpace(contactInfo.Value.Email))
         {
-            await _emailService.SendOtpEmailAsync(
+            var emailSent = await _emailService.SendOtpEmailAsync(
                 contactInfo.Value.Email,
                 "رمز التحقق - تسجيل الدخول من جهاز جديد",
                 otpCode,
                 "التحقق من تسجيل الدخول من جهاز جديد",
                 cancellation);
+
+            if (!emailSent)
+            {
+                return ApiResponse<LoginResultDto>.Failure(
+                    "Failed to send device verification OTP email. Please try again later.",
+                    statusCode: 500);
+            }
         }
 
         return ApiResponse<LoginResultDto>.Success(

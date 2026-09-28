@@ -7,6 +7,8 @@ using Huwiyati.Domain.Entities.CivilRegistry;
 using Huwiyati.Domain.Entities.Documents;
 using Huwiyati.Domain.Entities.Family;
 using Huwiyati.Domain.Entities.Organizations;
+using Huwiyati.Domain.Entities.Notifications;
+using Huwiyati.Domain.Entities.Requests;
 using Huwiyati.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -34,6 +36,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<MarriageContract> MarriageContracts { get; set; } = null!;
     public DbSet<Passport> Passports { get; set; } = null!;
     public DbSet<TravelRecord> TravelRecords { get; set; } = null!;
+    public DbSet<ServiceType> ServiceTypes { get; set; } = null!;
+    public DbSet<ServiceRequest> ServiceRequests { get; set; } = null!;
+    public DbSet<RequestStatusHistory> RequestStatusHistories { get; set; } = null!;
+    public DbSet<Notification> Notifications { get; set; } = null!;
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

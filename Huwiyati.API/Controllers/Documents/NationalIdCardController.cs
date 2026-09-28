@@ -1,12 +1,14 @@
 namespace Huwiyati.API.Controllers.Documents;
 
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Huwiyati.Application.Documents.NationalIdCard.Commands;
 using Huwiyati.Application.Documents.NationalIdCard.Queries;
+using Huwiyati.Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/v1/national-id-cards")]
+[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
 public class NationalIdCardController : ControllerBase
 {
     private readonly IssueNationalIdCardHandler _issueNationalIdCardHandler;

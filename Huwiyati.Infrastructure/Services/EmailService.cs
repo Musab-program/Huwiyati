@@ -15,7 +15,7 @@ public class EmailService : IEmailService
         _configuration = configuration;
     }
 
-    public async Task SendEmailAsync(string toEmail, string subject, string body, CancellationToken cancellationToken = default)
+    public async Task<bool> SendEmailAsync(string toEmail, string subject, string body, CancellationToken cancellationToken = default)
     {
         var emailSettings = _configuration.GetSection("EmailSettings");
         var smtpServer = emailSettings["SmtpServer"] ?? "smtp.gmail.com";
@@ -24,13 +24,15 @@ public class EmailService : IEmailService
         var senderEmail = emailSettings["SenderEmail"]!;
         var password = (emailSettings["Password"] ?? string.Empty).Replace(" ", "");
 
+        // Dev Mode Fallback when SMTP password is not configured
         if (string.IsNullOrWhiteSpace(password))
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine($"[EMAIL SERVICE - DEV MODE] Email to: {toEmail} | Subject: {subject}");
             Console.WriteLine($"[EMAIL SERVICE - DEV MODE] Body preview: {subject}");
             Console.ResetColor();
-            return;
+
+            return true;
         }
 
         var message = new MimeMessage();
@@ -51,16 +53,20 @@ public class EmailService : IEmailService
             await client.AuthenticateAsync(senderEmail, password, cancellationToken);
             await client.SendAsync(message, cancellationToken);
             await client.DisconnectAsync(true, cancellationToken);
+
+            return true;
         }
         catch (Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"[EMAIL SERVICE WARNING] Failed to send email via SMTP to {toEmail}: {ex.Message}");
+            Console.WriteLine($"[EMAIL SERVICE ERROR] Failed to send email via SMTP to {toEmail}: {ex.Message}");
             Console.ResetColor();
+
+            return false;
         }
     }
 
-    public async Task SendOtpEmailAsync(string toEmail, string subject, string otpCode, string purposeTitle, CancellationToken cancellationToken = default)
+    public async Task<bool> SendOtpEmailAsync(string toEmail, string subject, string otpCode, string purposeTitle, CancellationToken cancellationToken = default)
     {
         var htmlBody = $@"
             <div style='font-family: Arial, sans-serif; text-align: right; direction: rtl; padding: 25px; border: 1px solid #e0e0e0; border-radius: 10px; max-width: 500px; margin: 0 auto; background-color: #ffffff;'>
@@ -78,13 +84,12 @@ public class EmailService : IEmailService
             </div>";
 
         Console.ForegroundColor = ConsoleColor.Cyan;
-
         Console.WriteLine($"\n=======================================================");
         Console.WriteLine($"[DEV OTP NOTIFICATION] To: {toEmail}");
         Console.WriteLine($"[DEV OTP CODE]: {otpCode}");
         Console.WriteLine($"=======================================================\n");
         Console.ResetColor();
 
-        await SendEmailAsync(toEmail, subject, htmlBody, cancellationToken);
+        return await SendEmailAsync(toEmail, subject, htmlBody, cancellationToken);
     }
 }

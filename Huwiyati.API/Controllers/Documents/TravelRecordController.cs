@@ -1,11 +1,14 @@
 namespace Huwiyati.API.Controllers.Documents;
 
-using Microsoft.AspNetCore.Mvc;
 using Huwiyati.Application.Documents.Passport.Commands;
 using Huwiyati.Application.Documents.Passport.Queries;
+using Huwiyati.Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/v1/travel-records")]
+[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
 public class TravelRecordController : ControllerBase
 {
     private readonly AddTravelRecordHandler _addTravelRecordHandler;
@@ -40,6 +43,7 @@ public class TravelRecordController : ControllerBase
     /// <summary>
     /// Get a specific travel record by its unique ID
     /// </summary>
+    
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetTravelRecordById(Guid id, CancellationToken cancellationToken)
     {
