@@ -1,12 +1,14 @@
 namespace Huwiyati.API.Controllers.Documents;
 
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Huwiyati.Application.Documents.BirthCertificate.Commands;
 using Huwiyati.Application.Documents.BirthCertificate.Queries;
+using Huwiyati.Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/v1/birth-certificates")]
+[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
 public class BirthCertificateController : ControllerBase
 {
     private readonly IssueBirthCertificateHandler _issueBirthCertificateHandler;

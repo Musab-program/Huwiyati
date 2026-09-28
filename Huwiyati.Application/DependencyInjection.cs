@@ -16,6 +16,8 @@ using Huwiyati.Application.Organizations.Branches.Queries;
 using Huwiyati.Application.Organizations.Employees.Commands;
 using Huwiyati.Application.Organizations.Employees.Queries;
 using Huwiyati.Application.Organizations.Queries;
+using Huwiyati.Application.Requests.Commands;
+using Huwiyati.Application.Requests.Queries;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Huwiyati.Application
@@ -102,6 +104,15 @@ namespace Huwiyati.Application
             services.AddScoped<GetPassportTravelRecordsHandler>();
             services.AddScoped<GetTravelRecordByIdHandler>();
             services.AddScoped<GetPersonTravelHistoryHandler>();
+
+            // Register Service Requests Handlers
+            services.AddScoped<CreateServiceRequestHandler>();
+            services.AddScoped<ChangeServiceRequestStatusHandler>();
+            services.AddScoped<CancelServiceRequestHandler>();
+            services.AddScoped<GetCitizenServiceRequestsHandler>();
+            services.AddScoped<GetBranchServiceRequestsHandler>();
+            services.AddScoped<GetServiceRequestByIdHandler>();
+            services.AddScoped<GetServiceTypesHandler>();
 
             return services;
         }

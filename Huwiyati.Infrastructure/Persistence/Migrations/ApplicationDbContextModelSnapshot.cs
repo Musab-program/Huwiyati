@@ -198,6 +198,50 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
                     b.ToTable("Persons", (string)null);
                 });
 
+            modelBuilder.Entity("Huwiyati.Domain.Entities.CivilRegistry.ServiceType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("ServiceTypes");
+                });
+
             modelBuilder.Entity("Huwiyati.Domain.Entities.Documents.BirthCertificate", b =>
                 {
                     b.Property<Guid>("Id")
@@ -650,6 +694,52 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
                     b.ToTable("MarriageContracts", (string)null);
                 });
 
+            modelBuilder.Entity("Huwiyati.Domain.Entities.Notifications.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "IsRead");
+
+                    b.ToTable("Notifications", (string)null);
+                });
+
             modelBuilder.Entity("Huwiyati.Domain.Entities.Organizations.Employee", b =>
                 {
                     b.Property<Guid>("Id")
@@ -768,6 +858,101 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.ToTable("OrganizationBranches", (string)null);
+                });
+
+            modelBuilder.Entity("Huwiyati.Domain.Entities.Requests.RequestStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ServiceRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceRequestId");
+
+                    b.ToTable("RequestStatusHistories");
+                });
+
+            modelBuilder.Entity("Huwiyati.Domain.Entities.Requests.ServiceRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequestDataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequestNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("ServiceTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmissionDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("PersonId");
+
+                    b.HasIndex("RequestNumber")
+                        .IsUnique();
+
+                    b.HasIndex("ServiceTypeId");
+
+                    b.ToTable("ServiceRequests");
                 });
 
             modelBuilder.Entity("Huwiyati.Infrastructure.Identity.ApplicationUser", b =>
@@ -993,6 +1178,17 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Huwiyati.Domain.Entities.CivilRegistry.ServiceType", b =>
+                {
+                    b.HasOne("Huwiyati.Domain.Entities.Organizations.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("Huwiyati.Domain.Entities.Documents.BirthCertificate", b =>
                 {
                     b.HasOne("Huwiyati.Domain.Entities.CivilRegistry.Person", "ChildPerson")
@@ -1204,6 +1400,44 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("Huwiyati.Domain.Entities.Requests.RequestStatusHistory", b =>
+                {
+                    b.HasOne("Huwiyati.Domain.Entities.Requests.ServiceRequest", "ServiceRequest")
+                        .WithMany("StatusHistory")
+                        .HasForeignKey("ServiceRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServiceRequest");
+                });
+
+            modelBuilder.Entity("Huwiyati.Domain.Entities.Requests.ServiceRequest", b =>
+                {
+                    b.HasOne("Huwiyati.Domain.Entities.Organizations.OrganizationBranch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Huwiyati.Domain.Entities.CivilRegistry.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Huwiyati.Domain.Entities.CivilRegistry.ServiceType", "ServiceType")
+                        .WithMany("ServiceRequests")
+                        .HasForeignKey("ServiceTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("ServiceType");
+                });
+
             modelBuilder.Entity("Huwiyati.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.HasOne("Huwiyati.Domain.Entities.CivilRegistry.Person", "Person")
@@ -1273,6 +1507,11 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
                     b.Navigation("Passports");
                 });
 
+            modelBuilder.Entity("Huwiyati.Domain.Entities.CivilRegistry.ServiceType", b =>
+                {
+                    b.Navigation("ServiceRequests");
+                });
+
             modelBuilder.Entity("Huwiyati.Domain.Entities.Family.Family", b =>
                 {
                     b.Navigation("FamilyMembers");
@@ -1288,6 +1527,11 @@ namespace Huwiyati.Infrastructure.Persistence.Migrations
                     b.Navigation("Employees");
 
                     b.Navigation("NationalIdCards");
+                });
+
+            modelBuilder.Entity("Huwiyati.Domain.Entities.Requests.ServiceRequest", b =>
+                {
+                    b.Navigation("StatusHistory");
                 });
 
             modelBuilder.Entity("Huwiyati.Infrastructure.Identity.ApplicationUser", b =>

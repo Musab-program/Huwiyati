@@ -29,40 +29,11 @@ public class CreateFamilyCardHandler
         var branchData = await _context.ValidateCivilRegistryBranchAsync(command.IssuingBranchId, cancellationToken);
         if(!branchData.IsValid)
         {
-            ApiResponse<FamilyDto>.Failure(
+            return  ApiResponse<FamilyDto>.Failure(
                 branchData.ErrorMessage,
                 statusCode: branchData.StatusCode);
         }
-        //var branchData = await _context.OrganizationBranches
-        //    .AsNoTracking()
-        //    .Where(b => b.Id == command.IssuingBranchId)
-        //    .Select(b => new
-        //    {
-        //        b.Id,
-        //        b.BranchName,
-        //        b.IsActive,
-        //        OrganizationIsActive = b.Organization.IsActive,
-        //        OrganizationName = b.Organization.Name
-        //    })
-        //    .FirstOrDefaultAsync(cancellationToken);
-
-        //if (branchData == null)
-        //{
-        //    return ApiResponse<FamilyDto>.Failure(
-        //        "Specified issuing branch does not exist.", statusCode: 404);
-        //}
-
-        //if (!branchData.IsActive || !branchData.OrganizationIsActive)
-        //{
-        //    return ApiResponse<FamilyDto>.Failure(
-        //        "Specified issuing branch or its parent organization is inactive.", statusCode: 400);
-        //}
-
-        //if (!branchData.OrganizationName.Contains("الأحوال المدنية"))
-        //{
-        //    return ApiResponse<FamilyDto>.Failure(
-        //        "Family Cards can only be issued by Civil Registry branches (الأحوال المدنية).", statusCode: 400);
-        //}
+       
 
         // 2. Fetch Husband record from Civil Registry
         var husband = await _context.Persons

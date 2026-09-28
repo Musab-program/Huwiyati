@@ -52,12 +52,19 @@ public class RequestAccountOtpHandler
         var hasEmail = contactInfo.HasValue && !string.IsNullOrWhiteSpace(contactInfo.Value.Email);
         if (hasEmail)
         {
-            await _emailService.SendOtpEmailAsync(
+            var emailSent = await _emailService.SendOtpEmailAsync(
                 contactInfo.Value.Email,
                 "رمز التحقق - نظام هويتي الرقمية",
                 otpCode,
                 "تأكيد الحساب",
                 cancellationToken);
+
+            if (!emailSent)
+            {
+                return ApiResponse<string>.Failure(
+                    "Failed to send OTP verification email. Please check email service configuration.",
+                    statusCode: 500);
+            }
         }
 
         var message = hasEmail

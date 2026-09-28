@@ -1,11 +1,14 @@
 namespace Huwiyati.API.Controllers.Documents;
 
-using Microsoft.AspNetCore.Mvc;
 using Huwiyati.Application.Documents.DeathCertificate.Commands;
 using Huwiyati.Application.Documents.DeathCertificate.Queries;
+using Huwiyati.Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/v1/death-certificates")]
+[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
 public class DeathCertificateController : ControllerBase
 {
     private readonly IssueDeathCertificateHandler _issueDeathCertificateHandler;

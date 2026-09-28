@@ -8,6 +8,7 @@ using Huwiyati.Domain.Entities.Family;
 using Huwiyati.Domain.Entities.Organizations;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Infrastructure.Identity;
+using Huwiyati.Infrastructure.Persistence.Seeders;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -738,5 +739,8 @@ public class DbInitializer
         }
 
         await context.SaveChangesAsync();
+
+        // Seed default ServiceTypes
+        await ServiceTypeSeeder.SeedServiceTypesAsync(context);
     }
 }

@@ -48,12 +48,19 @@ public class ForgotPasswordHandler
             var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(userId.Value, cancellationToken);
             if (contactInfo.HasValue && !string.IsNullOrWhiteSpace(contactInfo.Value.Email))
             {
-                await _emailService.SendOtpEmailAsync(
+                var emailSent = await _emailService.SendOtpEmailAsync(
                     contactInfo.Value.Email,
                     "رمز التحقق - استعادة كلمة المرور",
                     otpCode,
                     "إعادة تعيين كلمة المرور",
                     cancellationToken);
+
+                if (!emailSent)
+                {
+                    return ApiResponse<bool>.Failure(
+                        "Failed to send password reset OTP email. Please try again later.",
+                        statusCode: 500);
+                }
             }
         }
 

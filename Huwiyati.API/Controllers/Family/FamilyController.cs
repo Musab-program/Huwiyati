@@ -1,12 +1,14 @@
 namespace Huwiyati.API.Controllers.Family;
 
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Huwiyati.Application.Family.Commands;
 using Huwiyati.Application.Family.Queries;
+using Huwiyati.Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/v1/families")]
+[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
 public class FamilyController : ControllerBase
 {
     private readonly CreateFamilyCardHandler _createFamilyCardHandler;
