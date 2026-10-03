@@ -5,20 +5,25 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Organizations.Employees.DTOs;
 
+using Huwiyati.Domain.Events.Organizations;
+
 public class UpdateEmployeeHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IEmployeeNumberGenerator _employeeNumberGenerator;
+    private readonly IDomainEventHandler<EmployeeUpdatedEvent> _employeeUpdatedEventHandler;
 
     public UpdateEmployeeHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
-        IEmployeeNumberGenerator employeeNumberGenerator)
+        IEmployeeNumberGenerator employeeNumberGenerator,
+        IDomainEventHandler<EmployeeUpdatedEvent> employeeUpdatedEventHandler)
     {
         _context = context;
         _identityService = identityService;
         _employeeNumberGenerator = employeeNumberGenerator;
+        _employeeUpdatedEventHandler = employeeUpdatedEventHandler;
     }
 
     public async Task<ApiResponse<EmployeeDto>> UpdateEmployeeAsync(
@@ -84,6 +89,10 @@ public class UpdateEmployeeHandler
 
         _context.Employees.Update(employee);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 7.1 Trigger Domain Event to notify employee user account
+        var updateEvent = new EmployeeUpdatedEvent(employee.UserId, targetBranch.BranchName);
+        await _employeeUpdatedEventHandler.HandleAsync(updateEvent, cancellationToken);
 
         // 8. Resolve Person details via IdentityService
         var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(employee.UserId, cancellationToken);

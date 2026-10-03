@@ -6,6 +6,7 @@ using Huwiyati.Domain.Entities.CivilRegistry;
 using Huwiyati.Domain.Entities.Documents;
 using Huwiyati.Domain.Entities.Family;
 using Huwiyati.Domain.Entities.Organizations;
+using Huwiyati.Domain.Entities.Requests;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Infrastructure.Identity;
 using Huwiyati.Infrastructure.Persistence.Seeders;
@@ -401,6 +402,18 @@ public class DbInitializer
                 if (createResult.Succeeded)
                 {
                     await userManager.AddToRoleAsync(targetUser, uData.Role);
+                    if (uData.Role != AppRoles.Citizen)
+                    {
+                        await userManager.AddToRoleAsync(targetUser, AppRoles.Citizen);
+                    }
+                }
+            }
+            else
+            {
+                // Ensure existing seeded users (like SuperAdmin Musab) also have Citizen role
+                if (!await userManager.IsInRoleAsync(targetUser, AppRoles.Citizen))
+                {
+                    await userManager.AddToRoleAsync(targetUser, AppRoles.Citizen);
                 }
             }
 
@@ -742,5 +755,173 @@ public class DbInitializer
 
         // Seed default ServiceTypes
         await ServiceTypeSeeder.SeedServiceTypesAsync(context);
+
+        // -------------------------------------------------------------
+        // 14. Seed Service Requests & Status History
+        // -------------------------------------------------------------
+        var nationalIdServiceType = await context.ServiceTypes.FirstOrDefaultAsync(st => st.Code == "NATIONAL_ID_RENEWAL");
+        var passportRenewalServiceType = await context.ServiceTypes.FirstOrDefaultAsync(st => st.Code == "PASSPORT_RENEWAL");
+        var familyCardServiceType = await context.ServiceTypes.FirstOrDefaultAsync(st => st.Code == "FAMILY_CARD_RENEWAL");
+        var birthCertServiceType = await context.ServiceTypes.FirstOrDefaultAsync(st => st.Code == "BIRTH_CERTIFICATE_REGISTRATION");
+
+        if (fatherPerson != null && nationalIdServiceType != null)
+        {
+            var req1Id = Guid.Parse("018f7d9a-7000-7000-8000-000000000001");
+            if (!await context.ServiceRequests.AnyAsync(r => r.Id == req1Id || r.RequestNumber == "REQ-20260928-0001"))
+            {
+                var req1 = new ServiceRequest
+                {
+                    Id = req1Id,
+                    RequestNumber = "REQ-20260928-0001",
+                    PersonId = fatherPerson.Id,
+                    ServiceTypeId = nationalIdServiceType.Id,
+                    BranchId = sanaaBranchId,
+                    Status = RequestStatus.Pending,
+                    RequestDataJson = "{\"reasonForRenewal\":\"تجديد بسبب انتهاء الصلاحية\",\"oldCardNumber\":\"01001000001\"}",
+                    SubmissionDate = DateTime.UtcNow.AddDays(-3),
+                    CreatedAt = DateTime.UtcNow.AddDays(-3)
+                };
+                await context.ServiceRequests.AddAsync(req1);
+
+                await context.RequestStatusHistories.AddAsync(new RequestStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ServiceRequestId = req1Id,
+                    Status = RequestStatus.Pending,
+                    Note = "تم تقديم طلب تجديد البطاقة الشخصية بنجاح.",
+                    CreatedAt = DateTime.UtcNow.AddDays(-3)
+                });
+            }
+        }
+
+        if (fatherPerson != null && passportRenewalServiceType != null)
+        {
+            var req2Id = Guid.Parse("018f7d9a-7000-7000-8000-000000000002");
+            if (!await context.ServiceRequests.AnyAsync(r => r.Id == req2Id || r.RequestNumber == "REQ-20260928-0002"))
+            {
+                var req2 = new ServiceRequest
+                {
+                    Id = req2Id,
+                    RequestNumber = "REQ-20260928-0002",
+                    PersonId = fatherPerson.Id,
+                    ServiceTypeId = passportRenewalServiceType.Id,
+                    BranchId = immigrationBranchId,
+                    Status = RequestStatus.UnderReview,
+                    RequestDataJson = "{\"passportNumber\":\"05001000003\",\"reason\":\"تجديد قبل السفر\"}",
+                    SubmissionDate = DateTime.UtcNow.AddDays(-2),
+                    CreatedAt = DateTime.UtcNow.AddDays(-2)
+                };
+                await context.ServiceRequests.AddAsync(req2);
+
+                await context.RequestStatusHistories.AddAsync(new RequestStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ServiceRequestId = req2Id,
+                    Status = RequestStatus.Pending,
+                    Note = "تم تقديم طلب تجديد جواز السفر بنجاح.",
+                    CreatedAt = DateTime.UtcNow.AddDays(-2)
+                });
+
+                await context.RequestStatusHistories.AddAsync(new RequestStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ServiceRequestId = req2Id,
+                    Status = RequestStatus.UnderReview,
+                    Note = "الطلب قيد المراجعة والتدقيق من قبل موظف الجوازات.",
+                    CreatedAt = DateTime.UtcNow.AddDays(-1)
+                });
+            }
+        }
+
+        if (sonPerson != null && birthCertServiceType != null)
+        {
+            var req3Id = Guid.Parse("018f7d9a-7000-7000-8000-000000000003");
+            if (!await context.ServiceRequests.AnyAsync(r => r.Id == req3Id || r.RequestNumber == "REQ-20260928-0003"))
+            {
+                var req3 = new ServiceRequest
+                {
+                    Id = req3Id,
+                    RequestNumber = "REQ-20260928-0003",
+                    PersonId = sonPerson.Id,
+                    ServiceTypeId = birthCertServiceType.Id,
+                    BranchId = thawraHospitalBranchId,
+                    Status = RequestStatus.Issued,
+                    CompletedDate = DateTime.UtcNow.AddDays(-1),
+                    RequestDataJson = "{\"childName\":\"ياسين\",\"gender\":\"Male\",\"dateOfBirth\":\"2020-03-10\",\"fatherNationalNumber\":\"01001000001\",\"motherNationalNumber\":\"01001000002\"}",
+                    SubmissionDate = DateTime.UtcNow.AddDays(-5),
+                    CreatedAt = DateTime.UtcNow.AddDays(-5)
+                };
+                await context.ServiceRequests.AddAsync(req3);
+
+                await context.RequestStatusHistories.AddAsync(new RequestStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ServiceRequestId = req3Id,
+                    Status = RequestStatus.Pending,
+                    Note = "تم تقديم بلاغ الولادة من المستشفى.",
+                    CreatedAt = DateTime.UtcNow.AddDays(-5)
+                });
+
+                await context.RequestStatusHistories.AddAsync(new RequestStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ServiceRequestId = req3Id,
+                    Status = RequestStatus.Approved,
+                    Note = "تمت الموافقة على بلاغ الولادة واعتماد البيانات.",
+                    CreatedAt = DateTime.UtcNow.AddDays(-3)
+                });
+
+                await context.RequestStatusHistories.AddAsync(new RequestStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ServiceRequestId = req3Id,
+                    Status = RequestStatus.Issued,
+                    Note = "تم إصدار القيد وتسليم شهادة الميلاد.",
+                    CreatedAt = DateTime.UtcNow.AddDays(-1)
+                });
+            }
+        }
+
+        if (motherPerson != null && familyCardServiceType != null)
+        {
+            var req4Id = Guid.Parse("018f7d9a-7000-7000-8000-000000000004");
+            if (!await context.ServiceRequests.AnyAsync(r => r.Id == req4Id || r.RequestNumber == "REQ-20260928-0004"))
+            {
+                var req4 = new ServiceRequest
+                {
+                    Id = req4Id,
+                    RequestNumber = "REQ-20260928-0004",
+                    PersonId = motherPerson.Id,
+                    ServiceTypeId = familyCardServiceType.Id,
+                    BranchId = sanaaBranchId,
+                    Status = RequestStatus.Rejected,
+                    RejectionReason = "المستندات المرفقة غير واضحة، يرجى إعادة تقديم الطلب مع صورة واضحة من عقد الزواج.",
+                    RequestDataJson = "{\"familyNumber\":\"02001000001\",\"reason\":\"تجديد البطاقة العائلية\"}",
+                    SubmissionDate = DateTime.UtcNow.AddDays(-4),
+                    CreatedAt = DateTime.UtcNow.AddDays(-4)
+                };
+                await context.ServiceRequests.AddAsync(req4);
+
+                await context.RequestStatusHistories.AddAsync(new RequestStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ServiceRequestId = req4Id,
+                    Status = RequestStatus.Pending,
+                    Note = "تم تقديم الطلب عبر البوابة الإلكترونية.",
+                    CreatedAt = DateTime.UtcNow.AddDays(-4)
+                });
+
+                await context.RequestStatusHistories.AddAsync(new RequestStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ServiceRequestId = req4Id,
+                    Status = RequestStatus.Rejected,
+                    Note = "تم رفض الطلب: المستندات المرفقة غير واضحة، يرجى إعادة تقديم الطلب مع صورة واضحة من عقد الزواج.",
+                    CreatedAt = DateTime.UtcNow.AddDays(-2)
+                });
+            }
+        }
+
+        await context.SaveChangesAsync();
     }
 }

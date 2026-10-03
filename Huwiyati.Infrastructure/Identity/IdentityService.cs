@@ -1,10 +1,12 @@
 namespace Huwiyati.Infrastructure.Identity;
 
+using System.Security.Claims;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Common.Models;
 using Huwiyati.Domain.Constants;
 using Huwiyati.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// Implementation of IIdentityService providing identity management operations backed by ASP.NET Core Identity.
@@ -16,6 +18,16 @@ public class IdentityService : IIdentityService
     public IdentityService(UserManager<ApplicationUser> userManager)
     {
         _userManager = userManager;
+    }
+
+    /// <summary>
+    /// Extracts the unique User ID from the current user claims.
+    /// </summary>
+    public Guid GetUserIdFromClaims(ClaimsPrincipal user)
+    {
+        if (user == null) return Guid.Empty;
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value;
+        return Guid.TryParse(userIdClaim, out var id) ? id : Guid.Empty;
     }
 
     /// <summary>
@@ -110,6 +122,15 @@ public class IdentityService : IIdentityService
     public async Task<Guid?> GetUserIdByNationalNumberAsync(string nationalNumber, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByNameAsync(nationalNumber);
+        return user?.Id;
+    }
+
+    /// <summary>
+    /// Finds the User ID for a user identified by their Person ID.
+    /// </summary>
+    public async Task<Guid?> GetUserIdByPersonIdAsync(Guid personId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PersonId == personId, cancellationToken);
         return user?.Id;
     }
 

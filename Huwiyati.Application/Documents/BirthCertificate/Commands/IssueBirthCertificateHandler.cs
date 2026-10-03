@@ -10,17 +10,22 @@ using Huwiyati.Domain.Entities.Family;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Application.Documents.BirthCertificate.DTOs;
 
+using Huwiyati.Domain.Events.Documents;
+
 public class IssueBirthCertificateHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IDomainEventHandler<BirthCertificateIssuedEvent> _birthCertificateIssuedEventHandler;
 
     public IssueBirthCertificateHandler(
         IApplicationDbContext context,
-        IDocumentNumberGenerator documentNumberGenerator)
+        IDocumentNumberGenerator documentNumberGenerator,
+        IDomainEventHandler<BirthCertificateIssuedEvent> birthCertificateIssuedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _birthCertificateIssuedEventHandler = birthCertificateIssuedEventHandler;
     }
 
     public async Task<ApiResponse<BirthCertificateDto>> IssueAsync(
@@ -132,6 +137,10 @@ public class IssueBirthCertificateHandler
 
         // 9. Save all changes in a single atomic database transaction
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 9.1 Trigger Domain Event to notify father
+        var birthEvent = new BirthCertificateIssuedEvent(father.Id, childPerson.FirstName);
+        await _birthCertificateIssuedEventHandler.HandleAsync(birthEvent, cancellationToken);
 
         // 10. Construct response DTO
         var responseDto = new BirthCertificateDto

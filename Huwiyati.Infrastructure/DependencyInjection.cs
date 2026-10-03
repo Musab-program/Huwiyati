@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Huwiyati.Application.Common.Interfaces;
+using Huwiyati.Infrastructure.BackgroundJobs;
 using Huwiyati.Infrastructure.Identity;
 using Huwiyati.Infrastructure.Persistence;
 using Huwiyati.Infrastructure.Services;
@@ -69,6 +70,10 @@ public static class DependencyInjection
 
         // 11. Register ServicePayloadValidator Implementation
         services.AddScoped<IServicePayloadValidator, ServicePayloadValidator>();
+
+        // 12. Register Background Jobs
+        services.AddHostedService<DocumentExpirationMonitorJob>();
+        services.AddHostedService<VerificationCodeCleanupJob>();
 
         return services;
     }

@@ -6,6 +6,7 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Authentication.DTOs;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Domain.Entities.Authentication;
+using Huwiyati.Domain.Events.Authentication;
 
 public class LoginHandler
 {
@@ -13,17 +14,20 @@ public class LoginHandler
     private readonly IIdentityService _identityService;
     private readonly ITokenService _tokenService;
     private readonly IEmailService _emailService;
+    private readonly IDomainEventHandler<NewDeviceLoginAttemptEvent> _newDeviceLoginAttemptEventHandler;
 
     public LoginHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
         ITokenService tokenService,
-        IEmailService emailService)
+        IEmailService emailService,
+        IDomainEventHandler<NewDeviceLoginAttemptEvent> newDeviceLoginAttemptEventHandler)
     {
         _context = context;
         _identityService = identityService;
         _tokenService = tokenService;
         _emailService = emailService;
+        _newDeviceLoginAttemptEventHandler = newDeviceLoginAttemptEventHandler;
     }
 
     public async Task<ApiResponse<LoginResultDto>> LoginHandlerAsync(
@@ -120,6 +124,10 @@ public class LoginHandler
 
         await _context.VerificationCodes.AddAsync(verificationCode, cancellation);
         await _context.SaveChangesAsync(cancellation);
+
+        // Trigger NewDeviceLoginAttemptEvent
+        var newDeviceLoginAttemptEvent = new NewDeviceLoginAttemptEvent(userLoginInfo.UserId, device.DeviceName);
+        await _newDeviceLoginAttemptEventHandler.HandleAsync(newDeviceLoginAttemptEvent, cancellation);
 
         // Send OTP via Email Service securely
         var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(userLoginInfo.UserId, cancellation);

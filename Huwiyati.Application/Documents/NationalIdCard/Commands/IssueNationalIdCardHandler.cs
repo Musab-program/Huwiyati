@@ -1,4 +1,4 @@
-﻿namespace Huwiyati.Application.Documents.NationalIdCard.Commands;
+namespace Huwiyati.Application.Documents.NationalIdCard.Commands;
 
 using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Extensions;
@@ -10,18 +10,23 @@ using Huwiyati.Domain.Entities.Documents;
 using Huwiyati.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
+using Huwiyati.Domain.Events.Documents;
+
 // Handler implementing the business logic for issuing a National ID Card
 public class IssueNationalIdCardHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IDomainEventHandler<NationalIdCardIssuedEvent> _nationalIdCardIssuedEventHandler;
 
     public IssueNationalIdCardHandler(
         IApplicationDbContext context,
-        IDocumentNumberGenerator documentNumberGenerator)
+        IDocumentNumberGenerator documentNumberGenerator,
+        IDomainEventHandler<NationalIdCardIssuedEvent> nationalIdCardIssuedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _nationalIdCardIssuedEventHandler = nationalIdCardIssuedEventHandler;
     }
 
     public async Task<ApiResponse<NationalIdCardDto>> IssueAsync(
@@ -107,6 +112,10 @@ public class IssueNationalIdCardHandler
 
         await _context.NationalIdCards.AddAsync(card, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 5.1 Trigger Domain Event to notify citizen
+        var idEvent = new NationalIdCardIssuedEvent(person.Id, person.NationalNumber);
+        await _nationalIdCardIssuedEventHandler.HandleAsync(idEvent, cancellationToken);
 
         // 6. Map to DTO and return response
         var responseDto = new NationalIdCardDto

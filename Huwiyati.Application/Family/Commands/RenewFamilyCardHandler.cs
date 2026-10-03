@@ -8,13 +8,19 @@ using Huwiyati.Domain.Entities.Family;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Application.Common.Extensions;
 
+using Huwiyati.Domain.Events.Family;
+
 public class RenewFamilyCardHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IDomainEventHandler<FamilyCardRenewedEvent> _familyCardRenewedEventHandler;
 
-    public RenewFamilyCardHandler(IApplicationDbContext context)
+    public RenewFamilyCardHandler(
+        IApplicationDbContext context,
+        IDomainEventHandler<FamilyCardRenewedEvent> familyCardRenewedEventHandler)
     {
         _context = context;
+        _familyCardRenewedEventHandler = familyCardRenewedEventHandler;
     }
 
     public async Task<ApiResponse<FamilyDto>> RenewAsync(
@@ -93,6 +99,10 @@ public class RenewFamilyCardHandler
 
         await _context.FamilyMembers.AddRangeAsync(newMembers, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 5.1 Trigger Domain Event to notify Head of Family
+        var renewEvent = new FamilyCardRenewedEvent(newFamily.HeadOfFamilyPersonId, newFamily.FamilyNumber);
+        await _familyCardRenewedEventHandler.HandleAsync(renewEvent, cancellationToken);
 
         // 6. Fetch updated members for response projection via Select (Zero Include)
         var responseMembersDtoList = await _context.FamilyMembers

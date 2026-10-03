@@ -6,15 +6,22 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Organizations.Admins.DTOs;
 using Huwiyati.Domain.Constants;
 
+using Huwiyati.Domain.Events.Organizations;
+
 public class UpdateAdminHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
+    private readonly IDomainEventHandler<AdminUpdatedEvent> _adminUpdatedEventHandler;
 
-    public UpdateAdminHandler(IApplicationDbContext context, IIdentityService identityService)
+    public UpdateAdminHandler(
+        IApplicationDbContext context,
+        IIdentityService identityService,
+        IDomainEventHandler<AdminUpdatedEvent> adminUpdatedEventHandler)
     {
         _context = context;
         _identityService = identityService;
+        _adminUpdatedEventHandler = adminUpdatedEventHandler;
     }
 
     public async Task<ApiResponse<AdminDto>> UpdateAdminAsync(
@@ -62,6 +69,10 @@ public class UpdateAdminHandler
 
         _context.Employees.Update(emp);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 4.1 Trigger Domain Event to notify user
+        var updateEvent = new AdminUpdatedEvent(emp.UserId, newBranchData.Branch.BranchName);
+        await _adminUpdatedEventHandler.HandleAsync(updateEvent, cancellationToken);
 
         var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(emp.UserId, cancellationToken);
         var person = contactInfo.HasValue

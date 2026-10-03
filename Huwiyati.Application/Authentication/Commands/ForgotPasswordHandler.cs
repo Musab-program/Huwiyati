@@ -4,21 +4,25 @@ using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Domain.Entities.Authentication;
+using Huwiyati.Domain.Events.Authentication;
 
 public class ForgotPasswordHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IEmailService _emailService;
+    private readonly IDomainEventHandler<PasswordResetRequestedEvent> _passwordResetRequestedEventHandler;
 
     public ForgotPasswordHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
-        IEmailService emailService)
+        IEmailService emailService,
+        IDomainEventHandler<PasswordResetRequestedEvent> passwordResetRequestedEventHandler)
     {
         _context = context;
         _identityService = identityService;
         _emailService = emailService;
+        _passwordResetRequestedEventHandler = passwordResetRequestedEventHandler;
     }
 
     public async Task<ApiResponse<bool>> RequestPasswordResetAsync(
@@ -43,6 +47,10 @@ public class ForgotPasswordHandler
 
             await _context.VerificationCodes.AddAsync(verificationCode, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+
+            // Trigger PasswordResetRequestedEvent
+            var passwordResetRequestedEvent = new PasswordResetRequestedEvent(userId.Value);
+            await _passwordResetRequestedEventHandler.HandleAsync(passwordResetRequestedEvent, cancellationToken);
 
             // Fetch user email via IdentityService and send OTP email securely
             var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(userId.Value, cancellationToken);

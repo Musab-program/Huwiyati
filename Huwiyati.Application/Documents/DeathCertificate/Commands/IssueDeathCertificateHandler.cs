@@ -8,17 +8,22 @@ using Huwiyati.Domain.Entities.Documents;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Application.Documents.DeathCertificate.DTOs;
 
+using Huwiyati.Domain.Events.Documents;
+
 public class IssueDeathCertificateHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IDomainEventHandler<DeathCertificateIssuedEvent> _deathCertificateIssuedEventHandler;
 
     public IssueDeathCertificateHandler(
         IApplicationDbContext context,
-        IDocumentNumberGenerator documentNumberGenerator)
+        IDocumentNumberGenerator documentNumberGenerator,
+        IDomainEventHandler<DeathCertificateIssuedEvent> deathCertificateIssuedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _deathCertificateIssuedEventHandler = deathCertificateIssuedEventHandler;
     }
 
     public async Task<ApiResponse<DeathCertificateDto>> IssueAsync(
@@ -104,6 +109,11 @@ public class IssueDeathCertificateHandler
 
         // 9. Save all changes in a single atomic database transaction
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 9.1 Trigger Domain Event to notify family members
+        var deceasedFullName = $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}".Trim();
+        var deathEvent = new DeathCertificateIssuedEvent(person.Id, deceasedFullName);
+        await _deathCertificateIssuedEventHandler.HandleAsync(deathEvent, cancellationToken);
 
         // 10. Construct response DTO
         var responseDto = new DeathCertificateDto

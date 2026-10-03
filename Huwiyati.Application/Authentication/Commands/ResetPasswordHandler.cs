@@ -1,5 +1,6 @@
 using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
+using Huwiyati.Domain.Events.Authentication;
 using Microsoft.EntityFrameworkCore;
 
 namespace Huwiyati.Application.Authentication.Commands;
@@ -8,11 +9,16 @@ public class ResetPasswordHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
+    private readonly IDomainEventHandler<PasswordResetSuccessEvent> _passwordResetSuccessEventHandler;
 
-    public ResetPasswordHandler(IApplicationDbContext context, IIdentityService identityService)
+    public ResetPasswordHandler(
+        IApplicationDbContext context,
+        IIdentityService identityService,
+        IDomainEventHandler<PasswordResetSuccessEvent> passwordResetSuccessEventHandler)
     {
         _context = context;
         _identityService = identityService;
+        _passwordResetSuccessEventHandler = passwordResetSuccessEventHandler;
     }
 
     public async Task<ApiResponse<bool>> ResetPasswordAsync(ResetPasswordCommand command, CancellationToken cancellationToken = default)
@@ -49,7 +55,11 @@ public class ResetPasswordHandler
         verificationCode.IsUsed = true;
         await _context.SaveChangesAsync(cancellationToken);
 
-        // 5. Return success response
+        // 5. Trigger PasswordResetSuccessEvent
+        var passwordResetSuccessEvent = new PasswordResetSuccessEvent(userId.Value);
+        await _passwordResetSuccessEventHandler.HandleAsync(passwordResetSuccessEvent, cancellationToken);
+
+        // 6. Return success response
         return ApiResponse<bool>.Success(true, message: "Password has been reset successfully.");
     }
 }

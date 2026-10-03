@@ -20,7 +20,7 @@ namespace Huwiyati.API.Controllers.CivilRegistry
 
         [HttpGet]
         //[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin},{AppRoles.SuperAdmin}")]
-        [Authorize(Roles =AppRoles.Citizen)]
+        //[Authorize(Roles =AppRoles.Citizen)]
         public async Task<IActionResult> GetAllCitizens(CancellationToken cancellation)
         {
             var persons = await _context.Persons.ToListAsync(cancellation);

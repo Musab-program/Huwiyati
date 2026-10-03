@@ -6,13 +6,19 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Application.Documents.DeathCertificate.DTOs;
 
+using Huwiyati.Domain.Events.Documents;
+
 public class UpdateDeathCertificateHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IDomainEventHandler<DeathCertificateUpdatedEvent> _deathCertificateUpdatedEventHandler;
 
-    public UpdateDeathCertificateHandler(IApplicationDbContext context)
+    public UpdateDeathCertificateHandler(
+        IApplicationDbContext context,
+        IDomainEventHandler<DeathCertificateUpdatedEvent> deathCertificateUpdatedEventHandler)
     {
         _context = context;
+        _deathCertificateUpdatedEventHandler = deathCertificateUpdatedEventHandler;
     }
 
     public async Task<ApiResponse<DeathCertificateDto>> UpdateAsync(
@@ -45,6 +51,15 @@ public class UpdateDeathCertificateHandler
 
         // 4. Save changes to database
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 4.1 Trigger Domain Event to notify relative
+        var deceasedName = await _context.Persons
+            .Where(p => p.Id == deathCertificate.PersonId)
+            .Select(p => $"{p.FirstName} {p.FatherName} {p.GrandfatherName} {p.FamilyName}".Trim())
+            .FirstOrDefaultAsync(cancellationToken) ?? string.Empty;
+
+        var updateEvent = new DeathCertificateUpdatedEvent(deathCertificate.PersonId, deceasedName);
+        await _deathCertificateUpdatedEventHandler.HandleAsync(updateEvent, cancellationToken);
 
         // 5. Query updated DeathCertificateDto projection cleanly via Select
         var responseDto = await _context.DeathCertificates

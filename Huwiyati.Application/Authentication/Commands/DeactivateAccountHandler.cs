@@ -5,16 +5,22 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Domain.Entities.Authentication;
 using Huwiyati.Domain.Enums;
+using Huwiyati.Domain.Events.Authentication;
 
 public class DeactivateAccountHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
+    private readonly IDomainEventHandler<AccountDeactivatedEvent> _accountDeactivatedEventHandler;
 
-    public DeactivateAccountHandler(IApplicationDbContext context, IIdentityService identityService)
+    public DeactivateAccountHandler(
+        IApplicationDbContext context,
+        IIdentityService identityService,
+        IDomainEventHandler<AccountDeactivatedEvent> accountDeactivatedEventHandler)
     {
         _context = context;
         _identityService = identityService;
+        _accountDeactivatedEventHandler = accountDeactivatedEventHandler;
     }
 
     public async Task<ApiResponse<string>> DeactivateAccountAsync(
@@ -55,6 +61,10 @@ public class DeactivateAccountHandler
         }
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 6. Trigger AccountDeactivatedEvent
+        var accountDeactivatedEvent = new AccountDeactivatedEvent(userLoginInfo.UserId);
+        await _accountDeactivatedEventHandler.HandleAsync(accountDeactivatedEvent, cancellationToken);
 
         return ApiResponse<string>.Success("Account deactivated successfully. All devices untrusted.");
     }

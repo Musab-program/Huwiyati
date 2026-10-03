@@ -7,20 +7,25 @@ using Huwiyati.Application.Organizations.Employees.DTOs;
 using Huwiyati.Domain.Constants;
 using Huwiyati.Domain.Entities.Organizations;
 
+using Huwiyati.Domain.Events.Organizations;
+
 public class AssignEmployeeHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IEmployeeNumberGenerator _employeeNumberGenerator;
+    private readonly IDomainEventHandler<EmployeeAssignedEvent> _employeeAssignedEventHandler;
 
     public AssignEmployeeHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
-        IEmployeeNumberGenerator employeeNumberGenerator)
+        IEmployeeNumberGenerator employeeNumberGenerator,
+        IDomainEventHandler<EmployeeAssignedEvent> employeeAssignedEventHandler)
     {
         _context = context;
         _identityService = identityService;
         _employeeNumberGenerator = employeeNumberGenerator;
+        _employeeAssignedEventHandler = employeeAssignedEventHandler;
     }
 
     public async Task<ApiResponse<EmployeeDto>> AssignEmployeeAsync(
@@ -88,6 +93,15 @@ public class AssignEmployeeHandler
 
         await _context.Employees.AddAsync(employee, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 6.1 Fetch branch name and trigger Domain Event to notify citizen account
+        var branchName = await _context.OrganizationBranches
+            .Where(b => b.Id == adminBranchId.Value)
+            .Select(b => b.BranchName)
+            .FirstOrDefaultAsync(cancellationToken) ?? string.Empty;
+
+        var employeeEvent = new EmployeeAssignedEvent(userId.Value, branchName);
+        await _employeeAssignedEventHandler.HandleAsync(employeeEvent, cancellationToken);
 
         // 7. Assign Employee role using IdentityService
         await _identityService.AssignUserRolesAsync(userId.Value, new[] { AppRoles.Employee }, cancellationToken);

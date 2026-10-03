@@ -1,5 +1,6 @@
 using Huwiyati.Application.Common.Models;
 using Huwiyati.Domain.Enums;
+using System.Security.Claims;
 
 namespace Huwiyati.Application.Common.Interfaces;
 
@@ -8,6 +9,11 @@ namespace Huwiyati.Application.Common.Interfaces;
 /// </summary>
 public interface IIdentityService
 {
+    /// <summary>
+    /// Extracts the unique User ID from the current user claims.
+    /// </summary>
+    Guid GetUserIdFromClaims(ClaimsPrincipal user);
+
     /// <summary>
     /// Creates a new user account linked to a Person record in the Civil Registry.
     /// </summary>
@@ -41,6 +47,11 @@ public interface IIdentityService
     /// Retrieves the unique User ID associated with a National Number.
     /// </summary>
     Task<Guid?> GetUserIdByNationalNumberAsync(string nationalNumber, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the unique User ID associated with a Person ID in Civil Registry.
+    /// </summary>
+    Task<Guid?> GetUserIdByPersonIdAsync(Guid personId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves contact details (Email, Phone) and linked Person ID for a given User ID.

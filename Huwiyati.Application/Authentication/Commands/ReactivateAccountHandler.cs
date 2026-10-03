@@ -5,18 +5,25 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Authentication.DTOs;
 using Huwiyati.Domain.Enums;
+using Huwiyati.Domain.Events.Authentication;
 
 public class ReactivateAccountHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly ITokenService _tokenService;
+    private readonly IDomainEventHandler<AccountReactivatedEvent> _accountReactivatedEventHandler;
 
-    public ReactivateAccountHandler(IApplicationDbContext context, IIdentityService identityService, ITokenService tokenService)
+    public ReactivateAccountHandler(
+        IApplicationDbContext context,
+        IIdentityService identityService,
+        ITokenService tokenService,
+        IDomainEventHandler<AccountReactivatedEvent> accountReactivatedEventHandler)
     {
         _context = context;
         _identityService = identityService;
         _tokenService = tokenService;
+        _accountReactivatedEventHandler = accountReactivatedEventHandler;
     }
 
     public async Task<ApiResponse<LoginResultDto>> ReactivateAccountAsync(
@@ -46,7 +53,11 @@ public class ReactivateAccountHandler
         await _identityService.ChangeAccountStatusAsync(userLoginInfo.UserId, AccountStatus.Active, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        // 4. Get Citizen Name and Issue Token
+        // 4. Trigger AccountReactivatedEvent
+        var accountReactivatedEvent = new AccountReactivatedEvent(userLoginInfo.UserId);
+        await _accountReactivatedEventHandler.HandleAsync(accountReactivatedEvent, cancellationToken);
+
+        // 5. Get Citizen Name and Issue Token
         var person = await _context.Persons.FirstOrDefaultAsync(p => p.Id == userLoginInfo.PersonId, cancellationToken);
         var fullName = person != null ? $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}".Trim() : command.NationalNumber;
         var roles = await _identityService.GetUserRolesAsync(userLoginInfo.UserId, cancellationToken);

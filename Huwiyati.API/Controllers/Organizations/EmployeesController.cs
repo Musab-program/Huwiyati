@@ -1,9 +1,9 @@
 namespace Huwiyati.API.Controllers.Organizations;
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Huwiyati.Application.Common;
+using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Domain.Constants;
 using Huwiyati.Application.Organizations.Employees.Commands;
 using Huwiyati.Application.Organizations.Employees.Queries;
@@ -19,6 +19,7 @@ public class EmployeesController : ControllerBase
     private readonly GetEmployeeByIdHandler _getEmployeeByIdHandler;
     private readonly DeactivateEmployeeHandler _deactivateEmployeeHandler;
     private readonly ActivateEmployeeHandler _activateEmployeeHandler;
+    private readonly IIdentityService _identityService;
 
     public EmployeesController(
         AssignEmployeeHandler assignEmployeeHandler,
@@ -26,7 +27,8 @@ public class EmployeesController : ControllerBase
         GetEmployeesHandler getEmployeesHandler,
         GetEmployeeByIdHandler getEmployeeByIdHandler,
         DeactivateEmployeeHandler deactivateEmployeeHandler,
-        ActivateEmployeeHandler activateEmployeeHandler)
+        ActivateEmployeeHandler activateEmployeeHandler,
+        IIdentityService identityService)
     {
         _assignEmployeeHandler = assignEmployeeHandler;
         _updateEmployeeHandler = updateEmployeeHandler;
@@ -34,12 +36,7 @@ public class EmployeesController : ControllerBase
         _getEmployeeByIdHandler = getEmployeeByIdHandler;
         _deactivateEmployeeHandler = deactivateEmployeeHandler;
         _activateEmployeeHandler = activateEmployeeHandler;
-    }
-
-    private bool TryGetCurrentUserId(out Guid userId)
-    {
-        var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub")?.Value;
-        return Guid.TryParse(claimValue, out userId);
+        _identityService = identityService;
     }
 
     /// <summary>
@@ -48,7 +45,8 @@ public class EmployeesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetEmployees(CancellationToken cancellationToken)
     {
-        if (!TryGetCurrentUserId(out var adminUserId))
+        var adminUserId = _identityService.GetUserIdFromClaims(User);
+        if (adminUserId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID claim in token.", statusCode: 401));
         }
@@ -63,7 +61,8 @@ public class EmployeesController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetEmployeeById(Guid id, CancellationToken cancellationToken)
     {
-        if (!TryGetCurrentUserId(out var adminUserId))
+        var adminUserId = _identityService.GetUserIdFromClaims(User);
+        if (adminUserId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID claim in token.", statusCode: 401));
         }
@@ -78,7 +77,8 @@ public class EmployeesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> AssignEmployee([FromBody] AssignEmployeeCommand command, CancellationToken cancellationToken)
     {
-        if (!TryGetCurrentUserId(out var adminUserId))
+        var adminUserId = _identityService.GetUserIdFromClaims(User);
+        if (adminUserId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID claim in token.", statusCode: 401));
         }
@@ -93,7 +93,8 @@ public class EmployeesController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateEmployee(Guid id, [FromBody] UpdateEmployeeCommand command, CancellationToken cancellationToken)
     {
-        if (!TryGetCurrentUserId(out var adminUserId))
+        var adminUserId = _identityService.GetUserIdFromClaims(User);
+        if (adminUserId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID claim in token.", statusCode: 401));
         }
@@ -109,7 +110,8 @@ public class EmployeesController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeactivateEmployee(Guid id, CancellationToken cancellationToken)
     {
-        if (!TryGetCurrentUserId(out var adminUserId))
+        var adminUserId = _identityService.GetUserIdFromClaims(User);
+        if (adminUserId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID claim in token.", statusCode: 401));
         }
@@ -124,7 +126,8 @@ public class EmployeesController : ControllerBase
     [HttpPost("{id:guid}/activate")]
     public async Task<IActionResult> ActivateEmployee(Guid id, CancellationToken cancellationToken)
     {
-        if (!TryGetCurrentUserId(out var adminUserId))
+        var adminUserId = _identityService.GetUserIdFromClaims(User);
+        if (adminUserId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID claim in token.", statusCode: 401));
         }
