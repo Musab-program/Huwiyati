@@ -8,13 +8,19 @@ using Huwiyati.Domain.Entities.Family;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Application.Common.Extensions;
 
+using Huwiyati.Domain.Events.Family;
+
 public class AddWifeHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IDomainEventHandler<WifeAddedToFamilyEvent> _wifeAddedToFamilyEventHandler;
 
-    public AddWifeHandler(IApplicationDbContext context)
+    public AddWifeHandler(
+        IApplicationDbContext context,
+        IDomainEventHandler<WifeAddedToFamilyEvent> wifeAddedToFamilyEventHandler)
     {
         _context = context;
+        _wifeAddedToFamilyEventHandler = wifeAddedToFamilyEventHandler;
     }
 
     public async Task<ApiResponse<FamilyMemberDto>> AddWifeAsync(
@@ -114,6 +120,11 @@ public class AddWifeHandler
         wife.MaritalStatus = MaritalStatus.Married;
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 8.1 Trigger Domain Event to notify Husband and Wife
+        var wifeFullName = $"{wife.FirstName} {wife.FatherName} {wife.GrandfatherName} {wife.FamilyName}".Trim();
+        var wifeAddedEvent = new WifeAddedToFamilyEvent(husband.Id, wife.Id, wifeFullName);
+        await _wifeAddedToFamilyEventHandler.HandleAsync(wifeAddedEvent, cancellationToken);
 
         // 9. Construct response DTO
         var responseDto = new FamilyMemberDto

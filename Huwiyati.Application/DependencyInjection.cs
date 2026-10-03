@@ -1,4 +1,5 @@
 using Huwiyati.Application.Authentication.Commands;
+using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.BirthCertificate.Commands;
 using Huwiyati.Application.Documents.BirthCertificate.Queries;
 using Huwiyati.Application.Documents.DeathCertificate.Commands;
@@ -9,6 +10,9 @@ using Huwiyati.Application.Documents.Passport.Commands;
 using Huwiyati.Application.Documents.Passport.Queries;
 using Huwiyati.Application.Family.Commands;
 using Huwiyati.Application.Family.Queries;
+using Huwiyati.Application.Notifications;
+using Huwiyati.Application.Notifications.Commands;
+using Huwiyati.Application.Notifications.Queries;
 using Huwiyati.Application.Organizations.Admins.Commands;
 using Huwiyati.Application.Organizations.Admins.Queries;
 using Huwiyati.Application.Organizations.Branches.Commands;
@@ -104,6 +108,11 @@ namespace Huwiyati.Application
             services.AddScoped<GetPassportTravelRecordsHandler>();
             services.AddScoped<GetTravelRecordByIdHandler>();
             services.AddScoped<GetPersonTravelHistoryHandler>();
+
+            // Register Notification Event Handlers
+            services.AddNotificationEventHandlers();
+            services.AddScoped<GetUserNotificationsHandler>();
+            services.AddScoped<MarkNotificationsAsReadHandler>();
 
             // Register Service Requests Handlers
             services.AddScoped<CreateServiceRequestHandler>();

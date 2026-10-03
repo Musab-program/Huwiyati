@@ -8,18 +8,23 @@ using Huwiyati.Domain.Entities.Documents;
 using Huwiyati.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
+using Huwiyati.Domain.Events.Passport;
+
 // Handler carrying out the business logic for issuing a Passport
 public class IssuePassportHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IDomainEventHandler<PassportIssuedEvent> _passportIssuedEventHandler;
 
     public IssuePassportHandler(
         IApplicationDbContext context,
-        IDocumentNumberGenerator documentNumberGenerator)
+        IDocumentNumberGenerator documentNumberGenerator,
+        IDomainEventHandler<PassportIssuedEvent> passportIssuedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _passportIssuedEventHandler = passportIssuedEventHandler;
     }
 
     public async Task<ApiResponse<PassportDto>> IssueAsync(
@@ -82,6 +87,11 @@ public class IssuePassportHandler
 
         await _context.Passports.AddAsync(passport, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 8. Trigger Domain Event to create notification asynchronously/decoupled
+        var passportIssuedEvent = new PassportIssuedEvent(person.Id, passport.PassportNumber, passport.ExpiryDate);
+        await _passportIssuedEventHandler.HandleAsync(
+           passportIssuedEvent, cancellationToken);
 
         // 8. Map response DTO
         var responseDto = new PassportDto

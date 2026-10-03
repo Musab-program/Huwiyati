@@ -1,4 +1,4 @@
-﻿namespace Huwiyati.Application.Family.Commands;
+namespace Huwiyati.Application.Family.Commands;
 
 using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common;
@@ -8,17 +8,22 @@ using Huwiyati.Domain.Entities.Family;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Application.Common.Extensions;
 
+using Huwiyati.Domain.Events.Family;
+
 public class CreateFamilyCardHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IDomainEventHandler<FamilyCardCreatedEvent> _familyCardCreatedEventHandler;
 
     public CreateFamilyCardHandler(
         IApplicationDbContext context,
-        IDocumentNumberGenerator documentNumberGenerator)
+        IDocumentNumberGenerator documentNumberGenerator,
+        IDomainEventHandler<FamilyCardCreatedEvent> familyCardCreatedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _familyCardCreatedEventHandler = familyCardCreatedEventHandler;
     }
 
     public async Task<ApiResponse<FamilyDto>> CreateAsync(
@@ -156,6 +161,10 @@ public class CreateFamilyCardHandler
         
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 10.1 Trigger Domain Event to notify Head of Family
+        var familyEvent = new FamilyCardCreatedEvent(husband.Id, family.FamilyNumber);
+        await _familyCardCreatedEventHandler.HandleAsync(familyEvent, cancellationToken);
 
         // 11. Construct response DTO
         var responseDto = new FamilyDto

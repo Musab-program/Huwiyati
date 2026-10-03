@@ -2,6 +2,7 @@ namespace Huwiyati.API.Controllers.CivilServices;
 
 using System.Security.Claims;
 using Huwiyati.Application.Common;
+using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Requests.Commands;
 using Huwiyati.Application.Requests.Queries;
 using Huwiyati.Domain.Constants;
@@ -19,6 +20,7 @@ public class EmployeeServiceRequestsController : ControllerBase
     private readonly GetBranchServiceRequestsHandler _getBranchRequestsHandler;
     private readonly GetServiceRequestByIdHandler _getByIdHandler;
     private readonly GetServiceTypesHandler _getServiceTypesHandler;
+    private readonly IIdentityService _identityService;
 
     public EmployeeServiceRequestsController(
         CreateServiceRequestHandler createHandler,
@@ -26,7 +28,8 @@ public class EmployeeServiceRequestsController : ControllerBase
         CancelServiceRequestHandler cancelHandler,
         GetBranchServiceRequestsHandler getBranchRequestsHandler,
         GetServiceRequestByIdHandler getByIdHandler,
-        GetServiceTypesHandler getServiceTypesHandler)
+        GetServiceTypesHandler getServiceTypesHandler,
+        IIdentityService identityService)
     {
         _createHandler = createHandler;
         _changeStatusHandler = changeStatusHandler;
@@ -34,6 +37,7 @@ public class EmployeeServiceRequestsController : ControllerBase
         _getBranchRequestsHandler = getBranchRequestsHandler;
         _getByIdHandler = getByIdHandler;
         _getServiceTypesHandler = getServiceTypesHandler;
+        _identityService = identityService;
     }
 
     [HttpPost]
@@ -46,8 +50,8 @@ public class EmployeeServiceRequestsController : ControllerBase
     [HttpPost("change-status")]
     public async Task<IActionResult> ChangeRequestStatus([FromBody] ChangeServiceRequestStatusCommand command, CancellationToken cancellationToken)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
-        if (!Guid.TryParse(userIdClaim, out var employeeUserId))
+        var employeeUserId = _identityService.GetUserIdFromClaims(User);
+        if (employeeUserId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID in token.", statusCode: 401));
         }
@@ -59,8 +63,8 @@ public class EmployeeServiceRequestsController : ControllerBase
     [HttpPost("cancel")]
     public async Task<IActionResult> CancelRequestOnBehalf([FromBody] CancelServiceRequestCommand command, CancellationToken cancellationToken)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
-        if (!Guid.TryParse(userIdClaim, out var employeeUserId))
+        var employeeUserId = _identityService.GetUserIdFromClaims(User);
+        if (employeeUserId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID in token.", statusCode: 401));
         }
@@ -72,26 +76,26 @@ public class EmployeeServiceRequestsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetBranchRequests([FromQuery] GetBranchServiceRequestsQuery query, CancellationToken cancellationToken)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
-        if (string.IsNullOrWhiteSpace(userIdClaim))
+        var employeeUserId = _identityService.GetUserIdFromClaims(User);
+        if (employeeUserId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID in token.", statusCode: 401));
         }
 
-        var result = await _getBranchRequestsHandler.GetBranchRequestsAsync(query, userIdClaim, cancellationToken);
+        var result = await _getBranchRequestsHandler.GetBranchRequestsAsync(query, employeeUserId.ToString(), cancellationToken);
         return StatusCode(result.StatusCode, result);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetRequestById(Guid id, CancellationToken cancellationToken)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
-        if (string.IsNullOrWhiteSpace(userIdClaim))
+        var employeeUserId = _identityService.GetUserIdFromClaims(User);
+        if (employeeUserId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID in token.", statusCode: 401));
         }
 
-        var result = await _getByIdHandler.GetByIdAsync(id, currentPersonId: null, currentEmployeeUserId: userIdClaim, cancellationToken: cancellationToken);
+        var result = await _getByIdHandler.GetByIdAsync(id, currentPersonId: null, currentEmployeeUserId: employeeUserId.ToString(), cancellationToken: cancellationToken);
         return StatusCode(result.StatusCode, result);
     }
 

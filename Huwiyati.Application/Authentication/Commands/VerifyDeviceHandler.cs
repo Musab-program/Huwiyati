@@ -4,18 +4,25 @@ using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Authentication.DTOs;
+using Huwiyati.Domain.Events.Authentication;
 
 public class VerifyDeviceHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly ITokenService _tokenService;
+    private readonly IDomainEventHandler<NewDeviceLoginSuccessEvent> _newDeviceLoginSuccessEventHandler;
 
-    public VerifyDeviceHandler(IApplicationDbContext context, IIdentityService identityService, ITokenService tokenService)
+    public VerifyDeviceHandler(
+        IApplicationDbContext context,
+        IIdentityService identityService,
+        ITokenService tokenService,
+        IDomainEventHandler<NewDeviceLoginSuccessEvent> newDeviceLoginSuccessEventHandler)
     {
         _context = context;
         _identityService = identityService;
         _tokenService = tokenService;
+        _newDeviceLoginSuccessEventHandler = newDeviceLoginSuccessEventHandler;
     }
 
     public async Task<ApiResponse<LoginResultDto>> VerifyDeviceAsync(VerifyDeviceCommand command, CancellationToken cancellationToken = default)
@@ -51,6 +58,10 @@ public class VerifyDeviceHandler
         verificationCode.IsUsed = true;
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        // Trigger NewDeviceLoginSuccessEvent
+        var newDeviceLoginSuccessEvent = new NewDeviceLoginSuccessEvent(userId.Value, device.DeviceName);
+        await _newDeviceLoginSuccessEventHandler.HandleAsync(newDeviceLoginSuccessEvent, cancellationToken);
 
         // 3. Get Citizen Name and Issue JWT Token
         var person = await _context.Persons.FirstOrDefaultAsync(p => p.NationalNumber == command.NationalNumber, cancellationToken);

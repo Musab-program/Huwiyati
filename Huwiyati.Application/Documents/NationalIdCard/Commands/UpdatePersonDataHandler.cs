@@ -7,14 +7,20 @@ using Huwiyati.Domain.Entities.CivilRegistry;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Application.Documents.NationalIdCard.DTOs;
 
+using Huwiyati.Domain.Events.Documents;
+
 // Handler implementing the business logic for updating Person details linked to an active National ID Card
 public class UpdatePersonDataHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IDomainEventHandler<PersonDataUpdatedEvent> _personDataUpdatedEventHandler;
 
-    public UpdatePersonDataHandler(IApplicationDbContext context)
+    public UpdatePersonDataHandler(
+        IApplicationDbContext context,
+        IDomainEventHandler<PersonDataUpdatedEvent> personDataUpdatedEventHandler)
     {
         _context = context;
+        _personDataUpdatedEventHandler = personDataUpdatedEventHandler;
     }
 
     public async Task<ApiResponse<NationalIdCardDto>> UpdateAsync(
@@ -73,6 +79,10 @@ public class UpdatePersonDataHandler
 
         _context.Persons.Update(person);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 3.1 Trigger Domain Event to notify citizen
+        var updateEvent = new PersonDataUpdatedEvent(person.Id);
+        await _personDataUpdatedEventHandler.HandleAsync(updateEvent, cancellationToken);
 
         // 4. Update projected FullName and return response DTO
         activeCardDto.FullName = $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}".Trim();

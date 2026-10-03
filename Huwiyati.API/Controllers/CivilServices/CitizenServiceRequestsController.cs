@@ -2,6 +2,7 @@ namespace Huwiyati.API.Controllers.CivilServices;
 
 using System.Security.Claims;
 using Huwiyati.Application.Common;
+using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Requests.Commands;
 using Huwiyati.Application.Requests.Queries;
 using Huwiyati.Domain.Constants;
@@ -21,6 +22,7 @@ public class CitizenServiceRequestsController : ControllerBase
     private readonly GetServiceRequestByIdHandler _getByIdHandler;
     private readonly GetServiceTypesHandler _getServiceTypesHandler;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IIdentityService _identityService;
 
     public CitizenServiceRequestsController(
         CreateServiceRequestHandler createHandler,
@@ -28,7 +30,8 @@ public class CitizenServiceRequestsController : ControllerBase
         GetCitizenServiceRequestsHandler getCitizenRequestsHandler,
         GetServiceRequestByIdHandler getByIdHandler,
         GetServiceTypesHandler getServiceTypesHandler,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        IIdentityService identityService)
     {
         _createHandler = createHandler;
         _cancelHandler = cancelHandler;
@@ -36,13 +39,14 @@ public class CitizenServiceRequestsController : ControllerBase
         _getByIdHandler = getByIdHandler;
         _getServiceTypesHandler = getServiceTypesHandler;
         _userManager = userManager;
+        _identityService = identityService;
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateRequest([FromBody] CreateServiceRequestCommand command, CancellationToken cancellationToken)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
-        if (!Guid.TryParse(userIdClaim, out var userId))
+        var userId = _identityService.GetUserIdFromClaims(User);
+        if (userId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID in token.", statusCode: 401));
         }
@@ -60,8 +64,8 @@ public class CitizenServiceRequestsController : ControllerBase
     [HttpPost("cancel")]
     public async Task<IActionResult> CancelRequest([FromBody] CancelServiceRequestCommand command, CancellationToken cancellationToken)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
-        if (!Guid.TryParse(userIdClaim, out var userId))
+        var userId = _identityService.GetUserIdFromClaims(User);
+        if (userId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID in token.", statusCode: 401));
         }
@@ -79,8 +83,8 @@ public class CitizenServiceRequestsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetMyRequests([FromQuery] GetCitizenServiceRequestsQuery query, CancellationToken cancellationToken)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
-        if (!Guid.TryParse(userIdClaim, out var userId))
+        var userId = _identityService.GetUserIdFromClaims(User);
+        if (userId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID in token.", statusCode: 401));
         }
@@ -98,8 +102,8 @@ public class CitizenServiceRequestsController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetRequestById(Guid id, CancellationToken cancellationToken)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
-        if (!Guid.TryParse(userIdClaim, out var userId))
+        var userId = _identityService.GetUserIdFromClaims(User);
+        if (userId == Guid.Empty)
         {
             return Unauthorized(ApiResponse<object>.Failure("Invalid or missing User ID in token.", statusCode: 401));
         }

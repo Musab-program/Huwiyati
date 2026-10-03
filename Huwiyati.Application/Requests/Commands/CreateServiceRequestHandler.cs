@@ -9,21 +9,29 @@ using Huwiyati.Domain.Entities.Requests;
 using Huwiyati.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
+using Huwiyati.Domain.Events.Requests;
+
 // Handler carrying out business logic for initiating a new ServiceRequest
 public class CreateServiceRequestHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IRequestNumberGenerator _requestNumberGenerator;
     private readonly IServicePayloadValidator _payloadValidator;
+    private readonly IIdentityService _identityService;
+    private readonly IDomainEventHandler<ServiceRequestCreatedEvent> _serviceRequestCreatedEventHandler;
 
     public CreateServiceRequestHandler(
         IApplicationDbContext context,
         IRequestNumberGenerator requestNumberGenerator,
-        IServicePayloadValidator payloadValidator)
+        IServicePayloadValidator payloadValidator,
+        IIdentityService identityService,
+        IDomainEventHandler<ServiceRequestCreatedEvent> serviceRequestCreatedEventHandler)
     {
         _context = context;
         _requestNumberGenerator = requestNumberGenerator;
         _payloadValidator = payloadValidator;
+        _identityService = identityService;
+        _serviceRequestCreatedEventHandler = serviceRequestCreatedEventHandler;
     }
 
     public async Task<ApiResponse<ServiceRequestDto>> CreateAsync(
@@ -115,6 +123,14 @@ public class CreateServiceRequestHandler
 
         // 8. Persist transaction to SQL Server
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 8.1 Trigger Domain Event if person has an active user account
+        var userId = await _identityService.GetUserIdByPersonIdAsync(person.Id, cancellationToken);
+        if (userId != null)
+        {
+            var createRequestEvent = new ServiceRequestCreatedEvent(userId.Value, request.RequestNumber);
+            await _serviceRequestCreatedEventHandler.HandleAsync(createRequestEvent, cancellationToken);
+        }
 
         // 9. Map response DTO
         var responseDto = new ServiceRequestDto

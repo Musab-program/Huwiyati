@@ -7,20 +7,25 @@ using Huwiyati.Application.Organizations.Admins.DTOs;
 using Huwiyati.Domain.Constants;
 using Huwiyati.Domain.Entities.Organizations;
 
+using Huwiyati.Domain.Events.Organizations;
+
 public class AssignAdminHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IEmployeeNumberGenerator _employeeNumberGenerator;
+    private readonly IDomainEventHandler<AdminAssignedEvent> _adminAssignedEventHandler;
 
     public AssignAdminHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
-        IEmployeeNumberGenerator employeeNumberGenerator)
+        IEmployeeNumberGenerator employeeNumberGenerator,
+        IDomainEventHandler<AdminAssignedEvent> adminAssignedEventHandler)
     {
         _context = context;
         _identityService = identityService;
         _employeeNumberGenerator = employeeNumberGenerator;
+        _adminAssignedEventHandler = adminAssignedEventHandler;
     }
 
     public async Task<ApiResponse<AdminDto>> AssignAdminAsync(
@@ -93,6 +98,10 @@ public class AssignAdminHandler
 
         await _context.Employees.AddAsync(employee, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 6.1 Trigger Domain Event to notify citizen account
+        var adminEvent = new AdminAssignedEvent(userId.Value, branch.BranchName);
+        await _adminAssignedEventHandler.HandleAsync(adminEvent, cancellationToken);
 
         // 7. Assign BOTH Admin and Employee roles using IdentityService
         await _identityService.AssignUserRolesAsync(userId.Value, new[] { AppRoles.Admin, AppRoles.Employee }, cancellationToken);

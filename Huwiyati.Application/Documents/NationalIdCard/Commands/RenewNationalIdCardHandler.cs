@@ -9,14 +9,20 @@ using Huwiyati.Domain.Enums;
 using Huwiyati.Application.Documents.NationalIdCard.DTOs;
 using Huwiyati.Application.Common.Extensions;
 
+using Huwiyati.Domain.Events.Documents;
+
 // Handler implementing the business logic for renewing a National ID Card according to 3-month eligibility rules
 public class RenewNationalIdCardHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IDomainEventHandler<NationalIdCardRenewedEvent> _nationalIdCardRenewedEventHandler;
 
-    public RenewNationalIdCardHandler(IApplicationDbContext context)
+    public RenewNationalIdCardHandler(
+        IApplicationDbContext context,
+        IDomainEventHandler<NationalIdCardRenewedEvent> nationalIdCardRenewedEventHandler)
     {
         _context = context;
+        _nationalIdCardRenewedEventHandler = nationalIdCardRenewedEventHandler;
     }
 
     public async Task<ApiResponse<NationalIdCardDto>> RenewAsync(
@@ -85,6 +91,10 @@ public class RenewNationalIdCardHandler
 
         await _context.NationalIdCards.AddAsync(newCard, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 6.1 Trigger Domain Event to notify citizen
+        var renewEvent = new NationalIdCardRenewedEvent(person.Id, person.NationalNumber);
+        await _nationalIdCardRenewedEventHandler.HandleAsync(renewEvent, cancellationToken);
 
         // 7. Map to DTO and return response
         var responseDto = new NationalIdCardDto

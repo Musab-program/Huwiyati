@@ -5,13 +5,19 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.BirthCertificate.DTOs;
 
+using Huwiyati.Domain.Events.Documents;
+
 public class UpdateChildDataHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IDomainEventHandler<ChildDataUpdatedEvent> _childDataUpdatedEventHandler;
 
-    public UpdateChildDataHandler(IApplicationDbContext context)
+    public UpdateChildDataHandler(
+        IApplicationDbContext context,
+        IDomainEventHandler<ChildDataUpdatedEvent> childDataUpdatedEventHandler)
     {
         _context = context;
+        _childDataUpdatedEventHandler = childDataUpdatedEventHandler;
     }
 
     public async Task<ApiResponse<BirthCertificateDto>> UpdateAsync(
@@ -48,6 +54,10 @@ public class UpdateChildDataHandler
 
         // 4. Save Changes to database
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 4.1 Trigger Domain Event to notify father
+        var childEvent = new ChildDataUpdatedEvent(birthCertificate.FatherPersonId, childPerson.FirstName);
+        await _childDataUpdatedEventHandler.HandleAsync(childEvent, cancellationToken);
 
         // 5. Query updated dto projection cleanly via Select
         var responseDto = await _context.BirthCertificates

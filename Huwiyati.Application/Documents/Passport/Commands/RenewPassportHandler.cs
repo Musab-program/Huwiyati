@@ -8,18 +8,23 @@ using Huwiyati.Application.Documents.Passport.DTOs;
 using Huwiyati.Domain.Entities.Documents;
 using Huwiyati.Domain.Enums;
 
+using Huwiyati.Domain.Events.Passport;
+
 // Handler carrying out the business logic for renewing a Passport
 public class RenewPassportHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IDomainEventHandler<PassportRenewedEvent> _passportRenewedEventHandler;
 
     public RenewPassportHandler(
         IApplicationDbContext context,
-        IDocumentNumberGenerator documentNumberGenerator)
+        IDocumentNumberGenerator documentNumberGenerator,
+        IDomainEventHandler<PassportRenewedEvent> passportRenewedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _passportRenewedEventHandler = passportRenewedEventHandler;
     }
 
     public async Task<ApiResponse<PassportDto>> RenewAsync(
@@ -93,6 +98,10 @@ public class RenewPassportHandler
 
         await _context.Passports.AddAsync(newPassport, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 8. Trigger Domain Event to create notification asynchronously/decoupled
+        await _passportRenewedEventHandler.HandleAsync(
+            new PassportRenewedEvent(person.Id, newPassport.PassportNumber, newPassport.ExpiryDate), cancellationToken);
 
         // 8. Map response DTO
         var responseDto = new PassportDto

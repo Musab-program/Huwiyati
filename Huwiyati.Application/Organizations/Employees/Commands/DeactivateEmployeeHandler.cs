@@ -4,13 +4,19 @@ using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 
+using Huwiyati.Domain.Events.Organizations;
+
 public class DeactivateEmployeeHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IDomainEventHandler<EmployeeDeactivatedEvent> _employeeDeactivatedEventHandler;
 
-    public DeactivateEmployeeHandler(IApplicationDbContext context)
+    public DeactivateEmployeeHandler(
+        IApplicationDbContext context,
+        IDomainEventHandler<EmployeeDeactivatedEvent> employeeDeactivatedEventHandler)
     {
         _context = context;
+        _employeeDeactivatedEventHandler = employeeDeactivatedEventHandler;
     }
 
     public async Task<ApiResponse<bool>> DeactivateEmployeeAsync(
@@ -47,6 +53,15 @@ public class DeactivateEmployeeHandler
         emp.IsActive = false;
         _context.Employees.Update(emp);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 3.1 Trigger Domain Event to notify employee user account
+        var branchName = await _context.OrganizationBranches
+            .Where(b => b.Id == emp.BranchId)
+            .Select(b => b.BranchName)
+            .FirstOrDefaultAsync(cancellationToken) ?? string.Empty;
+
+        var deactivateEvent = new EmployeeDeactivatedEvent(emp.UserId, branchName);
+        await _employeeDeactivatedEventHandler.HandleAsync(deactivateEvent, cancellationToken);
 
         return ApiResponse<bool>.Success(true, message: "Employee deactivated successfully.");
     }

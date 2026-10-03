@@ -1,6 +1,7 @@
 namespace Huwiyati.Infrastructure.Persistence.Configurations;
 
 using Huwiyati.Domain.Entities.Notifications;
+using Huwiyati.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,6 +23,12 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 
         builder.Property(n => n.IsRead)
             .HasDefaultValue(false);
+
+        // Foreign Key Relationship to ApplicationUser
+        builder.HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Index for fast querying of user notifications
         builder.HasIndex(n => new { n.UserId, n.IsRead });

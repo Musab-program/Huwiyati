@@ -5,16 +5,25 @@ using Huwiyati.Domain.Entities.Requests;
 using Huwiyati.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
+using Huwiyati.Domain.Events.Requests;
+
 namespace Huwiyati.Application.Requests.Commands;
 
 // Handler responsible for modifying ServiceRequest status with branch security checks
 public class ChangeServiceRequestStatusHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IIdentityService _identityService;
+    private readonly IDomainEventHandler<ServiceRequestStatusChangedEvent> _statusChangedEventHandler;
 
-    public ChangeServiceRequestStatusHandler(IApplicationDbContext context)
+    public ChangeServiceRequestStatusHandler(
+        IApplicationDbContext context,
+        IIdentityService identityService,
+        IDomainEventHandler<ServiceRequestStatusChangedEvent> statusChangedEventHandler)
     {
         _context = context;
+        _identityService = identityService;
+        _statusChangedEventHandler = statusChangedEventHandler;
     }
 
     public async Task<ApiResponse<ServiceRequestDto>> ChangeStatusAsync(
@@ -105,6 +114,14 @@ public class ChangeServiceRequestStatusHandler
 
         await _context.RequestStatusHistories.AddAsync(historyRecord, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 5.1 Trigger Domain Event if person has an active user account
+        var userId = await _identityService.GetUserIdByPersonIdAsync(requestData.PersonId, cancellationToken);
+        if (userId != null)
+        {
+            var statusEvent = new ServiceRequestStatusChangedEvent(userId.Value, requestData.RequestNumber, command.NewStatus.ToString());
+            await _statusChangedEventHandler.HandleAsync(statusEvent, cancellationToken);
+        }
 
         // 6. Map and return response using Select-fetched history records
         var historyList = await _context.RequestStatusHistories

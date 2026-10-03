@@ -8,14 +8,20 @@ using Huwiyati.Application.Documents.Passport.DTOs;
 using Huwiyati.Domain.Entities.Documents;
 using Huwiyati.Domain.Enums;
 
+using Huwiyati.Domain.Events.Passport;
+
 // Handler carrying out the business logic for adding a travel record
 public class AddTravelRecordHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IDomainEventHandler<TravelRecordAddedEvent> _travelRecordAddedEventHandler;
 
-    public AddTravelRecordHandler(IApplicationDbContext context)
+    public AddTravelRecordHandler(
+        IApplicationDbContext context,
+        IDomainEventHandler<TravelRecordAddedEvent> travelRecordAddedEventHandler)
     {
         _context = context;
+        _travelRecordAddedEventHandler = travelRecordAddedEventHandler;
     }
 
     public async Task<ApiResponse<TravelRecordDto>> AddAsync(
@@ -60,6 +66,10 @@ public class AddTravelRecordHandler
 
         await _context.TravelRecords.AddAsync(travelRecord, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 5. Trigger Domain Event to create notification asynchronously/decoupled
+        await _travelRecordAddedEventHandler.HandleAsync(
+            new TravelRecordAddedEvent(passport.PersonId, passport.PassportNumber, travelRecord.Country, travelRecord.EntryDate, travelRecord.ExitDate), cancellationToken);
 
         // 5. Map response DTO
         var responseDto = new TravelRecordDto

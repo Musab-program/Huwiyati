@@ -5,13 +5,19 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Domain.Enums;
 
+using Huwiyati.Domain.Events.Family;
+
 public class UpdateFamilyMemberStatusHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IDomainEventHandler<FamilyMemberStatusChangedEvent> _memberStatusChangedEventHandler;
 
-    public UpdateFamilyMemberStatusHandler(IApplicationDbContext context)
+    public UpdateFamilyMemberStatusHandler(
+        IApplicationDbContext context,
+        IDomainEventHandler<FamilyMemberStatusChangedEvent> memberStatusChangedEventHandler)
     {
         _context = context;
+        _memberStatusChangedEventHandler = memberStatusChangedEventHandler;
     }
 
     public async Task<ApiResponse<bool>> UpdateStatusAsync(
@@ -88,6 +94,20 @@ public class UpdateFamilyMemberStatusHandler
         }
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 5.1 Trigger Domain Event to notify Head of Family
+        var family = await _context.Families
+            .FirstOrDefaultAsync(f => f.Id == member.FamilyId, cancellationToken);
+
+        if (family != null)
+        {
+            var memberPerson = await _context.Persons
+                .FirstOrDefaultAsync(p => p.Id == member.PersonId, cancellationToken);
+            var memberFullName = memberPerson != null ? $"{memberPerson.FirstName} {memberPerson.FatherName} {memberPerson.FamilyName}".Trim() : "عضو الأسرة";
+
+            var statusEvent = new FamilyMemberStatusChangedEvent(family.HeadOfFamilyPersonId, memberFullName);
+            await _memberStatusChangedEventHandler.HandleAsync(statusEvent, cancellationToken);
+        }
 
         return ApiResponse<bool>.Success(
             true, message: "Family member status and related legal records updated successfully.", statusCode: 200);

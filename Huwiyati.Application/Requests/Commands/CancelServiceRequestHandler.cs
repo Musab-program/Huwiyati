@@ -5,16 +5,25 @@ using Huwiyati.Domain.Entities.Requests;
 using Huwiyati.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
+using Huwiyati.Domain.Events.Requests;
+
 namespace Huwiyati.Application.Requests.Commands;
 
 // Handler allowing applicants or submitter employees to cancel a pending ServiceRequest
 public class CancelServiceRequestHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IIdentityService _identityService;
+    private readonly IDomainEventHandler<ServiceRequestCancelledEvent> _requestCancelledEventHandler;
 
-    public CancelServiceRequestHandler(IApplicationDbContext context)
+    public CancelServiceRequestHandler(
+        IApplicationDbContext context,
+        IIdentityService identityService,
+        IDomainEventHandler<ServiceRequestCancelledEvent> requestCancelledEventHandler)
     {
         _context = context;
+        _identityService = identityService;
+        _requestCancelledEventHandler = requestCancelledEventHandler;
     }
 
     public async Task<ApiResponse<ServiceRequestDto>> CancelAsync(
@@ -101,6 +110,14 @@ public class CancelServiceRequestHandler
 
         await _context.RequestStatusHistories.AddAsync(historyRecord, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 5.1 Trigger Domain Event if person has an active user account
+        var userId = await _identityService.GetUserIdByPersonIdAsync(requestData.PersonId, cancellationToken);
+        if (userId != null)
+        {
+            var cancelledEvent = new ServiceRequestCancelledEvent(userId.Value, requestData.RequestNumber);
+            await _requestCancelledEventHandler.HandleAsync(cancelledEvent, cancellationToken);
+        }
 
         var historyList = await _context.RequestStatusHistories
             .AsNoTracking()
