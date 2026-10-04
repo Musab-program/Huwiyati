@@ -31,6 +31,10 @@ public class BirthCertificateConfiguration : IEntityTypeConfiguration<BirthCerti
         builder.Property(b => b.IssueDate)
             .IsRequired();
 
+        builder.Property(b => b.QrCodePayload)
+            .IsRequired(false)
+            .HasMaxLength(1000);
+
         // Unique Index: Certificate Number must be unique
         builder.HasIndex(b => b.CertificateNumber)
             .IsUnique();

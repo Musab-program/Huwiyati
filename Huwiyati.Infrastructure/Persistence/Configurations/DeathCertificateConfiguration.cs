@@ -37,6 +37,10 @@ public class DeathCertificateConfiguration : IEntityTypeConfiguration<DeathCerti
         builder.Property(d => d.IssueDate)
             .IsRequired();
 
+        builder.Property(d => d.QrCodePayload)
+            .IsRequired(false)
+            .HasMaxLength(1000);
+
         // Unique Index: Certificate Number must be unique
         builder.HasIndex(d => d.CertificateNumber)
             .IsUnique();

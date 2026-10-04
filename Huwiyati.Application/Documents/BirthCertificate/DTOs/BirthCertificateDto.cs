@@ -5,6 +5,7 @@ public class BirthCertificateDto
     public Guid Id { get; set; }
     public string CertificateNumber { get; set; } = string.Empty;
     public DateOnly IssueDate { get; set; }
+    public string? QrCodePayload { get; set; }
 
     // Newborn Child Details
     public Guid ChildPersonId { get; set; }

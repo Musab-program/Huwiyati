@@ -15,15 +15,18 @@ public class IssuePassportHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IQRCodeService _qrCodeService;
     private readonly IDomainEventHandler<PassportIssuedEvent> _passportIssuedEventHandler;
 
     public IssuePassportHandler(
         IApplicationDbContext context,
         IDocumentNumberGenerator documentNumberGenerator,
+        IQRCodeService qrCodeService,
         IDomainEventHandler<PassportIssuedEvent> passportIssuedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _qrCodeService = qrCodeService;
         _passportIssuedEventHandler = passportIssuedEventHandler;
     }
 
@@ -80,7 +83,7 @@ public class IssuePassportHandler
             PassportType = command.PassportType,
             IssueDate = issueDate,
             ExpiryDate = expiryDate,
-            QrCodePayload = $"PASS-{passportNumber}",
+            QrCodePayload = _qrCodeService.GenerateVerificationToken(),
             Status = PassportStatus.Active,
             CreatedAt = DateTime.UtcNow
         };

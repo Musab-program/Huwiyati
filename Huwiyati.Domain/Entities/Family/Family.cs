@@ -13,7 +13,7 @@ public class Family : AuditableEntity
     public Guid IssuingBranchId { get; set; }
     public DateOnly IssueDate { get; set; }
     public DateOnly ExpiryDate { get; set; }
-    public string? QrCodePayload { get; set; }
+    public string? QrCodePayload { get; set; } = string.Empty;
     public FamilyStatus Status { get; set; } = FamilyStatus.Active;
 
     // Navigation properties

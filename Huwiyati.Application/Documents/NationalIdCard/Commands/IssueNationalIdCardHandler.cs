@@ -17,15 +17,18 @@ public class IssueNationalIdCardHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IQRCodeService _qrCodeService;
     private readonly IDomainEventHandler<NationalIdCardIssuedEvent> _nationalIdCardIssuedEventHandler;
 
     public IssueNationalIdCardHandler(
         IApplicationDbContext context,
         IDocumentNumberGenerator documentNumberGenerator,
+        IQRCodeService qrCodeService,
         IDomainEventHandler<NationalIdCardIssuedEvent> nationalIdCardIssuedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _qrCodeService = qrCodeService;
         _nationalIdCardIssuedEventHandler = nationalIdCardIssuedEventHandler;
     }
 
@@ -105,7 +108,7 @@ public class IssueNationalIdCardHandler
             IssuingBranchId = command.IssuingBranchId,
             IssueDate = issueDate,
             ExpiryDate = expiryDate,
-            QrCodePayload = $"NAT-{person.NationalNumber}",
+            QrCodePayload = _qrCodeService.GenerateVerificationToken(),
             Status = NationalIdCardStatus.Active,
             CreatedAt = DateTime.UtcNow,
         };
@@ -124,6 +127,7 @@ public class IssueNationalIdCardHandler
             PersonId = person.Id,
             NationalNumber = person.NationalNumber,
             FullName = $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}".Trim(),
+            PhotoUrl = person.PhotoUrl,
             IssuingBranchId = branchResult.BranchId,
             BranchName = branchResult.BranchName,
             IssueDate = card.IssueDate,

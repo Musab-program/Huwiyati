@@ -42,6 +42,7 @@ public class GetPersonNationalIdCardHistoryHandler
                 PersonId = c.PersonId,
                 NationalNumber = c.Person.NationalNumber,
                 FullName = $"{c.Person.FirstName} {c.Person.FatherName} {c.Person.GrandfatherName} {c.Person.FamilyName}".Trim(),
+                PhotoUrl = c.Person.PhotoUrl,
                 IssuingBranchId = c.IssuingBranchId,
                 BranchName = c.OrganizationBranch.BranchName,
                 IssueDate = c.IssueDate,

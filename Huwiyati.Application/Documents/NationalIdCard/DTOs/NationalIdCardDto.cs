@@ -7,6 +7,7 @@ public class NationalIdCardDto
     public Guid PersonId { get; set; }
     public string NationalNumber { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
+    public string? PhotoUrl { get; set; }
     public Guid IssuingBranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
     public DateOnly IssueDate { get; set; }

@@ -14,6 +14,7 @@ public class DeathCertificate : AuditableEntity
     public string? PlaceOfDeath { get; set; }
     public string? CauseOfDeath { get; set; }
     public DateOnly IssueDate { get; set; }
+    public string? QrCodePayload { get; set; } = string.Empty;
 
     // Navigation Properties
     public Person Person { get; set; } = null!;

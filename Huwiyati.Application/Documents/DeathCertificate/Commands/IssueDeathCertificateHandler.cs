@@ -14,15 +14,18 @@ public class IssueDeathCertificateHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IQRCodeService _qrCodeService;
     private readonly IDomainEventHandler<DeathCertificateIssuedEvent> _deathCertificateIssuedEventHandler;
 
     public IssueDeathCertificateHandler(
         IApplicationDbContext context,
         IDocumentNumberGenerator documentNumberGenerator,
+        IQRCodeService qrCodeService,
         IDomainEventHandler<DeathCertificateIssuedEvent> deathCertificateIssuedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _qrCodeService = qrCodeService;
         _deathCertificateIssuedEventHandler = deathCertificateIssuedEventHandler;
     }
 
@@ -88,7 +91,8 @@ public class IssueDeathCertificateHandler
             DeathDate = command.DeathDate,
             PlaceOfDeath = command.PlaceOfDeath,
             CauseOfDeath = command.CauseOfDeath,
-            IssueDate = today
+            IssueDate = today,
+            QrCodePayload = _qrCodeService.GenerateVerificationToken()
         };
 
         await _context.DeathCertificates.AddAsync(deathCertificate, cancellationToken);
@@ -121,6 +125,7 @@ public class IssueDeathCertificateHandler
             Id = deathCertificate.Id,
             CertificateNumber = deathCertificate.CertificateNumber,
             IssueDate = deathCertificate.IssueDate,
+            QrCodePayload = deathCertificate.QrCodePayload,
 
             PersonId = person.Id,
             NationalNumber = person.NationalNumber,

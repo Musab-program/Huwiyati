@@ -13,7 +13,7 @@ public class Passport : AuditableEntity
     public PassportType PassportType { get; set; } = PassportType.Regular;
     public DateOnly IssueDate { get; set; }
     public DateOnly ExpiryDate { get; set; }
-    public string? QrCodePayload { get; set; }
+    public string? QrCodePayload { get; set; } = string.Empty;
     public PassportStatus Status { get; set; } = PassportStatus.Active;
 
     // Navigation properties

@@ -5,6 +5,7 @@ public class DeathCertificateDto
     public Guid Id { get; set; }
     public string CertificateNumber { get; set; } = string.Empty;
     public DateOnly IssueDate { get; set; }
+    public string? QrCodePayload { get; set; }
 
     // Deceased Person Details
     public Guid PersonId { get; set; }

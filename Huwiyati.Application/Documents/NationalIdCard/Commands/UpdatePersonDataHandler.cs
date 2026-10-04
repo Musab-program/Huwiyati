@@ -13,13 +13,16 @@ using Huwiyati.Domain.Events.Documents;
 public class UpdatePersonDataHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IFileStorageService _fileStorageService;
     private readonly IDomainEventHandler<PersonDataUpdatedEvent> _personDataUpdatedEventHandler;
 
     public UpdatePersonDataHandler(
         IApplicationDbContext context,
+        IFileStorageService fileStorageService,
         IDomainEventHandler<PersonDataUpdatedEvent> personDataUpdatedEventHandler)
     {
         _context = context;
+        _fileStorageService = fileStorageService;
         _personDataUpdatedEventHandler = personDataUpdatedEventHandler;
     }
 
@@ -62,7 +65,7 @@ public class UpdatePersonDataHandler
                 "No active National ID Card found for this citizen.", statusCode: 404);
         }
 
-        // 3. Update Person properties from command
+        // 3. Update Person properties from command and delete old photo file if changed
         person.FirstName = command.FirstName;
         person.FatherName = command.FatherName;
         person.GrandfatherName = command.GrandfatherName;
@@ -73,9 +76,17 @@ public class UpdatePersonDataHandler
         person.Governorate = command.Governorate;
         person.District = command.District;
         person.AddressDetails = command.AddressDetails;
-        person.PhotoUrl = command.PhotoUrl;
         person.BloodGroup = command.BloodGroup;
         person.LastModifiedAt = DateTime.UtcNow;
+
+        if (!string.IsNullOrWhiteSpace(command.PhotoUrl))
+        {
+            if (!string.IsNullOrWhiteSpace(person.PhotoUrl) && person.PhotoUrl != command.PhotoUrl)
+            {
+                await _fileStorageService.DeletePhotoAsync(person.PhotoUrl, cancellationToken);
+            }
+            person.PhotoUrl = command.PhotoUrl;
+        }
 
         _context.Persons.Update(person);
         await _context.SaveChangesAsync(cancellationToken);
@@ -84,8 +95,9 @@ public class UpdatePersonDataHandler
         var updateEvent = new PersonDataUpdatedEvent(person.Id);
         await _personDataUpdatedEventHandler.HandleAsync(updateEvent, cancellationToken);
 
-        // 4. Update projected FullName and return response DTO
+        // 4. Update projected FullName and PhotoUrl, then return response DTO
         activeCardDto.FullName = $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}".Trim();
+        activeCardDto.PhotoUrl = person.PhotoUrl;
 
         return ApiResponse<NationalIdCardDto>.Success(
             activeCardDto, message: "National ID Card person data updated successfully.", statusCode: 200);

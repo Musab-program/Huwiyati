@@ -15,15 +15,21 @@ public class RenewPassportHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IQRCodeService _qrCodeService;
+    private readonly IFileStorageService _fileStorageService;
     private readonly IDomainEventHandler<PassportRenewedEvent> _passportRenewedEventHandler;
 
     public RenewPassportHandler(
         IApplicationDbContext context,
         IDocumentNumberGenerator documentNumberGenerator,
+        IQRCodeService qrCodeService,
+        IFileStorageService fileStorageService,
         IDomainEventHandler<PassportRenewedEvent> passportRenewedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _qrCodeService = qrCodeService;
+        _fileStorageService = fileStorageService;
         _passportRenewedEventHandler = passportRenewedEventHandler;
     }
 
@@ -69,9 +75,13 @@ public class RenewPassportHandler
             activePassport.Status = PassportStatus.Expired;
         }
 
-        // 4. Update photo if provided
+        // 4. Update photo if provided and delete old image file
         if (!string.IsNullOrWhiteSpace(command.PhotoUrl))
         {
+            if (!string.IsNullOrWhiteSpace(person.PhotoUrl) && person.PhotoUrl != command.PhotoUrl)
+            {
+                await _fileStorageService.DeletePhotoAsync(person.PhotoUrl, cancellationToken);
+            }
             person.PhotoUrl = command.PhotoUrl;
         }
 
@@ -91,7 +101,7 @@ public class RenewPassportHandler
             PassportType = command.PassportType ?? activePassport?.PassportType ?? PassportType.Regular,
             IssueDate = newIssueDate,
             ExpiryDate = newExpiryDate,
-            QrCodePayload = $"PASS-{newPassportNumber}",
+            QrCodePayload = _qrCodeService.GenerateVerificationToken(),
             Status = PassportStatus.Active,
             CreatedAt = DateTime.UtcNow
         };

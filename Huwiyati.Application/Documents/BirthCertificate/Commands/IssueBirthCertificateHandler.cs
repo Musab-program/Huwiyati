@@ -16,15 +16,18 @@ public class IssueBirthCertificateHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IQRCodeService _qrCodeService;
     private readonly IDomainEventHandler<BirthCertificateIssuedEvent> _birthCertificateIssuedEventHandler;
 
     public IssueBirthCertificateHandler(
         IApplicationDbContext context,
         IDocumentNumberGenerator documentNumberGenerator,
+        IQRCodeService qrCodeService,
         IDomainEventHandler<BirthCertificateIssuedEvent> birthCertificateIssuedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _qrCodeService = qrCodeService;
         _birthCertificateIssuedEventHandler = birthCertificateIssuedEventHandler;
     }
 
@@ -114,7 +117,8 @@ public class IssueBirthCertificateHandler
             MotherPersonId = mother.Id,
             HospitalBranchId = command.HospitalBranchId,
             CertificateNumber = certificateNumber,
-            IssueDate = issueDate
+            IssueDate = issueDate,
+            QrCodePayload = _qrCodeService.GenerateVerificationToken()
         };
 
         await _context.BirthCertificates.AddAsync(birthCertificate, cancellationToken);
@@ -148,6 +152,7 @@ public class IssueBirthCertificateHandler
             Id = birthCertificate.Id,
             CertificateNumber = birthCertificate.CertificateNumber,
             IssueDate = birthCertificate.IssueDate,
+            QrCodePayload = birthCertificate.QrCodePayload,
 
             ChildPersonId = childPerson.Id,
             ChildNationalNumber = childPerson.NationalNumber,
