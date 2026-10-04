@@ -12,6 +12,7 @@ public class BirthCertificate : AuditableEntity
     public Guid HospitalBranchId { get; set; }
     public string CertificateNumber { get; set; } = string.Empty;
     public DateOnly IssueDate { get; set; }
+    public string? QrCodePayload { get; set; } = string.Empty;
 
     // Navigation Properties
     public Person ChildPerson { get; set; } = null!;

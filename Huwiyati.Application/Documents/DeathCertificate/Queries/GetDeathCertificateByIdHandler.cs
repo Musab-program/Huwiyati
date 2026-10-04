@@ -26,6 +26,7 @@ public class GetDeathCertificateByIdHandler
                 Id = d.Id,
                 CertificateNumber = d.CertificateNumber,
                 IssueDate = d.IssueDate,
+                QrCodePayload = d.QrCodePayload,
 
                 PersonId = d.PersonId,
                 NationalNumber = d.Person.NationalNumber,

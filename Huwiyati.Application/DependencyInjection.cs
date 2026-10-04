@@ -8,8 +8,10 @@ using Huwiyati.Application.Documents.NationalIdCard.Commands;
 using Huwiyati.Application.Documents.NationalIdCard.Queries;
 using Huwiyati.Application.Documents.Passport.Commands;
 using Huwiyati.Application.Documents.Passport.Queries;
+using Huwiyati.Application.Documents.Verification.Queries;
 using Huwiyati.Application.Family.Commands;
 using Huwiyati.Application.Family.Queries;
+using Huwiyati.Application.Files.Commands;
 using Huwiyati.Application.Notifications;
 using Huwiyati.Application.Notifications.Commands;
 using Huwiyati.Application.Notifications.Queries;
@@ -98,6 +100,9 @@ namespace Huwiyati.Application
             services.AddScoped<GetFamilyByIdHandler>();
             services.AddScoped<GetFamilyHistoryByFamilyNumberHandler>();
 
+            // Register Document Verification Handler
+            services.AddScoped<VerifyDocumentByQrPayloadQueryHandler>();
+
             // Register Passport Handlers
             services.AddScoped<IssuePassportHandler>();
             services.AddScoped<RenewPassportHandler>();
@@ -122,6 +127,9 @@ namespace Huwiyati.Application
             services.AddScoped<GetBranchServiceRequestsHandler>();
             services.AddScoped<GetServiceRequestByIdHandler>();
             services.AddScoped<GetServiceTypesHandler>();
+
+            // Register File Storage Handlers
+            services.AddScoped<UploadPhotoHandler>();
 
             return services;
         }

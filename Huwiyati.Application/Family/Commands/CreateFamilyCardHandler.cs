@@ -14,15 +14,18 @@ public class CreateFamilyCardHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDocumentNumberGenerator _documentNumberGenerator;
+    private readonly IQRCodeService _qrCodeService;
     private readonly IDomainEventHandler<FamilyCardCreatedEvent> _familyCardCreatedEventHandler;
 
     public CreateFamilyCardHandler(
         IApplicationDbContext context,
         IDocumentNumberGenerator documentNumberGenerator,
+        IQRCodeService qrCodeService,
         IDomainEventHandler<FamilyCardCreatedEvent> familyCardCreatedEventHandler)
     {
         _context = context;
         _documentNumberGenerator = documentNumberGenerator;
+        _qrCodeService = qrCodeService;
         _familyCardCreatedEventHandler = familyCardCreatedEventHandler;
     }
 
@@ -122,7 +125,7 @@ public class CreateFamilyCardHandler
             IssuingBranchId = command.IssuingBranchId,
             IssueDate = issueDate,
             ExpiryDate = expiryDate,
-            QrCodePayload = $"FAM-{familyNumber}",
+            QrCodePayload = _qrCodeService.GenerateVerificationToken(),
             Status = FamilyStatus.Active,
             CreatedAt = DateTime.UtcNow,
         };

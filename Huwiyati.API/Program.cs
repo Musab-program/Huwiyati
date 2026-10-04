@@ -104,6 +104,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowFrontend");
 
+app.UseStaticFiles();
+
 // IMPORTANT: Authentication MUST come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();

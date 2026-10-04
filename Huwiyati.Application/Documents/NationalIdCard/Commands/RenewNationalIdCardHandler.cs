@@ -15,13 +15,19 @@ using Huwiyati.Domain.Events.Documents;
 public class RenewNationalIdCardHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IQRCodeService _qrCodeService;
+    private readonly IFileStorageService _fileStorageService;
     private readonly IDomainEventHandler<NationalIdCardRenewedEvent> _nationalIdCardRenewedEventHandler;
 
     public RenewNationalIdCardHandler(
         IApplicationDbContext context,
+        IQRCodeService qrCodeService,
+        IFileStorageService fileStorageService,
         IDomainEventHandler<NationalIdCardRenewedEvent> nationalIdCardRenewedEventHandler)
     {
         _context = context;
+        _qrCodeService = qrCodeService;
+        _fileStorageService = fileStorageService;
         _nationalIdCardRenewedEventHandler = nationalIdCardRenewedEventHandler;
     }
 
@@ -72,7 +78,7 @@ public class RenewNationalIdCardHandler
         }
 
         // 4. Update Person optional profile fields cleanly
-        UpdatePersonProfileIfProvided(person, command);
+        await UpdatePersonProfileIfProvidedAsync(person, command, cancellationToken);
 
         // 5. Calculate new IssueDate (today UTC) and ExpiryDate (+10 years)
         var newIssueDate = today;
@@ -85,7 +91,7 @@ public class RenewNationalIdCardHandler
             IssuingBranchId = command.IssuingBranchId,
             IssueDate = newIssueDate,
             ExpiryDate = newExpiryDate,
-            QrCodePayload = $"NAT-{person.NationalNumber}",
+            QrCodePayload = _qrCodeService.GenerateVerificationToken(),
             Status = NationalIdCardStatus.Active
         };
 
@@ -103,6 +109,7 @@ public class RenewNationalIdCardHandler
             PersonId = person.Id,
             NationalNumber = person.NationalNumber,
             FullName = $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}".Trim(),
+            PhotoUrl = person.PhotoUrl,
             IssuingBranchId = branch.BranchId,
             BranchName = branch.BranchName,
             IssueDate = newCard.IssueDate,
@@ -116,13 +123,21 @@ public class RenewNationalIdCardHandler
             responseDto, message: "National ID Card renewed successfully with a new 10-year validity.", statusCode: 200);
     }
 
-    // Encapsulated method updating optional Person profile fields on the tracked reference object
-    private static void UpdatePersonProfileIfProvided(Person person, RenewNationalIdCardCommand command)
+    // Encapsulated method updating optional Person profile fields and cleaning up old photo file
+    private async Task UpdatePersonProfileIfProvidedAsync(Person person, RenewNationalIdCardCommand command, CancellationToken ct)
     {
         if (command.MaritalStatus.HasValue) person.MaritalStatus = command.MaritalStatus.Value;
         if (!string.IsNullOrWhiteSpace(command.Governorate)) person.Governorate = command.Governorate;
         if (!string.IsNullOrWhiteSpace(command.District)) person.District = command.District;
         if (!string.IsNullOrWhiteSpace(command.AddressDetails)) person.AddressDetails = command.AddressDetails;
-        if (!string.IsNullOrWhiteSpace(command.PhotoUrl)) person.PhotoUrl = command.PhotoUrl;
+        
+        if (!string.IsNullOrWhiteSpace(command.PhotoUrl))
+        {
+            if (!string.IsNullOrWhiteSpace(person.PhotoUrl) && person.PhotoUrl != command.PhotoUrl)
+            {
+                await _fileStorageService.DeletePhotoAsync(person.PhotoUrl, ct);
+            }
+            person.PhotoUrl = command.PhotoUrl;
+        }
     }
 }

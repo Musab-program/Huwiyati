@@ -13,13 +13,16 @@ using Huwiyati.Domain.Events.Family;
 public class RenewFamilyCardHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IQRCodeService _qrCodeService;
     private readonly IDomainEventHandler<FamilyCardRenewedEvent> _familyCardRenewedEventHandler;
 
     public RenewFamilyCardHandler(
         IApplicationDbContext context,
+        IQRCodeService qrCodeService,
         IDomainEventHandler<FamilyCardRenewedEvent> familyCardRenewedEventHandler)
     {
         _context = context;
+        _qrCodeService = qrCodeService;
         _familyCardRenewedEventHandler = familyCardRenewedEventHandler;
     }
 
@@ -74,7 +77,7 @@ public class RenewFamilyCardHandler
             IssuingBranchId = command.IssuingBranchId,
             IssueDate = today,
             ExpiryDate = today.AddYears(10),
-            QrCodePayload = $"FAM-{existingFamily.FamilyNumber}",
+            QrCodePayload = _qrCodeService.GenerateVerificationToken(),
             Status = FamilyStatus.Active,
             CreatedAt = DateTime.UtcNow,
         };

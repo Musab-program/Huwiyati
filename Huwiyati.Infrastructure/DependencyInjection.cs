@@ -71,7 +71,13 @@ public static class DependencyInjection
         // 11. Register ServicePayloadValidator Implementation
         services.AddScoped<IServicePayloadValidator, ServicePayloadValidator>();
 
-        // 12. Register Background Jobs
+        // 12. Register QRCodeService Implementation
+        services.AddTransient<IQRCodeService, QRCodeService>();
+
+        // 13. Register FileStorageService Implementation
+        services.AddTransient<IFileStorageService, FileStorageService>();
+
+        // 14. Register Background Jobs
         services.AddHostedService<DocumentExpirationMonitorJob>();
         services.AddHostedService<VerificationCodeCleanupJob>();
 

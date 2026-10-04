@@ -24,6 +24,7 @@ public class GetAllBirthCertificatesHandler
                 Id = b.Id,
                 CertificateNumber = b.CertificateNumber,
                 IssueDate = b.IssueDate,
+                QrCodePayload = b.QrCodePayload,
 
                 ChildPersonId = b.ChildPersonId,
                 ChildNationalNumber = b.ChildPerson.NationalNumber,
