@@ -13,6 +13,9 @@ public class LoginCommandValidator : AbstractValidator<LoginCommand>
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password is required.");
 
+        RuleFor(x => x.RequestedRole)
+            .NotEmpty().WithMessage("Requested Role is required.");
+
         RuleFor(x => x.DeviceIdentifier)
             .NotEmpty().WithMessage("Device Identifier is required.");
     }

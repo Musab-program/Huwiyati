@@ -1,9 +1,14 @@
 namespace Huwiyati.Application.Authentication.Commands;
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Authentication.DTOs;
+using Huwiyati.Domain.Constants;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Domain.Entities.Authentication;
 using Huwiyati.Domain.Events.Authentication;
@@ -60,16 +65,68 @@ public class LoginHandler
                 statusCode: 403);
         }
 
-        // 4. Get Citizen Details from Civil Registry (Persons)
+        // 4. Validate that the user actually possesses the requested role in Identity
+        if (!userLoginInfo.Roles.Contains(command.RequestedRole))
+        {
+            return ApiResponse<LoginResultDto>.Failure(
+                $"Access Denied: You do not possess the '{command.RequestedRole}' role.",
+                statusCode: 403);
+        }
+
+        Guid? validatedOrganizationId = null;
+        Guid? validatedBranchId = null;
+
+        // 5. Role & Branch Context Validation for Employee and Admin (WITHOUT using Include)
+        if (command.RequestedRole == AppRoles.Employee || command.RequestedRole == AppRoles.Admin)
+        {
+            if (!command.BranchId.HasValue || command.BranchId.Value == Guid.Empty)
+            {
+                return ApiResponse<LoginResultDto>.Failure(
+                    "Branch ID is required for staff authentication.",
+                    statusCode: 400);
+            }
+
+            var employeeRecord = await _context.Employees
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.UserId == userLoginInfo.UserId
+                                       && e.BranchId == command.BranchId.Value
+                                       && e.IsActive, cancellation);
+
+            if (employeeRecord == null)
+            {
+                return ApiResponse<LoginResultDto>.Failure(
+                    "Access Denied: You are not assigned as an active staff member for this branch.",
+                    statusCode: 403);
+            }
+
+            var branch = await _context.OrganizationBranches
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id == command.BranchId.Value && b.IsActive, cancellation);
+
+            if (branch == null)
+            {
+                return ApiResponse<LoginResultDto>.Failure(
+                    "Access Denied: The specified branch is inactive or does not exist.",
+                    statusCode: 403);
+            }
+
+            validatedBranchId = branch.Id;
+            validatedOrganizationId = branch.OrganizationId;
+        }
+
+        // 6. Get Citizen Details from Civil Registry (Persons)
         var person = await _context.Persons
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == userLoginInfo.PersonId, cancellation);
         var fullName = person != null
             ? $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}".Trim()
             : command.NationalNumber;
 
-        // 5. Device Check (Mandatory)
+        // 7. Device Check (Mandatory)
         var device = await _context.UserDevices
             .FirstOrDefaultAsync(d => d.UserId == userLoginInfo.UserId && d.DeviceIdentifier == command.DeviceIdentifier, cancellation);
+
+        var activeRoles = new List<string> { command.RequestedRole };
 
         // Case A: Device exists and is trusted -> Direct Login
         if (device != null && device.IsTrusted)
@@ -77,11 +134,26 @@ public class LoginHandler
             device.LastLogin = DateTime.UtcNow;
             await _context.SaveChangesAsync(cancellation);
 
-            var tokenModel = _tokenService.GenerateToken(userLoginInfo.UserId,
-                                                         command.NationalNumber,
-                                                         fullName,
-                                                         userLoginInfo.AccountStatus,
-                                                         userLoginInfo.Roles);
+            var tokenModel = _tokenService.GenerateToken(
+                userLoginInfo.UserId,
+                command.NationalNumber,
+                fullName,
+                userLoginInfo.AccountStatus,
+                activeRoles,
+                validatedOrganizationId,
+                validatedBranchId);
+
+            var refreshTokenEntity = new RefreshToken
+            {
+                UserId = userLoginInfo.UserId,
+                Token = tokenModel.RefreshToken,
+                JwtId = Guid.NewGuid().ToString(),
+                ExpiryDate = tokenModel.RefreshTokenExpiration,
+                IsUsed = false,
+                IsRevoked = false
+            };
+            await _context.RefreshTokens.AddAsync(refreshTokenEntity, cancellation);
+            await _context.SaveChangesAsync(cancellation);
 
             return ApiResponse<LoginResultDto>.Success(
                 new LoginResultDto
@@ -89,6 +161,8 @@ public class LoginHandler
                     UserId = userLoginInfo.UserId,
                     AccessToken = tokenModel.Token,
                     Expiration = tokenModel.Expiration,
+                    RefreshToken = tokenModel.RefreshToken,
+                    RefreshTokenExpiration = tokenModel.RefreshTokenExpiration,
                     NationalNumber = command.NationalNumber,
                     FullName = fullName,
                     AccountStatus = userLoginInfo.AccountStatus,

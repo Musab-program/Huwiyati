@@ -1,9 +1,6 @@
 using Huwiyati.Application.Common.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Huwiyati.Application.Common.Interfaces
 {
@@ -14,6 +11,8 @@ namespace Huwiyati.Application.Common.Interfaces
             string nationalNumber,
             string fullName,
             string accountStatus,
-            IEnumerable<string> roles);
+            IEnumerable<string> roles,
+            Guid? organizationId = null,
+            Guid? branchId = null);
     }
 }

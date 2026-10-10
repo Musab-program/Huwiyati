@@ -1,30 +1,29 @@
-﻿using Huwiyati.Application.Common.Interfaces;
-using Huwiyati.Domain.Constants;
+namespace Huwiyati.API.Controllers.CivilRegistry;
+
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Huwiyati.Domain.Constants;
+using Huwiyati.Application.CivilRegistry.Queries;
 
-namespace Huwiyati.API.Controllers.CivilRegistry
+[ApiController]
+[Route("api/v1/[controller]")]
+[Authorize(Roles = AppRoles.SuperAdmin)]
+public class PersonController : ControllerBase
 {
-    [ApiController]
-    [Route("api/v1/[controller]")]
-    public class PersonController : ControllerBase
+    private readonly GetAllCitizensHandler _getAllCitizensHandler;
+
+    public PersonController(GetAllCitizensHandler getAllCitizensHandler)
     {
-        private readonly IApplicationDbContext _context;
+        _getAllCitizensHandler = getAllCitizensHandler;
+    }
 
-        public PersonController(IApplicationDbContext context)
-        {
-            _context = context;
-        }
-
-        [HttpGet]
-        //[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin},{AppRoles.SuperAdmin}")]
-        //[Authorize(Roles =AppRoles.Citizen)]
-        public async Task<IActionResult> GetAllCitizens(CancellationToken cancellation)
-        {
-            var persons = await _context.Persons.ToListAsync(cancellation);
-            return Ok(persons);
-        }
+    /// <summary>
+    /// Get all citizens registered in Civil Registry (SuperAdmin only)
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GetAllCitizens(CancellationToken cancellationToken)
+    {
+        var result = await _getAllCitizensHandler.GetAllCitizensAsync(cancellationToken);
+        return StatusCode(result.StatusCode, result);
     }
 }

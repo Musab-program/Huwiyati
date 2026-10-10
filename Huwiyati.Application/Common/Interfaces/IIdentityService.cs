@@ -15,6 +15,16 @@ public interface IIdentityService
     Guid GetUserIdFromClaims(ClaimsPrincipal user);
 
     /// <summary>
+    /// Retrieves the Person ID associated with the current user claims.
+    /// </summary>
+    Task<Guid> GetPersonIdFromClaimsAsync(ClaimsPrincipal user, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the National Number associated with the current user claims.
+    /// </summary>
+    Task<string?> GetNationalNumberFromClaimsAsync(ClaimsPrincipal user, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Creates a new user account linked to a Person record in the Civil Registry.
     /// </summary>
     Task<CreateUserResultModel> CreateUserAsync(
@@ -87,4 +97,14 @@ public interface IIdentityService
     /// Changes a user's account status (Active, Deactivated, Suspended).
     /// </summary>
     Task<bool> ChangeAccountStatusAsync(Guid userId, AccountStatus status, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves user account details for a specified Person ID.
+    /// </summary>
+    Task<UserAccountDetailsModel?> GetUserAccountDetailsByPersonIdAsync(Guid personId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves all registered application user accounts.
+    /// </summary>
+    Task<List<Huwiyati.Application.Authentication.DTOs.RegisteredUserAccountDto>> GetAllUserAccountsAsync(CancellationToken cancellationToken = default);
 }
