@@ -11,11 +11,13 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Add Controllers with JSON Enum Converters
+// 1. Add Controllers with JSON Enum & DateOnly Converters
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(new Huwiyati.API.Converters.DateOnlyJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new Huwiyati.API.Converters.NullableDateOnlyJsonConverter());
     });
 
 // 2. Register Application & Infrastructure Services
