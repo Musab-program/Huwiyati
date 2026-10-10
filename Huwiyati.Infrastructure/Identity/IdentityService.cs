@@ -31,6 +31,30 @@ public class IdentityService : IIdentityService
     }
 
     /// <summary>
+    /// Retrieves the Person ID associated with the current user claims.
+    /// </summary>
+    public async Task<Guid> GetPersonIdFromClaimsAsync(ClaimsPrincipal user, CancellationToken cancellationToken = default)
+    {
+        var userId = GetUserIdFromClaims(user);
+        if (userId == Guid.Empty) return Guid.Empty;
+
+        var appUser = await _userManager.FindByIdAsync(userId.ToString());
+        return appUser?.PersonId ?? Guid.Empty;
+    }
+
+    /// <summary>
+    /// Retrieves the National Number associated with the current user claims.
+    /// </summary>
+    public async Task<string?> GetNationalNumberFromClaimsAsync(ClaimsPrincipal user, CancellationToken cancellationToken = default)
+    {
+        var userId = GetUserIdFromClaims(user);
+        if (userId == Guid.Empty) return null;
+
+        var appUser = await _userManager.FindByIdAsync(userId.ToString());
+        return appUser?.UserName;
+    }
+
+    /// <summary>
     /// Checks if a user already exists with the specified email.
     /// </summary>
     public async Task<bool> UserExistsWithEmailAsync(string email, CancellationToken cancellationToken = default)
@@ -225,7 +249,55 @@ public class IdentityService : IIdentityService
         if (user == null) return false;
 
         user.Status = status;
+        if (status == AccountStatus.Active && user.ActivatedAt == null)
+        {
+            user.ActivatedAt = DateTime.UtcNow;
+        }
         var result = await _userManager.UpdateAsync(user);
         return result.Succeeded;
+    }
+
+    /// <summary>
+    /// Retrieves user account details for a specified Person ID.
+    /// </summary>
+    public async Task<UserAccountDetailsModel?> GetUserAccountDetailsByPersonIdAsync(Guid personId, CancellationToken cancellationToken = default)
+    {
+        return await _userManager.Users
+            .AsNoTracking()
+            .Where(u => u.PersonId == personId)
+            .Select(u => new UserAccountDetailsModel
+            {
+                UserId = u.Id,
+                PersonId = u.PersonId,
+                Email = u.Email ?? string.Empty,
+                PhoneNumber = u.PhoneNumber ?? string.Empty,
+                Status = u.Status,
+                CreatedAt = u.CreatedAt,
+                ActivatedAt = u.ActivatedAt
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves all registered application user accounts.
+    /// </summary>
+    public async Task<List<Huwiyati.Application.Authentication.DTOs.RegisteredUserAccountDto>> GetAllUserAccountsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _userManager.Users
+            .AsNoTracking()
+            .OrderByDescending(u => u.CreatedAt)
+            .Select(u => new Huwiyati.Application.Authentication.DTOs.RegisteredUserAccountDto
+            {
+                UserId = u.Id,
+                PersonId = u.PersonId,
+                NationalNumber = u.Person != null ? u.Person.NationalNumber : (u.UserName ?? string.Empty),
+                FullName = u.Person != null ? $"{u.Person.FirstName} {u.Person.FatherName} {u.Person.GrandfatherName} {u.Person.FamilyName}".Trim() : string.Empty,
+                Email = u.Email,
+                PhoneNumber = u.PhoneNumber,
+                Status = u.Status,
+                CreatedAt = u.CreatedAt,
+                ActivatedAt = u.ActivatedAt
+            })
+            .ToListAsync(cancellationToken);
     }
 }

@@ -1,10 +1,11 @@
-using Huwiyati.Application.Authentication.Commands;
-using Microsoft.AspNetCore.Mvc;
-
 namespace Huwiyati.API.Controllers.Authentication;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Huwiyati.Domain.Constants;
 using Huwiyati.Application.Authentication.Commands;
+using Huwiyati.Application.Authentication.DTOs;
+using Huwiyati.Application.Authentication.Queries;
 
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -21,6 +22,10 @@ public class AccountController : ControllerBase
     private readonly DeactivateAccountHandler _deactivateAccountHandler;
     private readonly ReactivateAccountHandler _reactivateAccountHandler;
     private readonly RequestAccountOtpHandler _requestAccountOtpHandler;
+    private readonly GetCitizenAccountStatusHandler _getCitizenAccountStatusHandler;
+    private readonly ActivateCitizenAccountHandler _activateCitizenAccountHandler;
+    private readonly GetAllUserAccountsHandler _getAllUserAccountsHandler;
+    private readonly RefreshTokenHandler _refreshTokenHandler;
 
     public AccountController(
         RegisterHandler registerHandler,
@@ -33,7 +38,11 @@ public class AccountController : ControllerBase
         RemoveDeviceHandler removeDeviceHandler,
         DeactivateAccountHandler deactivateAccountHandler,
         ReactivateAccountHandler reactivateAccountHandler,
-        RequestAccountOtpHandler requestAccountOtpHandler)
+        RequestAccountOtpHandler requestAccountOtpHandler,
+        GetCitizenAccountStatusHandler getCitizenAccountStatusHandler,
+        ActivateCitizenAccountHandler activateCitizenAccountHandler,
+        GetAllUserAccountsHandler getAllUserAccountsHandler,
+        RefreshTokenHandler refreshTokenHandler)
     {
         _registerHandler = registerHandler;
         _verifyOtpHandler = verifyOtpHandler;
@@ -46,6 +55,10 @@ public class AccountController : ControllerBase
         _deactivateAccountHandler = deactivateAccountHandler;
         _reactivateAccountHandler = reactivateAccountHandler;
         _requestAccountOtpHandler = requestAccountOtpHandler;
+        _getCitizenAccountStatusHandler = getCitizenAccountStatusHandler;
+        _activateCitizenAccountHandler = activateCitizenAccountHandler;
+        _getAllUserAccountsHandler = getAllUserAccountsHandler;
+        _refreshTokenHandler = refreshTokenHandler;
     }
 
     [HttpPost("register")]
@@ -122,6 +135,37 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> ReactivateAccount([FromBody] ReactivateAccountCommand command, CancellationToken cancellationToken)
     {
         var result = await _reactivateAccountHandler.ReactivateAccountAsync(command, cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    [HttpGet("citizen-status/{nationalNumber}")]
+    [Authorize(Roles = "Employee, Admin")]
+    public async Task<IActionResult> GetCitizenAccountStatus(string nationalNumber, CancellationToken cancellationToken)
+    {
+        var result = await _getCitizenAccountStatusHandler.GetCitizenAccountStatusAsync(nationalNumber, cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    [HttpPost("activate-citizen")]
+    [Authorize(Roles = "Employee, Admin")]
+    public async Task<IActionResult> ActivateCitizenAccount([FromBody] ActivateCitizenAccountRequestDto request, CancellationToken cancellationToken)
+    {
+        var result = await _activateCitizenAccountHandler.ActivateAccountAsync(request.NationalNumber, cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    [HttpGet("all-users")]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
+    public async Task<IActionResult> GetAllUserAccounts(CancellationToken cancellationToken)
+    {
+        var result = await _getAllUserAccountsHandler.GetAllUserAccountsAsync(cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenCommand command, CancellationToken cancellationToken)
+    {
+        var result = await _refreshTokenHandler.HandleAsync(command, cancellationToken);
         return StatusCode(result.StatusCode, result);
     }
 }

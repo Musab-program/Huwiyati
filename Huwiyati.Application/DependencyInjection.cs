@@ -1,4 +1,5 @@
 using Huwiyati.Application.Authentication.Commands;
+using Huwiyati.Application.Authentication.Queries;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.BirthCertificate.Commands;
 using Huwiyati.Application.Documents.BirthCertificate.Queries;
@@ -44,6 +45,14 @@ namespace Huwiyati.Application
             services.AddScoped<DeactivateAccountHandler>();
             services.AddScoped<ReactivateAccountHandler>();
             services.AddScoped<RequestAccountOtpHandler>();
+            services.AddScoped<GetCitizenProfileHandler>();
+            services.AddScoped<GetCitizenAccountStatusHandler>();
+            services.AddScoped<ActivateCitizenAccountHandler>();
+            services.AddScoped<GetAllUserAccountsHandler>();
+            services.AddScoped<RefreshTokenHandler>();
+
+            // Register Civil Registry Handlers
+            services.AddScoped<Huwiyati.Application.CivilRegistry.Queries.GetAllCitizensHandler>();
 
             // Register Organization Branch Handlers
             services.AddScoped<CreateBranchHandler>();
@@ -77,6 +86,7 @@ namespace Huwiyati.Application
             services.AddScoped<GetNationalIdCardsHandler>();
             services.AddScoped<GetNationalIdCardByIdHandler>();
             services.AddScoped<GetPersonNationalIdCardHistoryHandler>();
+            services.AddScoped<GetActiveNationalIdCardByPersonIdHandler>();
 
             // Register Birth Certificate Handlers
             services.AddScoped<IssueBirthCertificateHandler>();
@@ -90,6 +100,8 @@ namespace Huwiyati.Application
             services.AddScoped<UpdateDeathCertificateHandler>();
             services.AddScoped<GetAllDeathCertificatesHandler>();
             services.AddScoped<GetDeathCertificateByIdHandler>();
+            services.AddScoped<GetDeathCertificateForCitizenHandler>();
+            services.AddScoped<GetCitizenFamilyDeathCertificatesHandler>();
 
             // Register Family Handlers
             services.AddScoped<CreateFamilyCardHandler>();
@@ -99,6 +111,7 @@ namespace Huwiyati.Application
             services.AddScoped<GetActiveFamiliesHandler>();
             services.AddScoped<GetFamilyByIdHandler>();
             services.AddScoped<GetFamilyHistoryByFamilyNumberHandler>();
+            services.AddScoped<GetCitizenFamilyCardsHandler>();
 
             // Register Document Verification Handler
             services.AddScoped<VerifyDocumentByQrPayloadQueryHandler>();
@@ -109,6 +122,7 @@ namespace Huwiyati.Application
             services.AddScoped<GetActivePassportsHandler>();
             services.AddScoped<GetPassportByIdHandler>();
             services.AddScoped<GetPersonPassportHistoryHandler>();
+            services.AddScoped<GetActivePassportByPersonIdHandler>();
             services.AddScoped<AddTravelRecordHandler>();
             services.AddScoped<GetPassportTravelRecordsHandler>();
             services.AddScoped<GetTravelRecordByIdHandler>();

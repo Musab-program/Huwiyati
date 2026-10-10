@@ -77,7 +77,11 @@ public static class DependencyInjection
         // 13. Register FileStorageService Implementation
         services.AddTransient<IFileStorageService, FileStorageService>();
 
-        // 14. Register Background Jobs
+        // 14. Register Current User Service
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+        // 15. Register Background Jobs
         services.AddHostedService<DocumentExpirationMonitorJob>();
         services.AddHostedService<VerificationCodeCleanupJob>();
 

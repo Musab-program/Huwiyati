@@ -17,14 +17,20 @@ using System.Reflection;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>, IApplicationDbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    private readonly ICurrentUserService _currentUserService;
+
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options,
+        ICurrentUserService currentUserService)
         : base(options)
     {
+        _currentUserService = currentUserService;
     }
 
     public DbSet<Person> Persons { get; set; } = null!;
     public DbSet<VerificationCode> VerificationCodes { get; set; } = null!;
     public DbSet<UserDevice> UserDevices { get; set; } = null!;
+    public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
     public DbSet<Organization> Organizations { get; set; } = null!;
     public DbSet<OrganizationBranch> OrganizationBranches { get; set; } = null!;
     public DbSet<Employee> Employees { get; set; } = null!;
@@ -44,6 +50,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
+        var currentUserId = _currentUserService.UserId;
+
         foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
         {
             if (entry.State == EntityState.Added)
@@ -52,10 +60,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 {
                     entry.Entity.CreatedAt = now;
                 }
+
+                if (string.IsNullOrEmpty(entry.Entity.CreatedBy))
+                {
+                    entry.Entity.CreatedBy = currentUserId;
+                }
             }
             else if (entry.State == EntityState.Modified)
             {
                 entry.Entity.LastModifiedAt = now;
+                entry.Entity.LastModifiedBy = currentUserId;
             }
         }
 

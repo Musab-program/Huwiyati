@@ -20,23 +20,18 @@ public class GetBirthCertificatesByFatherNationalNumberHandler
         string fatherNationalNumber,
         CancellationToken cancellationToken = default)
     {
-        var father = await _context.Persons
+        var parent = await _context.Persons
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.NationalNumber == fatherNationalNumber, cancellationToken);
 
-        if (father == null)
+        if (parent == null)
         {
             return ApiResponse<List<BirthCertificateDto>>.Failure("No person record found with the provided national number.", statusCode: 404);
         }
 
-        if (father.Gender != Gender.Male)
-        {
-            return ApiResponse<List<BirthCertificateDto>>.Failure("The provided national number does not belong to a male father.", statusCode: 400);
-        }
-
         var certificates = await _context.BirthCertificates
             .AsNoTracking()
-            .Where(b => b.FatherPerson.NationalNumber == fatherNationalNumber)
+            .Where(b => b.FatherPerson.NationalNumber == fatherNationalNumber || b.MotherPerson.NationalNumber == fatherNationalNumber)
             .OrderByDescending(b => b.IssueDate)
             .Select(b => new BirthCertificateDto
             {
