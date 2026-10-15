@@ -6,16 +6,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Huwiyati.Application.Requests.Queries;
 
-// Handler responsible for querying requests assigned to the logged-in employee's branch
+/// <summary>
+/// Handles querying paginated service requests assigned to the operating employee's branch.
+/// </summary>
 public class GetBranchServiceRequestsHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetBranchServiceRequestsHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetBranchServiceRequestsHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves a paginated list of service requests assigned to the employee's branch.
+    /// </summary>
+    /// <param name="query">The pagination and filtering parameters.</param>
+    /// <param name="employeeUserId">The user identifier of the operating employee.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a <see cref="PaginatedList{T}"/> of <see cref="ServiceRequestDto"/> items.</returns>
     public async Task<ApiResponse<PaginatedList<ServiceRequestDto>>> GetBranchRequestsAsync(
         GetBranchServiceRequestsQuery query,
         string employeeUserId,

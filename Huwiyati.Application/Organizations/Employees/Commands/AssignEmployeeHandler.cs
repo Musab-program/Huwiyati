@@ -9,6 +9,9 @@ using Huwiyati.Domain.Entities.Organizations;
 
 using Huwiyati.Domain.Events.Organizations;
 
+/// <summary>
+/// Handles assigning a citizen as an employee in the currently authenticated admin's branch.
+/// </summary>
 public class AssignEmployeeHandler
 {
     private readonly IApplicationDbContext _context;
@@ -16,6 +19,13 @@ public class AssignEmployeeHandler
     private readonly IEmployeeNumberGenerator _employeeNumberGenerator;
     private readonly IDomainEventHandler<EmployeeAssignedEvent> _employeeAssignedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AssignEmployeeHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="employeeNumberGenerator">The generator for standardized employee numbers.</param>
+    /// <param name="employeeAssignedEventHandler">The event handler for employee assigned domain events.</param>
     public AssignEmployeeHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -28,6 +38,13 @@ public class AssignEmployeeHandler
         _employeeAssignedEventHandler = employeeAssignedEventHandler;
     }
 
+    /// <summary>
+    /// Assigns a citizen as an employee to the current admin's branch asynchronously.
+    /// </summary>
+    /// <param name="currentAdminUserId">The user identifier of the executing administrator.</param>
+    /// <param name="command">The assign employee command payload.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the resulting <see cref="EmployeeDto"/>.</returns>
     public async Task<ApiResponse<EmployeeDto>> AssignEmployeeAsync(
         Guid currentAdminUserId,
         AssignEmployeeCommand command,

@@ -10,6 +10,9 @@ using Huwiyati.Application.Documents.DeathCertificate.DTOs;
 
 using Huwiyati.Domain.Events.Documents;
 
+/// <summary>
+/// Handles registering citizen deaths, updating person and family statuses, and issuing official death certificates.
+/// </summary>
 public class IssueDeathCertificateHandler
 {
     private readonly IApplicationDbContext _context;
@@ -17,6 +20,13 @@ public class IssueDeathCertificateHandler
     private readonly IQRCodeService _qrCodeService;
     private readonly IDomainEventHandler<DeathCertificateIssuedEvent> _deathCertificateIssuedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IssueDeathCertificateHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="documentNumberGenerator">The generator for official document numbers.</param>
+    /// <param name="qrCodeService">The QR code payload generation service.</param>
+    /// <param name="deathCertificateIssuedEventHandler">The domain event handler for death certificate issuance notifications.</param>
     public IssueDeathCertificateHandler(
         IApplicationDbContext context,
         IDocumentNumberGenerator documentNumberGenerator,
@@ -29,6 +39,12 @@ public class IssueDeathCertificateHandler
         _deathCertificateIssuedEventHandler = deathCertificateIssuedEventHandler;
     }
 
+    /// <summary>
+    /// Validates hospital and civil registry branches, marks the person and family members as deceased, and creates the death certificate.
+    /// </summary>
+    /// <param name="command">The command carrying deceased citizen and death report information.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the issued <see cref="DeathCertificateDto"/>.</returns>
     public async Task<ApiResponse<DeathCertificateDto>> IssueAsync(
         IssueDeathCertificateCommand command,
         CancellationToken cancellationToken = default)

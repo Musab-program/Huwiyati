@@ -9,6 +9,9 @@ using Huwiyati.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Provides user endpoints for retrieving and managing in-app push and system notifications.
+/// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize(Roles = AppRoles.Citizen)]
@@ -18,6 +21,9 @@ public class NotificationsController : ControllerBase
     private readonly MarkNotificationsAsReadHandler _markAsReadHandler;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NotificationsController"/> class.
+    /// </summary>
     public NotificationsController(
         GetUserNotificationsHandler getNotificationsHandler,
         MarkNotificationsAsReadHandler markAsReadHandler,

@@ -6,11 +6,19 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common.Interfaces;
 
+/// <summary>
+/// Background hosted service that purges expired or used verification codes periodically.
+/// </summary>
 public class VerificationCodeCleanupJob : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<VerificationCodeCleanupJob> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VerificationCodeCleanupJob"/> class.
+    /// </summary>
+    /// <param name="scopeFactory">The service scope factory to create scoped dependency contexts.</param>
+    /// <param name="logger">The logger instance.</param>
     public VerificationCodeCleanupJob(
         IServiceScopeFactory scopeFactory,
         ILogger<VerificationCodeCleanupJob> logger)
@@ -19,6 +27,11 @@ public class VerificationCodeCleanupJob : BackgroundService
         _logger = logger;
     }
 
+    /// <summary>
+    /// Executes the background verification code cleanup job periodically.
+    /// </summary>
+    /// <param name="stoppingToken">A token triggered when the background service host is stopping.</param>
+    /// <returns>A task representing the background execution lifecycle.</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Verification Code Cleanup Job started.");

@@ -3,9 +3,14 @@ namespace Huwiyati.Application.Documents.Passport.Validators;
 using FluentValidation;
 using Huwiyati.Application.Documents.Passport.Commands;
 
-// Validator defining FluentValidation rules for RenewPassportCommand
+/// <summary>
+/// Validator defining validation rules for <see cref="RenewPassportCommand"/>.
+/// </summary>
 public class RenewPassportCommandValidator : AbstractValidator<RenewPassportCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RenewPassportCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public RenewPassportCommandValidator()
     {
         RuleFor(v => v.NationalNumber)

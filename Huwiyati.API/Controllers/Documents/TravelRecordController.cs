@@ -6,6 +6,9 @@ using Huwiyati.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Provides immigration and border control endpoints for logging and querying international travel records.
+/// </summary>
 [ApiController]
 [Route("api/v1/travel-records")]
 [Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
@@ -16,6 +19,9 @@ public class TravelRecordController : ControllerBase
     private readonly GetPersonTravelHistoryHandler _getPersonTravelHistoryHandler;
     private readonly GetTravelRecordByIdHandler _getTravelRecordByIdHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TravelRecordController"/> class.
+    /// </summary>
     public TravelRecordController(
         AddTravelRecordHandler addTravelRecordHandler,
         GetPassportTravelRecordsHandler getPassportTravelRecordsHandler,

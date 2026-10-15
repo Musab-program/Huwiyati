@@ -6,6 +6,9 @@ using Huwiyati.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Provides civil registry endpoints for creating family books, renewing family cards, managing wives, and updating family member statuses.
+/// </summary>
 [ApiController]
 [Route("api/v1/families")]
 [Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
@@ -19,6 +22,9 @@ public class FamilyController : ControllerBase
     private readonly GetFamilyByIdHandler _getFamilyByIdHandler;
     private readonly GetFamilyHistoryByFamilyNumberHandler _getFamilyHistoryByFamilyNumberHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FamilyController"/> class.
+    /// </summary>
     public FamilyController(
         CreateFamilyCardHandler createFamilyCardHandler,
         RenewFamilyCardHandler renewFamilyCardHandler,

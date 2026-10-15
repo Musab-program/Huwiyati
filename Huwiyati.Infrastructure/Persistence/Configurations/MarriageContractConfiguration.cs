@@ -5,9 +5,15 @@ using Huwiyati.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-// Fluent API Configuration covering every property in MarriageContract entity
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="MarriageContract"/> entity.
+/// </summary>
 public class MarriageContractConfiguration : IEntityTypeConfiguration<MarriageContract>
 {
+    /// <summary>
+    /// Configures table mapping, column constraints, auditable attributes, and relationships for <see cref="MarriageContract"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<MarriageContract> builder)
     {
         builder.ToTable("MarriageContracts");

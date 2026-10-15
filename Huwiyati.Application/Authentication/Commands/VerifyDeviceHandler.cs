@@ -6,6 +6,9 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Authentication.DTOs;
 using Huwiyati.Domain.Events.Authentication;
 
+/// <summary>
+/// Handles new device OTP verification, marks the hardware device as trusted, triggers login success events, and issues authentication tokens.
+/// </summary>
 public class VerifyDeviceHandler
 {
     private readonly IApplicationDbContext _context;
@@ -13,6 +16,13 @@ public class VerifyDeviceHandler
     private readonly ITokenService _tokenService;
     private readonly IDomainEventHandler<NewDeviceLoginSuccessEvent> _newDeviceLoginSuccessEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VerifyDeviceHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="tokenService">The token generation service.</param>
+    /// <param name="newDeviceLoginSuccessEventHandler">The domain event handler for device login success notifications.</param>
     public VerifyDeviceHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -25,6 +35,12 @@ public class VerifyDeviceHandler
         _newDeviceLoginSuccessEventHandler = newDeviceLoginSuccessEventHandler;
     }
 
+    /// <summary>
+    /// Validates the OTP for an unrecognized device, establishes device trust, and issues a valid authentication token.
+    /// </summary>
+    /// <param name="command">The device verification command parameters.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response with the logged-in user result and JWT tokens.</returns>
     public async Task<ApiResponse<LoginResultDto>> VerifyDeviceAsync(VerifyDeviceCommand command, CancellationToken cancellationToken = default)
     {
         var userId = await _identityService.GetUserIdByNationalNumberAsync(command.NationalNumber, cancellationToken);

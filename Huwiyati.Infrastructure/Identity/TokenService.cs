@@ -11,15 +11,33 @@ using Microsoft.IdentityModel.Tokens;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Common.Models;
 
+/// <summary>
+/// Service responsible for generating JWT access tokens and cryptographically secure refresh tokens.
+/// </summary>
 public class TokenService : ITokenService
 {
     private readonly IConfiguration _configuration;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TokenService"/> class.
+    /// </summary>
+    /// <param name="configuration">The application configuration root containing JWT parameters.</param>
     public TokenService(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// Generates a JSON Web Token (JWT) along with a cryptographically random refresh token.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="nationalNumber">The national identification number (username).</param>
+    /// <param name="fullName">The full name of the user.</param>
+    /// <param name="accountStatus">The user's account status.</param>
+    /// <param name="roles">The roles assigned to the user.</param>
+    /// <param name="organizationId">Optional organization identifier for staff members.</param>
+    /// <param name="branchId">Optional branch identifier for staff members.</param>
+    /// <returns>A <see cref="GenerateTokenModel"/> containing token strings and expiry timestamps.</returns>
     public GenerateTokenModel GenerateToken(
         Guid userId,
         string nationalNumber,

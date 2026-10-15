@@ -5,15 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.BirthCertificate.DTOs;
 
+/// <summary>
+/// Handles querying a specific birth certificate by its unique database identifier.
+/// </summary>
 public class GetBirthCertificateByIdHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetBirthCertificateByIdHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetBirthCertificateByIdHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves a birth certificate projected into <see cref="BirthCertificateDto"/> by its identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the birth certificate.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the matching <see cref="BirthCertificateDto"/> or a 404 response.</returns>
     public async Task<ApiResponse<BirthCertificateDto>> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)

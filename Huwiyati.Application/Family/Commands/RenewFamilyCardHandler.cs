@@ -10,12 +10,21 @@ using Huwiyati.Application.Common.Extensions;
 
 using Huwiyati.Domain.Events.Family;
 
+/// <summary>
+/// Handles renewing an existing family card record within 90 days of expiry.
+/// </summary>
 public class RenewFamilyCardHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IQRCodeService _qrCodeService;
     private readonly IDomainEventHandler<FamilyCardRenewedEvent> _familyCardRenewedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RenewFamilyCardHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="qrCodeService">The QR code payload generation service.</param>
+    /// <param name="familyCardRenewedEventHandler">The domain event handler for family card renewal notifications.</param>
     public RenewFamilyCardHandler(
         IApplicationDbContext context,
         IQRCodeService qrCodeService,
@@ -26,6 +35,12 @@ public class RenewFamilyCardHandler
         _familyCardRenewedEventHandler = familyCardRenewedEventHandler;
     }
 
+    /// <summary>
+    /// Validates branch and 90-day renewal eligibility, marks prior family record as expired, and generates a renewed 10-year family card.
+    /// </summary>
+    /// <param name="command">The command carrying family number and branch identifier.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the renewed <see cref="FamilyDto"/>.</returns>
     public async Task<ApiResponse<FamilyDto>> RenewAsync(
         RenewFamilyCardCommand command,
         CancellationToken cancellationToken = default)

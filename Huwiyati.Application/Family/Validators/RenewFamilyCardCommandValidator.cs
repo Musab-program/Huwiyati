@@ -3,8 +3,14 @@ namespace Huwiyati.Application.Family.Validators;
 using FluentValidation;
 using Huwiyati.Application.Family.Commands;
 
+/// <summary>
+/// Validator defining validation rules for <see cref="RenewFamilyCardCommand"/>.
+/// </summary>
 public class RenewFamilyCardCommandValidator : AbstractValidator<RenewFamilyCardCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RenewFamilyCardCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public RenewFamilyCardCommandValidator()
     {
         RuleFor(x => x.FamilyNumber)

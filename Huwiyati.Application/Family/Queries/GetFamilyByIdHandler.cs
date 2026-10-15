@@ -5,15 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Family.DTOs;
 
+/// <summary>
+/// Handles querying detailed family information by its unique identifier.
+/// </summary>
 public class GetFamilyByIdHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetFamilyByIdHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetFamilyByIdHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves a single family register record along with its head and member details projected into <see cref="FamilyDto"/>.
+    /// </summary>
+    /// <param name="id">The unique identifier of the family record.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the matching <see cref="FamilyDto"/> or a 404 response.</returns>
     public async Task<ApiResponse<FamilyDto>> GetFamilyByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var familyDto = await _context.Families

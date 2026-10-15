@@ -12,7 +12,9 @@ using Microsoft.EntityFrameworkCore;
 
 using Huwiyati.Domain.Events.Documents;
 
-// Handler implementing the business logic for issuing a National ID Card
+/// <summary>
+/// Handles business logic for issuing a new National ID Card for an existing or newly registered citizen.
+/// </summary>
 public class IssueNationalIdCardHandler
 {
     private readonly IApplicationDbContext _context;
@@ -20,6 +22,13 @@ public class IssueNationalIdCardHandler
     private readonly IQRCodeService _qrCodeService;
     private readonly IDomainEventHandler<NationalIdCardIssuedEvent> _nationalIdCardIssuedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IssueNationalIdCardHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="documentNumberGenerator">The generator for official document and national numbers.</param>
+    /// <param name="qrCodeService">The QR code payload generation service.</param>
+    /// <param name="nationalIdCardIssuedEventHandler">The domain event handler for card issuance notifications.</param>
     public IssueNationalIdCardHandler(
         IApplicationDbContext context,
         IDocumentNumberGenerator documentNumberGenerator,
@@ -32,6 +41,12 @@ public class IssueNationalIdCardHandler
         _nationalIdCardIssuedEventHandler = nationalIdCardIssuedEventHandler;
     }
 
+    /// <summary>
+    /// Validates branch, resolves or creates citizen record, creates card with 10-year validity, and triggers domain event.
+    /// </summary>
+    /// <param name="command">The command carrying citizen and issuance parameters.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the issued <see cref="NationalIdCardDto"/>.</returns>
     public async Task<ApiResponse<NationalIdCardDto>> IssueAsync(
         IssueNationalIdCardCommand command,
         CancellationToken cancellationToken = default)

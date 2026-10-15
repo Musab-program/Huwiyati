@@ -3,8 +3,16 @@ namespace Huwiyati.Infrastructure.Persistence.Seeders;
 using Huwiyati.Domain.Entities.Organizations;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Provides seeding logic for system organizations.
+/// </summary>
 public static class OrganizationSeeder
 {
+    /// <summary>
+    /// Seeds the default government authorities and organizations into the database if they do not already exist.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task SeedOrganizationsAsync(ApplicationDbContext context)
     {
         var orgCivilRegistryId = Guid.Parse("018F7D9A-0000-7000-8000-000000000010");

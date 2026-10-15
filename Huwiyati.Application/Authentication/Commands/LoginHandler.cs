@@ -13,6 +13,9 @@ using Huwiyati.Domain.Enums;
 using Huwiyati.Domain.Entities.Authentication;
 using Huwiyati.Domain.Events.Authentication;
 
+/// <summary>
+/// Handles user login, multi-role authorization checks, device trust verification, OTP generation for new devices, and JWT token issuance.
+/// </summary>
 public class LoginHandler
 {
     private readonly IApplicationDbContext _context;
@@ -21,6 +24,14 @@ public class LoginHandler
     private readonly IEmailService _emailService;
     private readonly IDomainEventHandler<NewDeviceLoginAttemptEvent> _newDeviceLoginAttemptEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LoginHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="tokenService">The token generation service.</param>
+    /// <param name="emailService">The email dispatching service.</param>
+    /// <param name="newDeviceLoginAttemptEventHandler">The domain event handler for untrusted device login attempts.</param>
     public LoginHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -35,6 +46,12 @@ public class LoginHandler
         _newDeviceLoginAttemptEventHandler = newDeviceLoginAttemptEventHandler;
     }
 
+    /// <summary>
+    /// Authenticates user credentials, validates role permissions, evaluates device trust, and issues authentication tokens.
+    /// </summary>
+    /// <param name="command">The login command containing credentials, role, and device data.</param>
+    /// <param name="cancellation">Cancellation token.</param>
+    /// <returns>An API response with the login outcome, tokens, or device verification requirements.</returns>
     public async Task<ApiResponse<LoginResultDto>> LoginHandlerAsync(
         LoginCommand command,
         CancellationToken cancellation = default)
@@ -65,8 +82,11 @@ public class LoginHandler
                 statusCode: 403);
         }
 
-        // 4. Validate that the user actually possesses the requested role in Identity
-        if (!userLoginInfo.Roles.Contains(command.RequestedRole))
+        // 4. Validate that the user actually possesses the requested role in Identity (case-insensitive check)
+        var matchedRole = userLoginInfo.Roles
+            .FirstOrDefault(r => string.Equals(r, command.RequestedRole, StringComparison.OrdinalIgnoreCase));
+
+        if (matchedRole == null)
         {
             return ApiResponse<LoginResultDto>.Failure(
                 $"Access Denied: You do not possess the '{command.RequestedRole}' role.",
@@ -77,7 +97,8 @@ public class LoginHandler
         Guid? validatedBranchId = null;
 
         // 5. Role & Branch Context Validation for Employee and Admin (WITHOUT using Include)
-        if (command.RequestedRole == AppRoles.Employee || command.RequestedRole == AppRoles.Admin)
+        if (string.Equals(matchedRole, AppRoles.Employee, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(matchedRole, AppRoles.Admin, StringComparison.OrdinalIgnoreCase))
         {
             if (!command.BranchId.HasValue || command.BranchId.Value == Guid.Empty)
             {
@@ -126,7 +147,7 @@ public class LoginHandler
         var device = await _context.UserDevices
             .FirstOrDefaultAsync(d => d.UserId == userLoginInfo.UserId && d.DeviceIdentifier == command.DeviceIdentifier, cancellation);
 
-        var activeRoles = new List<string> { command.RequestedRole };
+        var activeRoles = new List<string> { matchedRole };
 
         // Case A: Device exists and is trusted -> Direct Login
         if (device != null && device.IsTrusted)

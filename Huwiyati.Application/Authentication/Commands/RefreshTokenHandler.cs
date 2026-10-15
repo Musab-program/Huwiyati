@@ -10,14 +10,28 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Common.Models;
 using Huwiyati.Domain.Entities.Authentication;
 
+/// <summary>
+/// Command to request a refreshed JWT token pair using an expired access token and valid refresh token.
+/// </summary>
+/// <param name="Token">The expired or current JWT access token string.</param>
+/// <param name="RefreshToken">The active refresh token string.</param>
 public record RefreshTokenCommand(string Token, string RefreshToken);
 
+/// <summary>
+/// Handles token refresh requests using the refresh token rotation pattern to securely issue new access and refresh tokens.
+/// </summary>
 public class RefreshTokenHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly ITokenService _tokenService;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RefreshTokenHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="tokenService">The token generation service.</param>
+    /// <param name="identityService">The identity management service.</param>
     public RefreshTokenHandler(
         IApplicationDbContext context,
         ITokenService tokenService,
@@ -28,6 +42,12 @@ public class RefreshTokenHandler
         _identityService = identityService;
     }
 
+    /// <summary>
+    /// Validates the refresh token, revokes it, and issues a newly rotated token pair.
+    /// </summary>
+    /// <param name="request">The refresh token command payload.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response with the new token model.</returns>
     public async Task<ApiResponse<GenerateTokenModel>> HandleAsync(RefreshTokenCommand request, CancellationToken cancellationToken = default)
     {
         // Step 1: Retrieve the refresh token record from database without AsNoTracking to allow automatic change tracking

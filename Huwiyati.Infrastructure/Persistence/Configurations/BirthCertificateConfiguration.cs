@@ -4,8 +4,15 @@ using Huwiyati.Domain.Entities.Documents;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="BirthCertificate"/> entity.
+/// </summary>
 public class BirthCertificateConfiguration : IEntityTypeConfiguration<BirthCertificate>
 {
+    /// <summary>
+    /// Configures table mapping, constraints, foreign keys, and indexes for <see cref="BirthCertificate"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<BirthCertificate> builder)
     {
         builder.ToTable("BirthCertificates");

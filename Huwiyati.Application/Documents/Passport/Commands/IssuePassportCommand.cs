@@ -2,18 +2,28 @@ namespace Huwiyati.Application.Documents.Passport.Commands;
 
 using Huwiyati.Domain.Enums;
 
-// Command containing details required to issue a new Passport for the first time
+/// <summary>
+/// Command payload for issuing a new passport to a citizen for the first time.
+/// </summary>
 public class IssuePassportCommand
 {
-    // Personal Information
+    /// <summary>
+    /// Gets or sets the 11-digit national number of the citizen requesting the passport.
+    /// </summary>
     public string NationalNumber { get; set; } = string.Empty;
 
-    // Optional updated photo URL for the person
+    /// <summary>
+    /// Gets or sets the optional updated biometric photo URL.
+    /// </summary>
     public string? PhotoUrl { get; set; }
 
-    // Passport Specification Information
+    /// <summary>
+    /// Gets or sets the passport category (defaults to <see cref="PassportType.Regular"/>).
+    /// </summary>
     public PassportType PassportType { get; set; } = PassportType.Regular;
 
-    // Issuing Branch Information
+    /// <summary>
+    /// Gets or sets the immigration and passport authority branch identifier where issued.
+    /// </summary>
     public Guid IssuingBranchId { get; set; }
 }

@@ -3,8 +3,14 @@ namespace Huwiyati.Application.Authentication.Validators;
 using FluentValidation;
 using Huwiyati.Application.Authentication.Commands;
 
+/// <summary>
+/// Validator for enforcing citizen registration attributes, age constraints, phone format, and password complexity on <see cref="RegisterUserCommand"/>.
+/// </summary>
 public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RegisterUserCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public RegisterUserCommandValidator()
     {
         // 1. National Number validation

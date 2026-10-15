@@ -3,8 +3,14 @@ namespace Huwiyati.Application.Documents.BirthCertificate.Validators;
 using FluentValidation;
 using Huwiyati.Application.Documents.BirthCertificate.Commands;
 
+/// <summary>
+/// Validator for validating properties and rules of <see cref="IssueBirthCertificateCommand"/>.
+/// </summary>
 public class IssueBirthCertificateCommandValidator : AbstractValidator<IssueBirthCertificateCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IssueBirthCertificateCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public IssueBirthCertificateCommandValidator()
     {
         RuleFor(x => x.FatherNationalNumber)

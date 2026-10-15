@@ -8,22 +8,42 @@ using Huwiyati.Domain.Constants;
 
 using Huwiyati.Domain.Events.Organizations;
 
+/// <summary>
+/// Handles updating an administrator's branch assignment and re-generating employee numbers as necessary.
+/// </summary>
 public class UpdateAdminHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
+    private readonly IEmployeeNumberGenerator _employeeNumberGenerator;
     private readonly IDomainEventHandler<AdminUpdatedEvent> _adminUpdatedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpdateAdminHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="employeeNumberGenerator">The generator for standardized employee numbers.</param>
+    /// <param name="adminUpdatedEventHandler">The event handler for admin update domain events.</param>
     public UpdateAdminHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
+        IEmployeeNumberGenerator employeeNumberGenerator,
         IDomainEventHandler<AdminUpdatedEvent> adminUpdatedEventHandler)
     {
         _context = context;
         _identityService = identityService;
+        _employeeNumberGenerator = employeeNumberGenerator;
         _adminUpdatedEventHandler = adminUpdatedEventHandler;
     }
 
+    /// <summary>
+    /// Updates an administrator's branch assignment asynchronously.
+    /// </summary>
+    /// <param name="employeeId">The employee identifier.</param>
+    /// <param name="command">The update admin command payload.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the updated <see cref="AdminDto"/>.</returns>
     public async Task<ApiResponse<AdminDto>> UpdateAdminAsync(
         Guid employeeId,
         UpdateAdminCommand command,
@@ -48,6 +68,14 @@ public class UpdateAdminHandler
                 statusCode: 400);
         }
 
+        // Check if admin is already assigned to the requested branch
+        if (emp.BranchId == command.BranchId)
+        {
+            return ApiResponse<AdminDto>.Failure(
+                "The admin is already assigned to this branch.",
+                statusCode: 400);
+        }
+
         var newBranchData = await _context.OrganizationBranches
             .Where(b => b.Id == command.BranchId && b.IsActive)
             .Select(b => new
@@ -64,7 +92,11 @@ public class UpdateAdminHandler
                 statusCode: 404);
         }
 
+        // Generate new employee number for the new branch
+        string newEmployeeNumber = await _employeeNumberGenerator.GenerateEmployeeNumberAsync(command.BranchId, cancellationToken);
+
         emp.BranchId = command.BranchId;
+        emp.EmployeeNumber = newEmployeeNumber;
         emp.LastModifiedAt = DateTime.UtcNow;
 
         _context.Employees.Update(emp);

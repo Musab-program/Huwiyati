@@ -5,16 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.Passport.DTOs;
 
-// Handler returning full passport history (Active, Expired, Canceled) for a citizen by National Number
+/// <summary>
+/// Handles querying the full historical passport records (active, expired, canceled) for a citizen.
+/// </summary>
 public class GetPersonPassportHistoryHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetPersonPassportHistoryHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetPersonPassportHistoryHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all passports issued historically to the citizen identified by national number.
+    /// </summary>
+    /// <param name="nationalNumber">The 11-digit national number of the citizen.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="PassportDto"/>.</returns>
     public async Task<ApiResponse<List<PassportDto>>> GetPassportHistoryByNationalNumberAsync(
         string nationalNumber,
         CancellationToken cancellationToken = default)

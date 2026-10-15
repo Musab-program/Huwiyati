@@ -3,8 +3,14 @@ namespace Huwiyati.Application.Family.Validators;
 using FluentValidation;
 using Huwiyati.Application.Family.Commands;
 
+/// <summary>
+/// Validator defining validation rules for <see cref="AddWifeCommand"/>.
+/// </summary>
 public class AddWifeCommandValidator : AbstractValidator<AddWifeCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AddWifeCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public AddWifeCommandValidator()
     {
         RuleFor(x => x.HusbandNationalNumber)

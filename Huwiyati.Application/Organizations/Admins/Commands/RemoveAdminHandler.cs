@@ -7,12 +7,21 @@ using Huwiyati.Domain.Constants;
 
 using Huwiyati.Domain.Events.Organizations;
 
+/// <summary>
+/// Handles revoking the administrator role from an employee, retaining their regular employee and citizen status.
+/// </summary>
 public class RemoveAdminHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IDomainEventHandler<AdminRemovedEvent> _adminRemovedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RemoveAdminHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="adminRemovedEventHandler">The event handler for admin revocation domain events.</param>
     public RemoveAdminHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -23,6 +32,12 @@ public class RemoveAdminHandler
         _adminRemovedEventHandler = adminRemovedEventHandler;
     }
 
+    /// <summary>
+    /// Revokes the administrator role from an employee asynchronously.
+    /// </summary>
+    /// <param name="employeeId">The employee identifier.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> indicating whether the operation succeeded.</returns>
     public async Task<ApiResponse<bool>> RemoveAdminRoleAsync(
         Guid employeeId,
         CancellationToken cancellationToken = default)

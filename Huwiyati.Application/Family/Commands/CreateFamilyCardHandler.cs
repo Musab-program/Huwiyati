@@ -10,6 +10,9 @@ using Huwiyati.Application.Common.Extensions;
 
 using Huwiyati.Domain.Events.Family;
 
+/// <summary>
+/// Handles establishing a new family unit, registering marriage contracts, and issuing family cards.
+/// </summary>
 public class CreateFamilyCardHandler
 {
     private readonly IApplicationDbContext _context;
@@ -17,6 +20,13 @@ public class CreateFamilyCardHandler
     private readonly IQRCodeService _qrCodeService;
     private readonly IDomainEventHandler<FamilyCardCreatedEvent> _familyCardCreatedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateFamilyCardHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="documentNumberGenerator">The generator for official document and family numbers.</param>
+    /// <param name="qrCodeService">The QR code payload generation service.</param>
+    /// <param name="familyCardCreatedEventHandler">The domain event handler for family card creation notifications.</param>
     public CreateFamilyCardHandler(
         IApplicationDbContext context,
         IDocumentNumberGenerator documentNumberGenerator,
@@ -29,6 +39,12 @@ public class CreateFamilyCardHandler
         _familyCardCreatedEventHandler = familyCardCreatedEventHandler;
     }
 
+    /// <summary>
+    /// Validates spouses and branches, records the marriage contract, generates family number, and creates the family card.
+    /// </summary>
+    /// <param name="command">The command carrying spouses' national numbers, contract details, and branch.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the created <see cref="FamilyDto"/>.</returns>
     public async Task<ApiResponse<FamilyDto>> CreateAsync(
         CreateFamilyCardCommand command,
         CancellationToken cancellationToken = default)

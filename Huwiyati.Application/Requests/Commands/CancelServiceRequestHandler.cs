@@ -9,13 +9,21 @@ using Huwiyati.Domain.Events.Requests;
 
 namespace Huwiyati.Application.Requests.Commands;
 
-// Handler allowing applicants or submitter employees to cancel a pending ServiceRequest
+/// <summary>
+/// Handles cancellation of pending service requests by applicants or authorized employees.
+/// </summary>
 public class CancelServiceRequestHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IDomainEventHandler<ServiceRequestCancelledEvent> _requestCancelledEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CancelServiceRequestHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="requestCancelledEventHandler">The event handler for request cancellation domain events.</param>
     public CancelServiceRequestHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -26,6 +34,14 @@ public class CancelServiceRequestHandler
         _requestCancelledEventHandler = requestCancelledEventHandler;
     }
 
+    /// <summary>
+    /// Cancels a service request asynchronously, verifying cancellation permissions.
+    /// </summary>
+    /// <param name="command">The cancel service request command payload.</param>
+    /// <param name="currentPersonId">Optional person identifier of the current applicant.</param>
+    /// <param name="currentEmployeeUserId">Optional employee user identifier if cancelled by staff.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the updated <see cref="ServiceRequestDto"/>.</returns>
     public async Task<ApiResponse<ServiceRequestDto>> CancelAsync(
         CancelServiceRequestCommand command,
         Guid? currentPersonId = null,

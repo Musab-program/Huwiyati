@@ -7,11 +7,19 @@ using Huwiyati.Domain.Enums;
 
 using Huwiyati.Domain.Events.Family;
 
+/// <summary>
+/// Handles updating the status of an individual family member (e.g. Active, Left, Divorced, Deceased).
+/// </summary>
 public class UpdateFamilyMemberStatusHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDomainEventHandler<FamilyMemberStatusChangedEvent> _memberStatusChangedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpdateFamilyMemberStatusHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="memberStatusChangedEventHandler">The domain event handler for family member status updates.</param>
     public UpdateFamilyMemberStatusHandler(
         IApplicationDbContext context,
         IDomainEventHandler<FamilyMemberStatusChangedEvent> memberStatusChangedEventHandler)
@@ -20,6 +28,12 @@ public class UpdateFamilyMemberStatusHandler
         _memberStatusChangedEventHandler = memberStatusChangedEventHandler;
     }
 
+    /// <summary>
+    /// Updates member status, synchronizes civil registry and marriage records if divorced/deceased, and notifies the head of family.
+    /// </summary>
+    /// <param name="command">The command carrying target member identifier and new status.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> indicating operation success.</returns>
     public async Task<ApiResponse<bool>> UpdateStatusAsync(
         UpdateFamilyMemberStatusCommand command,
         CancellationToken cancellationToken = default)

@@ -14,6 +14,10 @@ public class VerificationController : ControllerBase
 {
     private readonly VerifyDocumentByQrPayloadQueryHandler _verifyDocumentHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VerificationController"/> class.
+    /// </summary>
+    /// <param name="verifyDocumentHandler">Query handler for verifying QR code payloads.</param>
     public VerificationController(VerifyDocumentByQrPayloadQueryHandler verifyDocumentHandler)
     {
         _verifyDocumentHandler = verifyDocumentHandler;

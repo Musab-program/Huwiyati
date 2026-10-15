@@ -6,11 +6,19 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Authentication.DTOs;
 using Huwiyati.Domain.Enums;
 
+/// <summary>
+/// Query handler returning complete demographic profile information and identity document statuses for the authenticated citizen.
+/// </summary>
 public class GetCitizenProfileHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetCitizenProfileHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="identityService">The identity management service.</param>
     public GetCitizenProfileHandler(
         IApplicationDbContext context,
         IIdentityService identityService)
@@ -19,6 +27,12 @@ public class GetCitizenProfileHandler
         _identityService = identityService;
     }
 
+    /// <summary>
+    /// Retrieves the citizen profile and document holding flags using the authenticated user identifier.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user account.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response with the citizen profile DTO.</returns>
     public async Task<ApiResponse<CitizenProfileDto>> GetProfileAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         if (userId == Guid.Empty)

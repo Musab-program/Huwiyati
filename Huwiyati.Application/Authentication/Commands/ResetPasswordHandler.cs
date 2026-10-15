@@ -5,12 +5,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Huwiyati.Application.Authentication.Commands;
 
+/// <summary>
+/// Handles completing a password reset by verifying the supplied OTP code, updating credentials in Identity, and triggering success events.
+/// </summary>
 public class ResetPasswordHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IDomainEventHandler<PasswordResetSuccessEvent> _passwordResetSuccessEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ResetPasswordHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="passwordResetSuccessEventHandler">The domain event handler for password reset notifications.</param>
     public ResetPasswordHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -21,6 +30,12 @@ public class ResetPasswordHandler
         _passwordResetSuccessEventHandler = passwordResetSuccessEventHandler;
     }
 
+    /// <summary>
+    /// Validates the OTP code and sets the new password for the user account.
+    /// </summary>
+    /// <param name="command">The reset password command parameters.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response indicating success or error.</returns>
     public async Task<ApiResponse<bool>> ResetPasswordAsync(ResetPasswordCommand command, CancellationToken cancellationToken = default)
     {
         // 1. Get UserId by National Number

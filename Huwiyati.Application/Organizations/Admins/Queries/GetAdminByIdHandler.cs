@@ -6,17 +6,31 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Organizations.Admins.DTOs;
 using Huwiyati.Domain.Constants;
 
+/// <summary>
+/// Handles retrieving detailed administrator employee information by unique employee identifier.
+/// </summary>
 public class GetAdminByIdHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetAdminByIdHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
     public GetAdminByIdHandler(IApplicationDbContext context, IIdentityService identityService)
     {
         _context = context;
         _identityService = identityService;
     }
 
+    /// <summary>
+    /// Retrieves an administrator by their unique employee identifier asynchronously.
+    /// </summary>
+    /// <param name="employeeId">The employee identifier.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the resulting <see cref="AdminDto"/>.</returns>
     public async Task<ApiResponse<AdminDto>> GetAdminByIdAsync(
         Guid employeeId,
         CancellationToken cancellationToken = default)

@@ -5,16 +5,27 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.CivilRegistry.DTOs;
 
-// Query handler returning list of all citizens in Civil Registry for SuperAdmin
+/// <summary>
+/// Query handler returning the complete registry of all citizens registered in the Civil Registry authority.
+/// </summary>
 public class GetAllCitizensHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetAllCitizensHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
     public GetAllCitizensHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all citizen records from the database asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response containing the list of citizen DTOs.</returns>
     public async Task<ApiResponse<List<CivilRegistryPersonDto>>> GetAllCitizensAsync(
         CancellationToken cancellationToken = default)
     {

@@ -6,6 +6,9 @@ using Huwiyati.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Provides administrative endpoints for issuing birth certificates, updating child registry data, and querying birth records.
+/// </summary>
 [ApiController]
 [Route("api/v1/birth-certificates")]
 [Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
@@ -17,6 +20,9 @@ public class BirthCertificateController : ControllerBase
     private readonly GetBirthCertificatesByFatherNationalNumberHandler _getBirthCertificatesByFatherNationalNumberHandler;
     private readonly GetAllBirthCertificatesHandler _getAllBirthCertificatesHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BirthCertificateController"/> class.
+    /// </summary>
     public BirthCertificateController(
         IssueBirthCertificateHandler issueBirthCertificateHandler,
         UpdateChildDataHandler updateChildDataHandler,

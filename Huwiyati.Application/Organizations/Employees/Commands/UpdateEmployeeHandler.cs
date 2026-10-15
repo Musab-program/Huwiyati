@@ -7,6 +7,9 @@ using Huwiyati.Application.Organizations.Employees.DTOs;
 
 using Huwiyati.Domain.Events.Organizations;
 
+/// <summary>
+/// Handles updating employee branch assignment and re-generating employee numbers as necessary.
+/// </summary>
 public class UpdateEmployeeHandler
 {
     private readonly IApplicationDbContext _context;
@@ -14,6 +17,13 @@ public class UpdateEmployeeHandler
     private readonly IEmployeeNumberGenerator _employeeNumberGenerator;
     private readonly IDomainEventHandler<EmployeeUpdatedEvent> _employeeUpdatedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpdateEmployeeHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="employeeNumberGenerator">The generator for standardized employee numbers.</param>
+    /// <param name="employeeUpdatedEventHandler">The event handler for employee updated domain events.</param>
     public UpdateEmployeeHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -26,6 +36,13 @@ public class UpdateEmployeeHandler
         _employeeUpdatedEventHandler = employeeUpdatedEventHandler;
     }
 
+    /// <summary>
+    /// Updates an employee's branch assignment asynchronously.
+    /// </summary>
+    /// <param name="currentAdminUserId">The user identifier of the executing administrator.</param>
+    /// <param name="command">The update employee command payload.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the updated <see cref="EmployeeDto"/>.</returns>
     public async Task<ApiResponse<EmployeeDto>> UpdateEmployeeAsync(
         Guid currentAdminUserId,
         UpdateEmployeeCommand command,

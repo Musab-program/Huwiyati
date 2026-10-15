@@ -15,6 +15,10 @@ public class IdentityService : IIdentityService
 {
     private readonly UserManager<ApplicationUser> _userManager;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IdentityService"/> class.
+    /// </summary>
+    /// <param name="userManager">The ASP.NET Core identity user manager.</param>
     public IdentityService(UserManager<ApplicationUser> userManager)
     {
         _userManager = userManager;

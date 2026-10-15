@@ -6,16 +6,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Huwiyati.Application.Requests.Queries;
 
-// Handler responsible for querying paginated service requests belonging to a specific citizen
+/// <summary>
+/// Handles querying paginated service requests submitted by a specific citizen.
+/// </summary>
 public class GetCitizenServiceRequestsHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetCitizenServiceRequestsHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetCitizenServiceRequestsHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves a paginated list of service requests submitted by the specified citizen.
+    /// </summary>
+    /// <param name="query">The pagination and filtering parameters.</param>
+    /// <param name="currentPersonId">The person identifier of the citizen.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a <see cref="PaginatedList{T}"/> of <see cref="ServiceRequestDto"/> items.</returns>
     public async Task<ApiResponse<PaginatedList<ServiceRequestDto>>> GetCitizenRequestsAsync(
         GetCitizenServiceRequestsQuery query,
         Guid currentPersonId,

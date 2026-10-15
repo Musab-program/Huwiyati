@@ -14,6 +14,10 @@ public class FileStorageService : IFileStorageService
     private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
     private const long MaxFileSizeInBytes = 3 * 1024 * 1024; // 3 MB Unified Limit
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FileStorageService"/> class.
+    /// </summary>
+    /// <param name="webHostEnvironment">The web hosting environment providing wwwroot path information.</param>
     public FileStorageService(IWebHostEnvironment webHostEnvironment)
     {
         _webHostEnvironment = webHostEnvironment;

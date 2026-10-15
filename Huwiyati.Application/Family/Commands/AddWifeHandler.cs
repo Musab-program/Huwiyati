@@ -10,11 +10,19 @@ using Huwiyati.Application.Common.Extensions;
 
 using Huwiyati.Domain.Events.Family;
 
+/// <summary>
+/// Handles adding an additional wife and registering an active marriage contract within an existing family register.
+/// </summary>
 public class AddWifeHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDomainEventHandler<WifeAddedToFamilyEvent> _wifeAddedToFamilyEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AddWifeHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="wifeAddedToFamilyEventHandler">The domain event handler for wife addition notifications.</param>
     public AddWifeHandler(
         IApplicationDbContext context,
         IDomainEventHandler<WifeAddedToFamilyEvent> wifeAddedToFamilyEventHandler)
@@ -23,6 +31,12 @@ public class AddWifeHandler
         _wifeAddedToFamilyEventHandler = wifeAddedToFamilyEventHandler;
     }
 
+    /// <summary>
+    /// Validates branch, confirms spouses, verifies existing marital records, creates contract and family member entries.
+    /// </summary>
+    /// <param name="command">The command carrying husband, wife, and contract details.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the newly registered <see cref="FamilyMemberDto"/>.</returns>
     public async Task<ApiResponse<FamilyMemberDto>> AddWifeAsync(
         AddWifeCommand command,
         CancellationToken cancellationToken = default)

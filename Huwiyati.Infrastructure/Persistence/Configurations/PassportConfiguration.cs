@@ -5,8 +5,15 @@ using Huwiyati.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="Passport"/> entity.
+/// </summary>
 public class PassportConfiguration : IEntityTypeConfiguration<Passport>
 {
+    /// <summary>
+    /// Configures table mapping, column constraints, default values, and relationships for <see cref="Passport"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<Passport> builder)
     {
         builder.ToTable("Passports");

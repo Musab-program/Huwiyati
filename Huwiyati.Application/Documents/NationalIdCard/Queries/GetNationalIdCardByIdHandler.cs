@@ -6,16 +6,28 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Application.Documents.NationalIdCard.DTOs;
 
-// Handler returning single Active National ID Card details by Card ID
+/// <summary>
+/// Handles querying details of an active National ID Card by its card identifier.
+/// </summary>
 public class GetNationalIdCardByIdHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetNationalIdCardByIdHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetNationalIdCardByIdHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves active National ID Card information projected into <see cref="NationalIdCardDto"/> by card ID.
+    /// </summary>
+    /// <param name="id">The unique identifier of the national ID card.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the matching <see cref="NationalIdCardDto"/> or a 404 response.</returns>
     public async Task<ApiResponse<NationalIdCardDto>> GetNationalIdCardByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)

@@ -5,8 +5,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Huwiyati.Domain.Entities.Organizations;
 using Huwiyati.Infrastructure.Identity;
 
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="Employee"/> entity.
+/// </summary>
 public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
 {
+    /// <summary>
+    /// Configures table mapping, properties, foreign keys, and indexes for <see cref="Employee"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<Employee> builder)
     {
         builder.ToTable("Employees");

@@ -3,9 +3,14 @@ namespace Huwiyati.Application.Documents.Passport.Validators;
 using FluentValidation;
 using Huwiyati.Application.Documents.Passport.Commands;
 
-// Validator defining FluentValidation rules for IssuePassportCommand
+/// <summary>
+/// Validator defining validation rules for <see cref="IssuePassportCommand"/>.
+/// </summary>
 public class IssuePassportCommandValidator : AbstractValidator<IssuePassportCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IssuePassportCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public IssuePassportCommandValidator()
     {
         // Personal Information Validation

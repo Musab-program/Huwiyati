@@ -13,8 +13,18 @@ using Huwiyati.Infrastructure.Persistence.Seeders;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Provides database initialization and seeding routines for initial system startup and development environments.
+/// </summary>
 public class DbInitializer
 {
+    /// <summary>
+    /// Seeds the database with default roles, organizations, branches, seed persons, administrative users, cards, and default service types.
+    /// </summary>
+    /// <param name="context">The application database context instance.</param>
+    /// <param name="roleManager">The Identity role manager for creating system roles.</param>
+    /// <param name="userManager">The Identity user manager for creating administrative and seed user accounts.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task SeedAsync(
         ApplicationDbContext context,
         RoleManager<IdentityRole<Guid>> roleManager,

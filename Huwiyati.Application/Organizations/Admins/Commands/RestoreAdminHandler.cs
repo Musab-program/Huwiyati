@@ -7,12 +7,21 @@ using Huwiyati.Domain.Constants;
 
 using Huwiyati.Domain.Events.Organizations;
 
+/// <summary>
+/// Handles restoring the administrator role to an existing employee.
+/// </summary>
 public class RestoreAdminHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IDomainEventHandler<AdminRestoredEvent> _adminRestoredEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RestoreAdminHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="adminRestoredEventHandler">The event handler for admin restored domain events.</param>
     public RestoreAdminHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -23,6 +32,12 @@ public class RestoreAdminHandler
         _adminRestoredEventHandler = adminRestoredEventHandler;
     }
 
+    /// <summary>
+    /// Restores the administrator role to an employee asynchronously.
+    /// </summary>
+    /// <param name="employeeId">The employee identifier.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> indicating whether the operation succeeded.</returns>
     public async Task<ApiResponse<bool>> RestoreAdminRoleAsync(
         Guid employeeId,
         CancellationToken cancellationToken = default)

@@ -5,9 +5,15 @@ using Huwiyati.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-// Fluent API Configuration covering every property in Family entity
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="Family"/> entity.
+/// </summary>
 public class FamilyConfiguration : IEntityTypeConfiguration<Family>
 {
+    /// <summary>
+    /// Configures table mapping, column constraints, auditable attributes, and relationships for <see cref="Family"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<Family> builder)
     {
         builder.ToTable("Families");

@@ -6,16 +6,27 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Application.Documents.NationalIdCard.DTOs;
 
-// Handler returning list of active National ID Cards directly using AsNoTracking and Select projection
+/// <summary>
+/// Handles querying all active National ID Cards across the civil registry.
+/// </summary>
 public class GetNationalIdCardsHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetNationalIdCardsHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetNationalIdCardsHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all active National ID Cards ordered chronologically by creation timestamp.
+    /// </summary>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="NationalIdCardDto"/>.</returns>
     public async Task<ApiResponse<List<NationalIdCardDto>>> GetActiveNationalIdCardsAsync(
         CancellationToken cancellationToken = default)
     {

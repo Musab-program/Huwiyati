@@ -6,6 +6,9 @@ using Huwiyati.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Provides administrative endpoints for issuing, renewing, and querying national identity cards and card histories.
+/// </summary>
 [ApiController]
 [Route("api/v1/national-id-cards")]
 //[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
@@ -18,6 +21,9 @@ public class NationalIdCardController : ControllerBase
     private readonly GetNationalIdCardByIdHandler _getNationalIdCardByIdHandler;
     private readonly GetPersonNationalIdCardHistoryHandler _getPersonNationalIdCardHistoryHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NationalIdCardController"/> class.
+    /// </summary>
     public NationalIdCardController(
         IssueNationalIdCardHandler issueNationalIdCardHandler,
         RenewNationalIdCardHandler renewNationalIdCardHandler,

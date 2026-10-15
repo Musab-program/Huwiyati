@@ -4,15 +4,29 @@ using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 
+/// <summary>
+/// Handles updating the read status of user notifications.
+/// </summary>
 public class MarkNotificationsAsReadHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MarkNotificationsAsReadHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public MarkNotificationsAsReadHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Marks a specific notification or all unread notifications of a user as read.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="notificationId">The optional specific notification identifier to mark as read.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a descriptive confirmation message.</returns>
     public async Task<ApiResponse<string>> MarkAsReadAsync(
         Guid userId,
         Guid? notificationId = null,

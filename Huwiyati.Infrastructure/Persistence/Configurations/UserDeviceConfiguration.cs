@@ -5,8 +5,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Huwiyati.Domain.Entities.Authentication;
 using Huwiyati.Infrastructure.Identity;
 
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="UserDevice"/> entity.
+/// </summary>
 public class UserDeviceConfiguration : IEntityTypeConfiguration<UserDevice>
 {
+    /// <summary>
+    /// Configures table mapping, column constraints, default values, and cascading relationships for <see cref="UserDevice"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<UserDevice> builder)
     {
         builder.ToTable("UserDevices");

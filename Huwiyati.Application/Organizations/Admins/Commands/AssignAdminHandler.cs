@@ -9,6 +9,9 @@ using Huwiyati.Domain.Entities.Organizations;
 
 using Huwiyati.Domain.Events.Organizations;
 
+/// <summary>
+/// Handles assigning a citizen as an administrator to an organization branch, creating or updating employee records and user roles.
+/// </summary>
 public class AssignAdminHandler
 {
     private readonly IApplicationDbContext _context;
@@ -16,6 +19,13 @@ public class AssignAdminHandler
     private readonly IEmployeeNumberGenerator _employeeNumberGenerator;
     private readonly IDomainEventHandler<AdminAssignedEvent> _adminAssignedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AssignAdminHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="employeeNumberGenerator">The generator for standardized employee numbers.</param>
+    /// <param name="adminAssignedEventHandler">The event handler for admin assignment domain events.</param>
     public AssignAdminHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -28,6 +38,12 @@ public class AssignAdminHandler
         _adminAssignedEventHandler = adminAssignedEventHandler;
     }
 
+    /// <summary>
+    /// Assigns administrative rights to a citizen for a branch asynchronously.
+    /// </summary>
+    /// <param name="command">The assign admin command payload.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the resulting <see cref="AdminDto"/>.</returns>
     public async Task<ApiResponse<AdminDto>> AssignAdminAsync(
         AssignAdminCommand command,
         CancellationToken cancellationToken = default)
@@ -78,9 +94,65 @@ public class AssignAdminHandler
 
         if (existingEmployee != null)
         {
-            return ApiResponse<AdminDto>.Failure(
-                "This citizen is already assigned as an employee or admin to a branch.",
-                statusCode: 400);
+            var userRoles = await _identityService.GetUserRolesAsync(userId.Value, cancellationToken);
+            bool isAlreadyAdmin = userRoles.Contains(AppRoles.Admin);
+
+            if (existingEmployee.BranchId == command.BranchId)
+            {
+                if (isAlreadyAdmin)
+                {
+                    return ApiResponse<AdminDto>.Failure(
+                        "This citizen is already assigned as an Admin to this branch.",
+                        statusCode: 400);
+                }
+
+                // Promote existing employee in the same branch to Admin
+                if (!existingEmployee.IsActive)
+                {
+                    existingEmployee.IsActive = true;
+                    existingEmployee.LastModifiedAt = DateTime.UtcNow;
+                    _context.Employees.Update(existingEmployee);
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+
+                // Assign Admin role
+                await _identityService.AssignUserRolesAsync(userId.Value, new[] { AppRoles.Admin }, cancellationToken);
+
+                // Trigger Domain Event to notify citizen account
+                var promotionEvent = new AdminAssignedEvent(userId.Value, branch.BranchName);
+                await _adminAssignedEventHandler.HandleAsync(promotionEvent, cancellationToken);
+
+                var promotedAdminDto = new AdminDto
+                {
+                    EmployeeId = existingEmployee.Id,
+                    UserId = userId.Value,
+                    NationalNumber = person.NationalNumber,
+                    FullName = $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}",
+                    EmployeeNumber = existingEmployee.EmployeeNumber,
+                    BranchId = branch.Id,
+                    BranchName = branch.BranchName,
+                    OrganizationName = branch.OrganizationName,
+                    IsActive = existingEmployee.IsActive,
+                    CreatedAt = existingEmployee.CreatedAt
+                };
+
+                return ApiResponse<AdminDto>.Success(
+                    promotedAdminDto,
+                    message: "Employee promoted to Admin in this branch successfully.");
+            }
+            else
+            {
+                if (isAlreadyAdmin)
+                {
+                    return ApiResponse<AdminDto>.Failure(
+                        "This user is already an Admin in another branch. Use Update Admin to transfer the admin to this branch.",
+                        statusCode: 400);
+                }
+
+                return ApiResponse<AdminDto>.Failure(
+                    "This citizen is already assigned as an employee to another branch. Cannot assign them as an admin to a different branch directly.",
+                    statusCode: 400);
+            }
         }
 
         // 5. Generate employee number automatically using algorithm (e.g. 01-2026-001-0001)

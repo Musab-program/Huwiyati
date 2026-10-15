@@ -1,20 +1,32 @@
 namespace Huwiyati.Application.Requests.Commands;
 
-// Command carrying client request parameters to initiate a new ServiceRequest
+/// <summary>
+/// Command carrying client parameters to initiate a new civil service request.
+/// </summary>
 public class CreateServiceRequestCommand
 {
-    // Optional PersonId (Used when Employee submits on behalf of a citizen)
+    /// <summary>
+    /// Gets or sets an optional person identifier when an employee submits on behalf of a citizen.
+    /// </summary>
     public Guid? PersonId { get; set; }
 
-    // Optional NationalNumber (Used when Employee submits on behalf of a citizen)
+    /// <summary>
+    /// Gets or sets an optional national identification number when an employee submits on behalf of a citizen.
+    /// </summary>
     public string? NationalNumber { get; set; }
 
-    // Selected Service Type Identifier
+    /// <summary>
+    /// Gets or sets the unique identifier of the selected service type.
+    /// </summary>
     public Guid ServiceTypeId { get; set; }
 
-    // Required processing Branch identifier selected by applicant
+    /// <summary>
+    /// Gets or sets the unique identifier of the processing organization branch.
+    /// </summary>
     public Guid BranchId { get; set; }
 
-    // Dynamic payload sent directly from client app
+    /// <summary>
+    /// Gets or sets dynamic payload object containing specific service-dependent form data.
+    /// </summary>
     public object? RequestDataJson { get; set; }
 }

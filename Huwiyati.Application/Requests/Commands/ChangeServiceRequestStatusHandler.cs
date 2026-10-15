@@ -9,23 +9,42 @@ using Huwiyati.Domain.Events.Requests;
 
 namespace Huwiyati.Application.Requests.Commands;
 
-// Handler responsible for modifying ServiceRequest status with branch security checks
+/// <summary>
+/// Handles updating the status of a service request, including branch security validations and automated fulfillment actions.
+/// </summary>
 public class ChangeServiceRequestStatusHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
+    private readonly IServiceRequestFulfillmentService _fulfillmentService;
     private readonly IDomainEventHandler<ServiceRequestStatusChangedEvent> _statusChangedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChangeServiceRequestStatusHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="fulfillmentService">The fulfillment service executing domain document actions on issue.</param>
+    /// <param name="statusChangedEventHandler">The event handler for status change domain events.</param>
     public ChangeServiceRequestStatusHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
+        IServiceRequestFulfillmentService fulfillmentService,
         IDomainEventHandler<ServiceRequestStatusChangedEvent> statusChangedEventHandler)
     {
         _context = context;
         _identityService = identityService;
+        _fulfillmentService = fulfillmentService;
         _statusChangedEventHandler = statusChangedEventHandler;
     }
 
+    /// <summary>
+    /// Transitions the status of a service request asynchronously, verifying employee branch authority.
+    /// </summary>
+    /// <param name="command">The change service request status command payload.</param>
+    /// <param name="currentEmployeeUserId">The user identifier of the operating employee.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the updated <see cref="ServiceRequestDto"/>.</returns>
     public async Task<ApiResponse<ServiceRequestDto>> ChangeStatusAsync(
         ChangeServiceRequestStatusCommand command,
         Guid currentEmployeeUserId,
@@ -100,6 +119,20 @@ public class ChangeServiceRequestStatusHandler
 
         if (command.NewStatus == RequestStatus.Issued)
         {
+            var fulfillmentResult = await _fulfillmentService.FulfillDocumentAsync(
+                requestEntity,
+                requestData.ServiceTypeCode,
+                requestData.NationalNumber,
+                cancellationToken);
+
+            if (!fulfillmentResult.IsSuccess)
+            {
+                return ApiResponse<ServiceRequestDto>.Failure(
+                    $"Cannot issue request: {fulfillmentResult.Message}",
+                    errors: fulfillmentResult.Errors,
+                    statusCode: fulfillmentResult.StatusCode);
+            }
+
             requestEntity.CompletedDate = DateTime.UtcNow;
         }
 

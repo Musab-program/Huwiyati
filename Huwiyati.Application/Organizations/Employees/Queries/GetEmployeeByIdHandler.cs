@@ -5,11 +5,19 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Organizations.Employees.DTOs;
 
+/// <summary>
+/// Handles querying details of an employee within the admin's branch by employee identifier.
+/// </summary>
 public class GetEmployeeByIdHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetEmployeeByIdHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
     public GetEmployeeByIdHandler(
         IApplicationDbContext context,
         IIdentityService identityService)
@@ -18,6 +26,13 @@ public class GetEmployeeByIdHandler
         _identityService = identityService;
     }
 
+    /// <summary>
+    /// Retrieves an employee by their unique identifier within the current admin's branch asynchronously.
+    /// </summary>
+    /// <param name="currentAdminUserId">The user identifier of the executing administrator.</param>
+    /// <param name="employeeId">The employee identifier to retrieve.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the resulting <see cref="EmployeeDto"/>.</returns>
     public async Task<ApiResponse<EmployeeDto>> GetEmployeeByIdAsync(
         Guid currentAdminUserId,
         Guid employeeId,

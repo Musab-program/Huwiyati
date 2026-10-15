@@ -9,13 +9,21 @@ using Huwiyati.Application.Documents.NationalIdCard.DTOs;
 
 using Huwiyati.Domain.Events.Documents;
 
-// Handler implementing the business logic for updating Person details linked to an active National ID Card
+/// <summary>
+/// Handles updating citizen biographical and demographic information linked to an active National ID Card.
+/// </summary>
 public class UpdatePersonDataHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IFileStorageService _fileStorageService;
     private readonly IDomainEventHandler<PersonDataUpdatedEvent> _personDataUpdatedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpdatePersonDataHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="fileStorageService">The file storage service for photo removal.</param>
+    /// <param name="personDataUpdatedEventHandler">The domain event handler for person profile updates.</param>
     public UpdatePersonDataHandler(
         IApplicationDbContext context,
         IFileStorageService fileStorageService,
@@ -26,6 +34,12 @@ public class UpdatePersonDataHandler
         _personDataUpdatedEventHandler = personDataUpdatedEventHandler;
     }
 
+    /// <summary>
+    /// Updates person demographic information, swaps profile photos, and publishes update domain events.
+    /// </summary>
+    /// <param name="command">The command carrying updated person data.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the updated <see cref="NationalIdCardDto"/>.</returns>
     public async Task<ApiResponse<NationalIdCardDto>> UpdateAsync(
         UpdatePersonDataCommand command,
         CancellationToken cancellationToken = default)

@@ -6,6 +6,9 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Domain.Entities.Authentication;
 using Huwiyati.Domain.Events.Authentication;
 
+/// <summary>
+/// Handles forgot password requests by generating an OTP verification code, dispatching an email to the user, and triggering domain events.
+/// </summary>
 public class ForgotPasswordHandler
 {
     private readonly IApplicationDbContext _context;
@@ -13,6 +16,13 @@ public class ForgotPasswordHandler
     private readonly IEmailService _emailService;
     private readonly IDomainEventHandler<PasswordResetRequestedEvent> _passwordResetRequestedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ForgotPasswordHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="emailService">The email dispatching service.</param>
+    /// <param name="passwordResetRequestedEventHandler">The domain event handler for password reset notifications.</param>
     public ForgotPasswordHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -25,6 +35,12 @@ public class ForgotPasswordHandler
         _passwordResetRequestedEventHandler = passwordResetRequestedEventHandler;
     }
 
+    /// <summary>
+    /// Processes a forgot password request asynchronously.
+    /// </summary>
+    /// <param name="command">The forgot password command details.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response indicating whether the reset OTP was successfully triggered.</returns>
     public async Task<ApiResponse<bool>> RequestPasswordResetAsync(
         ForgotPasswordCommand command,
         CancellationToken cancellationToken = default)

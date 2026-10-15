@@ -10,8 +10,17 @@ using Huwiyati.Infrastructure.Identity;
 using Huwiyati.Infrastructure.Persistence;
 using Huwiyati.Infrastructure.Services;
 
+/// <summary>
+/// Provides extension methods for registering infrastructure services into the dependency injection container.
+/// </summary>
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Registers all infrastructure services, including database contexts, identity, background jobs, and utility services.
+    /// </summary>
+    /// <param name="services">The service collection to append registrations to.</param>
+    /// <param name="configuration">The application configuration root.</param>
+    /// <returns>The modified service collection.</returns>
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
@@ -70,6 +79,9 @@ public static class DependencyInjection
 
         // 11. Register ServicePayloadValidator Implementation
         services.AddScoped<IServicePayloadValidator, ServicePayloadValidator>();
+
+        // 11.1 Register ServiceRequestFulfillmentService Implementation
+        services.AddScoped<IServiceRequestFulfillmentService, ServiceRequestFulfillmentService>();
 
         // 12. Register QRCodeService Implementation
         services.AddTransient<IQRCodeService, QRCodeService>();

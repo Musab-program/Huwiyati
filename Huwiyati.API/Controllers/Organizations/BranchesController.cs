@@ -7,6 +7,9 @@ using Huwiyati.Application.Organizations.Queries;
 using Huwiyati.Application.Organizations.Branches.Commands;
 using Huwiyati.Application.Organizations.Branches.Queries;
 
+/// <summary>
+/// Provides SuperAdmin endpoints for managing organizations, branches, and regional office configurations.
+/// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize(Roles = AppRoles.SuperAdmin)]
@@ -20,6 +23,9 @@ public class BranchesController : ControllerBase
     private readonly GetBranchesQueryHandler _getBranchesQueryHandler;
     private readonly GetBranchByIdHandler _getBranchByIdHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BranchesController"/> class.
+    /// </summary>
     public BranchesController(
         CreateBranchHandler createBranchHandler,
         UpdateBranchHandler updateBranchHandler,

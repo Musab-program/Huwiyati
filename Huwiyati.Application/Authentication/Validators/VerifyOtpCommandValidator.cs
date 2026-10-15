@@ -1,25 +1,24 @@
-﻿using FluentValidation;
+namespace Huwiyati.Application.Authentication.Validators;
+
+using FluentValidation;
 using Huwiyati.Application.Authentication.Commands;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Huwiyati.Application.Authentication.Validators
+/// <summary>
+/// Validator for enforcing required fields, length, and numerical digit format on <see cref="VerifyOTPCommand"/>.
+/// </summary>
+public class VerifyOtpCommandValidator : AbstractValidator<VerifyOTPCommand>
 {
-    public class VerifyOtpCommandValidator : AbstractValidator<VerifyOTPCommand>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VerifyOtpCommandValidator"/> class and configures validation rules.
+    /// </summary>
+    public VerifyOtpCommandValidator()
     {
-        public VerifyOtpCommandValidator()
-        {
-            RuleFor(x => x.UserId)
-                .NotEmpty().WithMessage("User ID is required.");
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithMessage("User ID is required.");
 
-            RuleFor(x =>x.Code)
-                .NotEmpty().WithMessage("Verification code is required.")
-                .Length(6).WithMessage("Verification code must be exactly 6 digits.")
-                .Matches(@"^\d{6}$").WithMessage("Verification code must contain only numbers.");
-
-        }
+        RuleFor(x => x.Code)
+            .NotEmpty().WithMessage("Verification code is required.")
+            .Length(6).WithMessage("Verification code must be exactly 6 digits.")
+            .Matches(@"^\d{6}$").WithMessage("Verification code must contain only numbers.");
     }
 }

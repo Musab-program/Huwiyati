@@ -3,8 +3,14 @@ namespace Huwiyati.Application.Organizations.Admins.Validators;
 using FluentValidation;
 using Huwiyati.Application.Organizations.Admins.Commands;
 
+/// <summary>
+/// Validator for verifying the validity of <see cref="AssignAdminCommand"/> data.
+/// </summary>
 public class AssignAdminCommandValidator : AbstractValidator<AssignAdminCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AssignAdminCommandValidator"/> class.
+    /// </summary>
     public AssignAdminCommandValidator()
     {
         RuleFor(x => x.NationalNumber)

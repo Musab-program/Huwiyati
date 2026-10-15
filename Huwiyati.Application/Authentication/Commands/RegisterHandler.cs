@@ -7,12 +7,21 @@ using Huwiyati.Application.Authentication.DTOs;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Domain.Entities.Authentication;
 
+/// <summary>
+/// Handles citizen account registration by verifying personal data against the Civil Registry, provisioning user records, and generating activation OTPs.
+/// </summary>
 public class RegisterHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IEmailService _emailService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RegisterHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="emailService">The email dispatching service.</param>
     public RegisterHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -23,6 +32,12 @@ public class RegisterHandler
         _emailService = emailService;
     }
 
+    /// <summary>
+    /// Validates citizen identity against the civil registry and creates a pending user account.
+    /// </summary>
+    /// <param name="command">The registration parameters.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response with the registration outcome.</returns>
     public async Task<ApiResponse<RegisterResultDto>> CreateAccountAsync(
         RegisterUserCommand command,
         CancellationToken cancellationToken = default)

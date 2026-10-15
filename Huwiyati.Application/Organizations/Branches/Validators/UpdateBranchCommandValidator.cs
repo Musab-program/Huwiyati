@@ -3,8 +3,14 @@ namespace Huwiyati.Application.Organizations.Branches.Validators;
 using FluentValidation;
 using Huwiyati.Application.Organizations.Branches.Commands;
 
+/// <summary>
+/// Validator for validating <see cref="UpdateBranchCommand"/> inputs.
+/// </summary>
 public class UpdateBranchCommandValidator : AbstractValidator<UpdateBranchCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpdateBranchCommandValidator"/> class.
+    /// </summary>
     public UpdateBranchCommandValidator()
     {
         RuleFor(x => x.Id)

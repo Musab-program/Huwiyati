@@ -4,8 +4,14 @@ using FluentValidation;
 using Huwiyati.Application.Requests.Commands;
 using Huwiyati.Domain.Enums;
 
+/// <summary>
+/// Validator for validating input parameters of <see cref="ChangeServiceRequestStatusCommand"/>.
+/// </summary>
 public class ChangeServiceRequestStatusCommandValidator : AbstractValidator<ChangeServiceRequestStatusCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChangeServiceRequestStatusCommandValidator"/> class.
+    /// </summary>
     public ChangeServiceRequestStatusCommandValidator()
     {
         RuleFor(v => v.ServiceRequestId)
