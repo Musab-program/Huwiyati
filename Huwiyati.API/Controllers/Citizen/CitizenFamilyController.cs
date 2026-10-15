@@ -7,6 +7,9 @@ using Huwiyati.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Provides citizen portal endpoints for querying family cards and household records.
+/// </summary>
 [ApiController]
 [Route("api/v1/citizen/family")]
 [Authorize(Roles = AppRoles.Citizen)]
@@ -15,6 +18,9 @@ public class CitizenFamilyController : ControllerBase
     private readonly GetCitizenFamilyCardsHandler _getCitizenFamilyCardsHandler;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CitizenFamilyController"/> class.
+    /// </summary>
     public CitizenFamilyController(
         GetCitizenFamilyCardsHandler getCitizenFamilyCardsHandler,
         IIdentityService identityService)

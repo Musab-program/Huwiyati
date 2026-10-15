@@ -5,15 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Organizations.Branches.DTOs;
 
+/// <summary>
+/// Handles querying details of a specific organization branch by its unique identifier.
+/// </summary>
 public class GetBranchByIdHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetBranchByIdHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetBranchByIdHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves a branch by its unique identifier asynchronously.
+    /// </summary>
+    /// <param name="id">The branch identifier.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the resulting <see cref="BranchDto"/>.</returns>
     public async Task<ApiResponse<BranchDto>> GetBranchByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)

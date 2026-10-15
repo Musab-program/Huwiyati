@@ -6,13 +6,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Huwiyati.Application.Organizations.Branches.Commands;
 
+/// <summary>
+/// Handles creating a new branch office for an organization.
+/// </summary>
 public class CreateBranchHandler
 {
     private readonly IApplicationDbContext _context;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateBranchHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public CreateBranchHandler(IApplicationDbContext context)
     {
         _context = context;
     }
+
+    /// <summary>
+    /// Creates an organization branch asynchronously.
+    /// </summary>
+    /// <param name="command">The create branch command payload.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the resulting <see cref="BranchDto"/>.</returns>
     public async Task<ApiResponse<BranchDto>> CreateBranchAsync(
         CreateBranchCommand command,
         CancellationToken cancellationToken = default)

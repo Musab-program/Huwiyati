@@ -5,15 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.DeathCertificate.DTOs;
 
+/// <summary>
+/// Handles querying death certificates belonging to deceased members within a citizen's family tree.
+/// </summary>
 public class GetCitizenFamilyDeathCertificatesHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetCitizenFamilyDeathCertificatesHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetCitizenFamilyDeathCertificatesHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all death certificates for deceased persons in families linked to the specified citizen.
+    /// </summary>
+    /// <param name="citizenPersonId">The unique person identifier of the citizen.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="DeathCertificateDto"/>.</returns>
     public async Task<ApiResponse<List<DeathCertificateDto>>> GetFamilyDeathCertificatesAsync(
         Guid citizenPersonId,
         CancellationToken cancellationToken = default)

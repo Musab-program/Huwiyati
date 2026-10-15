@@ -11,7 +11,9 @@ using Huwiyati.Application.Common.Extensions;
 
 using Huwiyati.Domain.Events.Documents;
 
-// Handler implementing the business logic for renewing a National ID Card according to 3-month eligibility rules
+/// <summary>
+/// Handles renewing an existing National ID Card under 90-day expiry eligibility rules.
+/// </summary>
 public class RenewNationalIdCardHandler
 {
     private readonly IApplicationDbContext _context;
@@ -19,6 +21,13 @@ public class RenewNationalIdCardHandler
     private readonly IFileStorageService _fileStorageService;
     private readonly IDomainEventHandler<NationalIdCardRenewedEvent> _nationalIdCardRenewedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RenewNationalIdCardHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="qrCodeService">The QR code payload generation service.</param>
+    /// <param name="fileStorageService">The file storage service for photo management.</param>
+    /// <param name="nationalIdCardRenewedEventHandler">The domain event handler for card renewal notifications.</param>
     public RenewNationalIdCardHandler(
         IApplicationDbContext context,
         IQRCodeService qrCodeService,
@@ -31,6 +40,12 @@ public class RenewNationalIdCardHandler
         _nationalIdCardRenewedEventHandler = nationalIdCardRenewedEventHandler;
     }
 
+    /// <summary>
+    /// Verifies 90-day renewal eligibility, archives previous active card, updates profile data, and creates a new 10-year card.
+    /// </summary>
+    /// <param name="command">The command carrying citizen identifier and updated card parameters.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the renewed <see cref="NationalIdCardDto"/>.</returns>
     public async Task<ApiResponse<NationalIdCardDto>> RenewAsync(
         RenewNationalIdCardCommand command,
         CancellationToken cancellationToken = default)

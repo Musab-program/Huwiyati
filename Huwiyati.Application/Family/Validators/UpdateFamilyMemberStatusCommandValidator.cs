@@ -3,8 +3,14 @@ namespace Huwiyati.Application.Family.Validators;
 using FluentValidation;
 using Huwiyati.Application.Family.Commands;
 
+/// <summary>
+/// Validator defining validation rules for <see cref="UpdateFamilyMemberStatusCommand"/>.
+/// </summary>
 public class UpdateFamilyMemberStatusCommandValidator : AbstractValidator<UpdateFamilyMemberStatusCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpdateFamilyMemberStatusCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public UpdateFamilyMemberStatusCommandValidator()
     {
         RuleFor(x => x.FamilyMemberId)

@@ -5,12 +5,21 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Domain.Entities.Authentication;
 
+/// <summary>
+/// Handles requests to generate and dispatch OTP verification codes for sensitive account operations.
+/// </summary>
 public class RequestAccountOtpHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IEmailService _emailService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RequestAccountOtpHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="emailService">The email dispatching service.</param>
     public RequestAccountOtpHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -21,6 +30,12 @@ public class RequestAccountOtpHandler
         _emailService = emailService;
     }
 
+    /// <summary>
+    /// Validates user credentials, creates a fresh OTP code, and emails it to the user's registered address.
+    /// </summary>
+    /// <param name="command">The account OTP request parameters.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response with confirmation message.</returns>
     public async Task<ApiResponse<string>> RequestOtpAsync(
         RequestAccountOtpCommand command,
         CancellationToken cancellationToken = default)

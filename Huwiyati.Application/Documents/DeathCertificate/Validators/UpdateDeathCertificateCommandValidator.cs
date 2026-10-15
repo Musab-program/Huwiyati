@@ -3,8 +3,14 @@ namespace Huwiyati.Application.Documents.DeathCertificate.Validators;
 using FluentValidation;
 using Huwiyati.Application.Documents.DeathCertificate.Commands;
 
+/// <summary>
+/// Validator for validating properties and business rules of <see cref="UpdateDeathCertificateCommand"/>.
+/// </summary>
 public class UpdateDeathCertificateCommandValidator : AbstractValidator<UpdateDeathCertificateCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpdateDeathCertificateCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public UpdateDeathCertificateCommandValidator()
     {
         RuleFor(x => x.DeathCertificateId)

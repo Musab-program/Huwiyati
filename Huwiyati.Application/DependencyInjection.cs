@@ -26,13 +26,25 @@ using Huwiyati.Application.Organizations.Queries;
 using Huwiyati.Application.Requests.Commands;
 using Huwiyati.Application.Requests.Queries;
 using Microsoft.Extensions.DependencyInjection;
+using FluentValidation;
 
 namespace Huwiyati.Application
 {
-    public static class DependencyInjection
+/// <summary>
+/// Provides extension methods for registering application layer services and command/query handlers in the dependency injection container.
+/// </summary>
+public static class DependencyInjection
+{
+    /// <summary>
+    /// Registers all application use case handlers, validators, and domain event handlers into the specified service collection.
+    /// </summary>
+    /// <param name="services">The service collection to populate.</param>
+    /// <returns>The updated service collection instance.</returns>
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-        {
+            // Register FluentValidation Validators
+            services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+
             // Register Authentication Handlers
             services.AddScoped<RegisterHandler>();
             services.AddScoped<VerifyOTPHandler>();

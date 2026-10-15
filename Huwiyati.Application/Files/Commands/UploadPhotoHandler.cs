@@ -11,14 +11,23 @@ public class UploadPhotoHandler
 {
     private readonly IFileStorageService _fileStorageService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UploadPhotoHandler"/> class.
+    /// </summary>
+    /// <param name="fileStorageService">The file storage service used to persist incoming file streams.</param>
     public UploadPhotoHandler(IFileStorageService fileStorageService)
     {
         _fileStorageService = fileStorageService;
     }
 
     /// <summary>
-    /// Step 1: Handle photo or document image stream upload and return ApiResponse with relative URL
+    /// Handles the upload of an image or document stream and persists it into storage.
     /// </summary>
+    /// <param name="fileStream">The readable stream containing binary file content.</param>
+    /// <param name="fileName">The original name or desired filename including extension.</param>
+    /// <param name="category">The file category classifying the target storage path (defaults to <see cref="FileCategory.ProfilePhoto"/>).</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the relative file storage path on success.</returns>
     public async Task<ApiResponse<string>> HandleAsync(Stream fileStream, string fileName, FileCategory category = FileCategory.ProfilePhoto, CancellationToken cancellationToken = default)
     {
         if (fileStream == null || fileStream.Length == 0)

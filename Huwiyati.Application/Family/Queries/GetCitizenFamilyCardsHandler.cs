@@ -6,15 +6,28 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Family.DTOs;
 using Huwiyati.Domain.Enums;
 
+/// <summary>
+/// Handles querying all active family cards in which a citizen is registered (either as head of family or as a member).
+/// </summary>
 public class GetCitizenFamilyCardsHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetCitizenFamilyCardsHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetCitizenFamilyCardsHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all active family records and their associated member lists for a given citizen.
+    /// </summary>
+    /// <param name="citizenPersonId">The unique person identifier of the citizen.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="FamilyDto"/>.</returns>
     public async Task<ApiResponse<List<FamilyDto>>> GetCitizenFamiliesAsync(Guid citizenPersonId, CancellationToken cancellationToken = default)
     {
         if (citizenPersonId == Guid.Empty)

@@ -10,7 +10,9 @@ using Microsoft.EntityFrameworkCore;
 
 using Huwiyati.Domain.Events.Passport;
 
-// Handler carrying out the business logic for issuing a Passport
+/// <summary>
+/// Handles business logic for issuing a passport to an eligible citizen with 6-year validity.
+/// </summary>
 public class IssuePassportHandler
 {
     private readonly IApplicationDbContext _context;
@@ -18,6 +20,13 @@ public class IssuePassportHandler
     private readonly IQRCodeService _qrCodeService;
     private readonly IDomainEventHandler<PassportIssuedEvent> _passportIssuedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IssuePassportHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="documentNumberGenerator">The generator for official passport numbers.</param>
+    /// <param name="qrCodeService">The QR code payload generation service.</param>
+    /// <param name="passportIssuedEventHandler">The domain event handler for passport issuance notifications.</param>
     public IssuePassportHandler(
         IApplicationDbContext context,
         IDocumentNumberGenerator documentNumberGenerator,
@@ -30,6 +39,12 @@ public class IssuePassportHandler
         _passportIssuedEventHandler = passportIssuedEventHandler;
     }
 
+    /// <summary>
+    /// Validates immigration branch, verifies citizen identity and active passport absence, generates number, and creates the passport.
+    /// </summary>
+    /// <param name="command">The command carrying citizen identifier, branch, and passport type.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the issued <see cref="PassportDto"/>.</returns>
     public async Task<ApiResponse<PassportDto>> IssueAsync(
         IssuePassportCommand command,
         CancellationToken cancellationToken = default)

@@ -18,6 +18,10 @@ public class FilesController : ControllerBase
 {
     private readonly UploadPhotoHandler _uploadPhotoHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FilesController"/> class.
+    /// </summary>
+    /// <param name="uploadPhotoHandler">The photo and document upload command handler.</param>
     public FilesController(UploadPhotoHandler uploadPhotoHandler)
     {
         _uploadPhotoHandler = uploadPhotoHandler;

@@ -5,17 +5,31 @@ using Huwiyati.Domain.Entities.Notifications;
 using Huwiyati.Domain.Events.Documents;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Event handler for broadcasting notifications to surviving family members upon issuance of a death certificate.
+/// </summary>
 public class DeathCertificateIssuedEventHandler : IDomainEventHandler<DeathCertificateIssuedEvent>
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DeathCertificateIssuedEventHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity service to resolve user accounts from person records.</param>
     public DeathCertificateIssuedEventHandler(IApplicationDbContext context, IIdentityService identityService)
     {
         _context = context;
         _identityService = identityService;
     }
 
+    /// <summary>
+    /// Handles the <see cref="DeathCertificateIssuedEvent"/> by notifying registered family members of the deceased.
+    /// </summary>
+    /// <param name="domainEvent">The domain event instance containing deceased person details.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public async Task HandleAsync(DeathCertificateIssuedEvent domainEvent, CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;

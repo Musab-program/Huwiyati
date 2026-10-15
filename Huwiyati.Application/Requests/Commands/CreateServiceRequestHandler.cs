@@ -11,7 +11,9 @@ using Microsoft.EntityFrameworkCore;
 
 using Huwiyati.Domain.Events.Requests;
 
-// Handler carrying out business logic for initiating a new ServiceRequest
+/// <summary>
+/// Handles creation and validation of new civil service requests submitted by citizens or employees.
+/// </summary>
 public class CreateServiceRequestHandler
 {
     private readonly IApplicationDbContext _context;
@@ -20,6 +22,14 @@ public class CreateServiceRequestHandler
     private readonly IIdentityService _identityService;
     private readonly IDomainEventHandler<ServiceRequestCreatedEvent> _serviceRequestCreatedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateServiceRequestHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="requestNumberGenerator">The generator for standardized service request tracking numbers.</param>
+    /// <param name="payloadValidator">The validator for service-specific payload schemas.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="serviceRequestCreatedEventHandler">The event handler for service request creation domain events.</param>
     public CreateServiceRequestHandler(
         IApplicationDbContext context,
         IRequestNumberGenerator requestNumberGenerator,
@@ -34,6 +44,13 @@ public class CreateServiceRequestHandler
         _serviceRequestCreatedEventHandler = serviceRequestCreatedEventHandler;
     }
 
+    /// <summary>
+    /// Creates a new service request asynchronously.
+    /// </summary>
+    /// <param name="command">The create service request command payload.</param>
+    /// <param name="currentPersonId">Optional person identifier of the applicant.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the created <see cref="ServiceRequestDto"/>.</returns>
     public async Task<ApiResponse<ServiceRequestDto>> CreateAsync(
         CreateServiceRequestCommand command,
         Guid? currentPersonId = null,

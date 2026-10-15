@@ -3,35 +3,72 @@ namespace Huwiyati.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common.Interfaces;
 
+/// <summary>
+/// Generator service producing unique, structured official document numbers for civil documents and passports.
+/// </summary>
 public class DocumentNumberGenerator : IDocumentNumberGenerator
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DocumentNumberGenerator"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public DocumentNumberGenerator(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Generates a unique 11-digit national identity number formatted as ServiceCode + BranchCode + Sequence.
+    /// </summary>
+    /// <param name="branchId">The branch identifier issuing the card.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A unique national identity number string.</returns>
     public Task<string> GenerateNationalNumberAsync(Guid branchId, CancellationToken cancellationToken = default)
     {
         return GenerateDocumentNumberInternalAsync("01", branchId, cancellationToken);
     }
 
+    /// <summary>
+    /// Generates a unique family record card number for the given branch.
+    /// </summary>
+    /// <param name="branchId">The branch identifier issuing the family card.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A unique family card number string.</returns>
     public Task<string> GenerateFamilyNumberAsync(Guid branchId, CancellationToken cancellationToken = default)
     {
         return GenerateDocumentNumberInternalAsync("02", branchId, cancellationToken);
     }
 
+    /// <summary>
+    /// Generates a unique birth certificate number for the given branch.
+    /// </summary>
+    /// <param name="branchId">The branch identifier issuing the birth certificate.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A unique birth certificate number string.</returns>
     public Task<string> GenerateBirthCertificateNumberAsync(Guid branchId, CancellationToken cancellationToken = default)
     {
         return GenerateDocumentNumberInternalAsync("03", branchId, cancellationToken);
     }
 
+    /// <summary>
+    /// Generates a unique death certificate number for the given branch.
+    /// </summary>
+    /// <param name="branchId">The branch identifier issuing the death certificate.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A unique death certificate number string.</returns>
     public Task<string> GenerateDeathCertificateNumberAsync(Guid branchId, CancellationToken cancellationToken = default)
     {
         return GenerateDocumentNumberInternalAsync("04", branchId, cancellationToken);
     }
 
+    /// <summary>
+    /// Generates a unique passport number for the given immigration branch.
+    /// </summary>
+    /// <param name="branchId">The branch identifier issuing the passport.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A unique passport number string.</returns>
     public Task<string> GeneratePassportNumberAsync(Guid branchId, CancellationToken cancellationToken = default)
     {
         return GenerateDocumentNumberInternalAsync("05", branchId, cancellationToken);

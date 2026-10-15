@@ -5,15 +5,31 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Notifications.DTOs;
 
+/// <summary>
+/// Handles querying paginated notifications for an authenticated user.
+/// </summary>
 public class GetUserNotificationsHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetUserNotificationsHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetUserNotificationsHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves paginated notifications for the specified user, optionally filtering by unread status.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="pageNumber">The 1-based page number (defaults to 1).</param>
+    /// <param name="pageSize">The number of items per page (defaults to 10, maximum 100).</param>
+    /// <param name="onlyUnread">Optional filter to retrieve only unread notifications.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a <see cref="NotificationListResultDto"/>.</returns>
     public async Task<ApiResponse<NotificationListResultDto>> GetUserNotificationsAsync(
         Guid userId,
         int pageNumber = 1,

@@ -4,8 +4,15 @@ using Huwiyati.Domain.Entities.Requests;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="ServiceRequest"/> entity.
+/// </summary>
 public class ServiceRequestConfiguration : IEntityTypeConfiguration<ServiceRequest>
 {
+    /// <summary>
+    /// Configures primary keys, unique request numbers, and foreign key relationships for <see cref="ServiceRequest"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<ServiceRequest> builder)
     {
         builder.HasKey(x => x.Id);

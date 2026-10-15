@@ -5,15 +5,27 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.BirthCertificate.DTOs;
 
+/// <summary>
+/// Handles querying all issued birth certificates across the civil registry.
+/// </summary>
 public class GetAllBirthCertificatesHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetAllBirthCertificatesHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetAllBirthCertificatesHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all birth certificates ordered chronologically by creation timestamp.
+    /// </summary>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="BirthCertificateDto"/>.</returns>
     public async Task<ApiResponse<List<BirthCertificateDto>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var certificates = await _context.BirthCertificates

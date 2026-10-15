@@ -5,16 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.NationalIdCard.DTOs;
 
-// Handler returning full card history (Active, Expired, Lost, Suspended) for a citizen by National Number
+/// <summary>
+/// Handles querying historical and current National ID Cards associated with a citizen.
+/// </summary>
 public class GetPersonNationalIdCardHistoryHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetPersonNationalIdCardHistoryHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetPersonNationalIdCardHistoryHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all past and present cards for a given citizen identified by national number.
+    /// </summary>
+    /// <param name="nationalNumber">The 11-digit national number of the citizen.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of historical <see cref="NationalIdCardDto"/>.</returns>
     public async Task<ApiResponse<List<NationalIdCardDto>>> GetCardHistoryByNationalNumberAsync(
         string nationalNumber,
         CancellationToken cancellationToken = default)

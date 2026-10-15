@@ -5,16 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.Passport.DTOs;
 
-// Handler returning list of travel records for a specific Passport Number
+/// <summary>
+/// Handles querying all border and travel movements associated with a specific passport number.
+/// </summary>
 public class GetPassportTravelRecordsHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetPassportTravelRecordsHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetPassportTravelRecordsHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all travel movement records recorded under the given passport number.
+    /// </summary>
+    /// <param name="passportNumber">The official passport number.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="TravelRecordDto"/>.</returns>
     public async Task<ApiResponse<List<TravelRecordDto>>> GetTravelRecordsByPassportNumberAsync(
         string passportNumber,
         CancellationToken cancellationToken = default)

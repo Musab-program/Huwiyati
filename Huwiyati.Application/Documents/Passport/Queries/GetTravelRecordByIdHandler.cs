@@ -5,16 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.Passport.DTOs;
 
-// Handler returning single Travel Record details by ID
+/// <summary>
+/// Handles querying single travel record details by its unique identifier.
+/// </summary>
 public class GetTravelRecordByIdHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetTravelRecordByIdHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetTravelRecordByIdHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves travel record details projected into <see cref="TravelRecordDto"/> by its ID.
+    /// </summary>
+    /// <param name="id">The unique identifier of the travel record.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the matching <see cref="TravelRecordDto"/> or a 404 response.</returns>
     public async Task<ApiResponse<TravelRecordDto>> GetTravelRecordByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)

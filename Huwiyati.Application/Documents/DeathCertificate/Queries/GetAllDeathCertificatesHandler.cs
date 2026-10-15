@@ -5,15 +5,27 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.DeathCertificate.DTOs;
 
+/// <summary>
+/// Handles querying all issued death certificates across the civil registry.
+/// </summary>
 public class GetAllDeathCertificatesHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetAllDeathCertificatesHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetAllDeathCertificatesHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all recorded death certificates ordered descending by creation date.
+    /// </summary>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="DeathCertificateDto"/>.</returns>
     public async Task<ApiResponse<List<DeathCertificateDto>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var certificates = await _context.DeathCertificates

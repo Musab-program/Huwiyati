@@ -5,12 +5,19 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Authentication.DTOs;
 
-// Query handler returning citizen account activation status details by National Number
+/// <summary>
+/// Query handler returning detailed citizen account registration and activation status by national number for administrative staff.
+/// </summary>
 public class GetCitizenAccountStatusHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetCitizenAccountStatusHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="identityService">The identity management service.</param>
     public GetCitizenAccountStatusHandler(
         IApplicationDbContext context,
         IIdentityService identityService)
@@ -19,6 +26,12 @@ public class GetCitizenAccountStatusHandler
         _identityService = identityService;
     }
 
+    /// <summary>
+    /// Retrieves account and registration status for a citizen using their national identification number.
+    /// </summary>
+    /// <param name="nationalNumber">The national number to query.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response with the citizen account status DTO.</returns>
     public async Task<ApiResponse<CitizenAccountStatusDto>> GetCitizenAccountStatusAsync(
         string nationalNumber,
         CancellationToken cancellationToken = default)

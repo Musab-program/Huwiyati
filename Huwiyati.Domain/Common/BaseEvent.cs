@@ -1,8 +1,13 @@
 namespace Huwiyati.Domain.Common;
 
-// Base class for all domain events in Huwiyati system
+/// <summary>
+/// Abstract base class for all domain events across the Huwiyati system.
+/// Encapsulates event metadata such as creation timestamp.
+/// </summary>
 public abstract class BaseEvent
 {
-    // Timestamp when the event occurred
+    /// <summary>
+    /// Gets the UTC timestamp when the domain event occurred.
+    /// </summary>
     public DateTime DateOccurred { get; protected set; } = DateTime.UtcNow;
 }

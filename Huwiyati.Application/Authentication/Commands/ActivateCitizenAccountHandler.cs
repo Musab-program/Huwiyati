@@ -6,12 +6,19 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Authentication.DTOs;
 using Huwiyati.Domain.Enums;
 
-// Command handler to activate a citizen's account by National Number
+/// <summary>
+/// Command handler for staff-initiated manual activation of citizen accounts upon branch verification.
+/// </summary>
 public class ActivateCitizenAccountHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ActivateCitizenAccountHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="identityService">The identity management service.</param>
     public ActivateCitizenAccountHandler(
         IApplicationDbContext context,
         IIdentityService identityService)
@@ -20,6 +27,12 @@ public class ActivateCitizenAccountHandler
         _identityService = identityService;
     }
 
+    /// <summary>
+    /// Activates the citizen account matching the specified national number.
+    /// </summary>
+    /// <param name="nationalNumber">The citizen's national identification number.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response with the updated account status DTO.</returns>
     public async Task<ApiResponse<CitizenAccountStatusDto>> ActivateAccountAsync(
         string nationalNumber,
         CancellationToken cancellationToken = default)

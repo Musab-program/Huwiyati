@@ -10,7 +10,9 @@ using Huwiyati.Domain.Enums;
 
 using Huwiyati.Domain.Events.Passport;
 
-// Handler carrying out the business logic for renewing a Passport
+/// <summary>
+/// Handles renewing passports within the permitted 6-month pre-expiry window.
+/// </summary>
 public class RenewPassportHandler
 {
     private readonly IApplicationDbContext _context;
@@ -19,6 +21,14 @@ public class RenewPassportHandler
     private readonly IFileStorageService _fileStorageService;
     private readonly IDomainEventHandler<PassportRenewedEvent> _passportRenewedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RenewPassportHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="documentNumberGenerator">The generator for official passport numbers.</param>
+    /// <param name="qrCodeService">The QR code payload generation service.</param>
+    /// <param name="fileStorageService">The file storage service for photo management.</param>
+    /// <param name="passportRenewedEventHandler">The domain event handler for passport renewal notifications.</param>
     public RenewPassportHandler(
         IApplicationDbContext context,
         IDocumentNumberGenerator documentNumberGenerator,
@@ -33,6 +43,12 @@ public class RenewPassportHandler
         _passportRenewedEventHandler = passportRenewedEventHandler;
     }
 
+    /// <summary>
+    /// Verifies 180-day renewal eligibility, marks previous active passport as expired, generates new number, and creates a 6-year passport.
+    /// </summary>
+    /// <param name="command">The command carrying citizen identifier and renewal parameters.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the renewed <see cref="PassportDto"/>.</returns>
     public async Task<ApiResponse<PassportDto>> RenewAsync(
         RenewPassportCommand command,
         CancellationToken cancellationToken = default)

@@ -5,23 +5,53 @@ namespace Huwiyati.Application.Documents.Verification.DTOs;
 /// </summary>
 public class DocumentVerificationResultDto
 {
-    // Step 1: Verification status flag
+    /// <summary>
+    /// Gets or sets a value indicating whether the verified document is valid and untampered.
+    /// </summary>
     public bool IsValid { get; set; }
 
-    // Step 2: Document identification properties
+    /// <summary>
+    /// Gets or sets the document type (e.g. NationalIdCard, Passport, BirthCertificate, DeathCertificate).
+    /// </summary>
     public string DocumentType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the official document number.
+    /// </summary>
     public string DocumentNumber { get; set; } = string.Empty;
 
-    // Step 3: Citizen identity details (Holder photo is nullable)
+    /// <summary>
+    /// Gets or sets the full legal name of the document holder.
+    /// </summary>
     public string HolderName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the biometric photo URL of the holder, if applicable.
+    /// </summary>
     public string? HolderPhotoUrl { get; set; }
 
-    // Step 4: Document lifecycle dates and status
+    /// <summary>
+    /// Gets or sets the current status of the document.
+    /// </summary>
     public string Status { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the date of issue.
+    /// </summary>
     public DateOnly? IssueDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the date of expiration, if applicable.
+    /// </summary>
     public DateOnly? ExpiryDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the issuing branch name.
+    /// </summary>
     public string? IssuingBranchName { get; set; }
 
-    // Step 5: Verification audit timestamp
+    /// <summary>
+    /// Gets or sets the timestamp when the document verification was completed.
+    /// </summary>
     public DateTime VerificationTimestamp { get; set; } = DateTime.UtcNow;
 }

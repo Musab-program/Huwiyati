@@ -6,8 +6,15 @@ using Huwiyati.Domain.Entities.CivilRegistry;
 using Huwiyati.Domain.Enums;
 using System;
 
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="Person"/> civil entity.
+/// </summary>
 public class PersonConfiguration : IEntityTypeConfiguration<Person>
 {
+    /// <summary>
+    /// Configures table mapping, column lengths, custom blood group enum conversions, and constraints for <see cref="Person"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<Person> builder)
     {
         builder.ToTable("Persons");

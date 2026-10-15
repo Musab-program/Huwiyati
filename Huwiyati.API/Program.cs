@@ -1,5 +1,12 @@
+// <summary>
+// Main entry point for Huwiyati API. Configures ASP.NET Core dependency injection, middleware pipeline,
+// JWT authentication, authorization policies, CORS, Swagger UI documentation, and initial database seeding.
+// </summary>
+
 using System.Text;
 using System.Text.Json.Serialization;
+using Huwiyati.API.Filters;
+using Huwiyati.API.Middleware;
 using Huwiyati.Application;
 using Huwiyati.Infrastructure;
 using Huwiyati.Infrastructure.Identity;
@@ -11,8 +18,11 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Add Controllers with JSON Enum & DateOnly Converters
-builder.Services.AddControllers()
+// 1. Add Controllers with Validation Filter & JSON Enum & DateOnly Converters
+builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<ValidationFilter>();
+    })
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -56,9 +66,14 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(
+                  "http://localhost:3000",
+                  "http://127.0.0.1:3000",
+                  "http://192.168.43.142:3000"
+              )
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -95,6 +110,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Global Exception Handling Middleware (RFC 9457 compliant)
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // 5. Configure HTTP request pipeline
 if (app.Environment.IsDevelopment())

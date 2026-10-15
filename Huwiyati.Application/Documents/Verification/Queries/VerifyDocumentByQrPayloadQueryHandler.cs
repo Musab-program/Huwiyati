@@ -13,14 +13,21 @@ public class VerifyDocumentByQrPayloadQueryHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VerifyDocumentByQrPayloadQueryHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public VerifyDocumentByQrPayloadQueryHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
     /// <summary>
-    /// Step 1: Main entry point for verifying a scanned QR payload against all document repositories.
+    /// Verifies a scanned QR payload against all document repositories (National ID, Passport, Family, Birth, Death).
     /// </summary>
+    /// <param name="qrPayload">The raw or encrypted QR code payload string.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the verification result or a 404 response.</returns>
     public async Task<ApiResponse<DocumentVerificationResultDto>> VerifyAsync(
         string qrPayload,
         CancellationToken cancellationToken = default)

@@ -10,6 +10,9 @@ using Huwiyati.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Provides citizen portal endpoints for viewing personal official documents including national IDs, passports, certificates, and travel records.
+/// </summary>
 [ApiController]
 [Route("api/v1/citizen/documents")]
 [Authorize(Roles = AppRoles.Citizen)]
@@ -23,6 +26,9 @@ public class CitizenDocumentsController : ControllerBase
     private readonly GetPersonTravelHistoryHandler _getPersonTravelHistoryHandler;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CitizenDocumentsController"/> class.
+    /// </summary>
     public CitizenDocumentsController(
         GetActiveNationalIdCardByPersonIdHandler getActiveNationalIdCardHandler,
         GetActivePassportByPersonIdHandler getActivePassportHandler,

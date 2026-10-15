@@ -7,6 +7,9 @@ using Huwiyati.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Provides citizen portal endpoints for querying account profile and civil registry metadata.
+/// </summary>
 [ApiController]
 [Route("api/v1/citizen/profile")]
 [Authorize(Roles = AppRoles.Citizen)]
@@ -15,6 +18,9 @@ public class CitizenProfileController : ControllerBase
     private readonly GetCitizenProfileHandler _getCitizenProfileHandler;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CitizenProfileController"/> class.
+    /// </summary>
     public CitizenProfileController(
         GetCitizenProfileHandler getCitizenProfileHandler,
         IIdentityService identityService)

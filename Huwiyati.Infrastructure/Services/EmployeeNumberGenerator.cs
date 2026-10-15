@@ -3,15 +3,28 @@ namespace Huwiyati.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common.Interfaces;
 
+/// <summary>
+/// Generator service creating standardized employee numbers formatted as OrgCode-Year-BranchIndex-Sequence.
+/// </summary>
 public class EmployeeNumberGenerator : IEmployeeNumberGenerator
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EmployeeNumberGenerator"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public EmployeeNumberGenerator(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Generates a standardized employee number for a given branch asynchronously.
+    /// </summary>
+    /// <param name="branchId">The branch identifier to generate the number for.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A formatted employee number string.</returns>
     public async Task<string> GenerateEmployeeNumberAsync(Guid branchId, CancellationToken cancellationToken = default)
     {
         // 1. Fetch branch details and its parent organization code/name via projection

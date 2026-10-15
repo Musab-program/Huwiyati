@@ -3,9 +3,14 @@ namespace Huwiyati.Application.Documents.NationalIdCard.Validators;
 using FluentValidation;
 using Huwiyati.Application.Documents.NationalIdCard.Commands;
 
-// Validator defining comprehensive validation rules for renewing a National ID Card command
+/// <summary>
+/// Validator defining validation rules for <see cref="RenewNationalIdCardCommand"/>.
+/// </summary>
 public class RenewNationalIdCardCommandValidator : AbstractValidator<RenewNationalIdCardCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RenewNationalIdCardCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public RenewNationalIdCardCommandValidator()
     {
         RuleFor(x => x.NationalNumber)

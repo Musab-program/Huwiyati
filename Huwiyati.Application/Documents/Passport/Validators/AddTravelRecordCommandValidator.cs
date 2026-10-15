@@ -3,9 +3,14 @@ namespace Huwiyati.Application.Documents.Passport.Validators;
 using FluentValidation;
 using Huwiyati.Application.Documents.Passport.Commands;
 
-// Validator defining FluentValidation rules for AddTravelRecordCommand
+/// <summary>
+/// Validator defining validation rules for <see cref="AddTravelRecordCommand"/>.
+/// </summary>
 public class AddTravelRecordCommandValidator : AbstractValidator<AddTravelRecordCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AddTravelRecordCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public AddTravelRecordCommandValidator()
     {
         RuleFor(v => v.PassportNumber)

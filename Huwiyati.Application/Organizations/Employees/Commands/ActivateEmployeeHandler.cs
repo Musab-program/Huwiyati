@@ -6,11 +6,19 @@ using Huwiyati.Application.Common.Interfaces;
 
 using Huwiyati.Domain.Events.Organizations;
 
+/// <summary>
+/// Handles activating an existing employee account within the admin's branch.
+/// </summary>
 public class ActivateEmployeeHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDomainEventHandler<EmployeeActivatedEvent> _employeeActivatedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ActivateEmployeeHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="employeeActivatedEventHandler">The event handler for employee activated domain events.</param>
     public ActivateEmployeeHandler(
         IApplicationDbContext context,
         IDomainEventHandler<EmployeeActivatedEvent> employeeActivatedEventHandler)
@@ -19,6 +27,13 @@ public class ActivateEmployeeHandler
         _employeeActivatedEventHandler = employeeActivatedEventHandler;
     }
 
+    /// <summary>
+    /// Activates an employee record in the admin's branch asynchronously.
+    /// </summary>
+    /// <param name="currentAdminUserId">The user identifier of the executing administrator.</param>
+    /// <param name="employeeId">The employee identifier to activate.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> indicating whether the operation succeeded.</returns>
     public async Task<ApiResponse<bool>> ActivateEmployeeAsync(
         Guid currentAdminUserId,
         Guid employeeId,

@@ -5,9 +5,15 @@ using Huwiyati.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-// Fluent API Configuration for NationalIdCard entity
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="NationalIdCard"/> entity.
+/// </summary>
 public class NationalIdCardConfiguration : IEntityTypeConfiguration<NationalIdCard>
 {
+    /// <summary>
+    /// Configures table mapping, column constraints, default values, and navigation relationships for <see cref="NationalIdCard"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<NationalIdCard> builder)
     {
         builder.ToTable("NationalIdCards");

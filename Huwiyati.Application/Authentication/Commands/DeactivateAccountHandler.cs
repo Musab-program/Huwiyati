@@ -7,12 +7,21 @@ using Huwiyati.Domain.Entities.Authentication;
 using Huwiyati.Domain.Enums;
 using Huwiyati.Domain.Events.Authentication;
 
+/// <summary>
+/// Handles account deactivation requests by verifying credentials and OTP, untrusting registered devices, and publishing domain events.
+/// </summary>
 public class DeactivateAccountHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IDomainEventHandler<AccountDeactivatedEvent> _accountDeactivatedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DeactivateAccountHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="identityService">The identity management service.</param>
+    /// <param name="accountDeactivatedEventHandler">The domain event handler for deactivation notifications.</param>
     public DeactivateAccountHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -23,6 +32,12 @@ public class DeactivateAccountHandler
         _accountDeactivatedEventHandler = accountDeactivatedEventHandler;
     }
 
+    /// <summary>
+    /// Processes account deactivation asynchronously.
+    /// </summary>
+    /// <param name="command">The deactivation command details.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response indicating deactivation result.</returns>
     public async Task<ApiResponse<string>> DeactivateAccountAsync(
         DeactivateAccountCommand command,
         CancellationToken cancellationToken = default)

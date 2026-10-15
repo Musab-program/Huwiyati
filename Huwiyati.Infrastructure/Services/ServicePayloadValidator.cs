@@ -14,6 +14,9 @@ using Huwiyati.Application.Documents.Passport.Validators;
 using Huwiyati.Application.Family.Commands;
 using Huwiyati.Application.Family.Validators;
 
+/// <summary>
+/// Validator service that inspects, deserializes, and verifies dynamic service-specific payloads against dedicated command validators.
+/// </summary>
 public class ServicePayloadValidator : IServicePayloadValidator
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -21,6 +24,12 @@ public class ServicePayloadValidator : IServicePayloadValidator
         PropertyNameCaseInsensitive = true
     };
 
+    /// <summary>
+    /// Validates the dynamic service request payload against its corresponding service schema.
+    /// </summary>
+    /// <param name="serviceTypeCode">The service type code indicating the expected payload structure.</param>
+    /// <param name="rawPayload">The raw JSON element or payload object from the client.</param>
+    /// <returns>A <see cref="ServicePayloadValidationModel"/> indicating validation success or errors.</returns>
     public ServicePayloadValidationModel ValidatePayload(string serviceTypeCode, object? rawPayload)
     {
         if (rawPayload == null)

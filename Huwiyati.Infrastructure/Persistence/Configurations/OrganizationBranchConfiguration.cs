@@ -1,11 +1,18 @@
-﻿namespace Huwiyati.Infrastructure.Persistence.Configurations;
+namespace Huwiyati.Infrastructure.Persistence.Configurations;
 
 using Huwiyati.Domain.Entities.Organizations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="OrganizationBranch"/> entity.
+/// </summary>
 public class OrganizationBranchConfiguration : IEntityTypeConfiguration<OrganizationBranch>
 {
+    /// <summary>
+    /// Configures table mapping, properties, and constraints for <see cref="OrganizationBranch"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<OrganizationBranch> builder)
     {
         builder.ToTable("OrganizationBranches");

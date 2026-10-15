@@ -4,8 +4,15 @@ using Huwiyati.Domain.Entities.Documents;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="TravelRecord"/> entity.
+/// </summary>
 public class TravelRecordConfiguration : IEntityTypeConfiguration<TravelRecord>
 {
+    /// <summary>
+    /// Configures table mapping, column limits, and foreign key relationships to passports and branches for <see cref="TravelRecord"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<TravelRecord> builder)
     {
         builder.ToTable("TravelRecords");

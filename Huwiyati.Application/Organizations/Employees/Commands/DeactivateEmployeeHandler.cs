@@ -6,11 +6,19 @@ using Huwiyati.Application.Common.Interfaces;
 
 using Huwiyati.Domain.Events.Organizations;
 
+/// <summary>
+/// Handles deactivating an employee account within the administrator's branch.
+/// </summary>
 public class DeactivateEmployeeHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDomainEventHandler<EmployeeDeactivatedEvent> _employeeDeactivatedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DeactivateEmployeeHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="employeeDeactivatedEventHandler">The event handler for employee deactivated domain events.</param>
     public DeactivateEmployeeHandler(
         IApplicationDbContext context,
         IDomainEventHandler<EmployeeDeactivatedEvent> employeeDeactivatedEventHandler)
@@ -19,6 +27,13 @@ public class DeactivateEmployeeHandler
         _employeeDeactivatedEventHandler = employeeDeactivatedEventHandler;
     }
 
+    /// <summary>
+    /// Deactivates an employee record in the admin's branch asynchronously.
+    /// </summary>
+    /// <param name="currentAdminUserId">The user identifier of the executing administrator.</param>
+    /// <param name="employeeId">The employee identifier to deactivate.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> indicating whether the operation succeeded.</returns>
     public async Task<ApiResponse<bool>> DeactivateEmployeeAsync(
         Guid currentAdminUserId,
         Guid employeeId,

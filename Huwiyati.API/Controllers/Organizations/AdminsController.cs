@@ -6,6 +6,9 @@ using Huwiyati.Domain.Constants;
 using Huwiyati.Application.Organizations.Admins.Commands;
 using Huwiyati.Application.Organizations.Admins.Queries;
 
+/// <summary>
+/// Provides SuperAdmin endpoints for managing branch administrators, assigning administrative duties, and managing administrator roles.
+/// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize(Roles = AppRoles.SuperAdmin)]
@@ -18,6 +21,9 @@ public class AdminsController : ControllerBase
     private readonly RemoveAdminHandler _removeAdminHandler;
     private readonly RestoreAdminHandler _restoreAdminHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AdminsController"/> class.
+    /// </summary>
     public AdminsController(
         AssignAdminHandler assignAdminHandler,
         GetAdminsHandler getAdminsHandler,

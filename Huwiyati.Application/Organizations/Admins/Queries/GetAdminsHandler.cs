@@ -6,17 +6,32 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Organizations.Admins.DTOs;
 using Huwiyati.Domain.Constants;
 
+/// <summary>
+/// Handles querying administrators filtered by organization or branch.
+/// </summary>
 public class GetAdminsHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetAdminsHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
     public GetAdminsHandler(IApplicationDbContext context, IIdentityService identityService)
     {
         _context = context;
         _identityService = identityService;
     }
 
+    /// <summary>
+    /// Retrieves a list of administrators optionally filtered by organization and/or branch.
+    /// </summary>
+    /// <param name="organizationId">Optional organization filter identifier.</param>
+    /// <param name="branchId">Optional branch filter identifier.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="AdminDto"/> items.</returns>
     public async Task<ApiResponse<List<AdminDto>>> GetAdminsAsync(
         Guid? organizationId = null,
         Guid? branchId = null,

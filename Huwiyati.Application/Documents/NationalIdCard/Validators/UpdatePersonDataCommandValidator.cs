@@ -3,9 +3,14 @@ namespace Huwiyati.Application.Documents.NationalIdCard.Validators;
 using FluentValidation;
 using Huwiyati.Application.Documents.NationalIdCard.Commands;
 
-// Validator defining strict required validation rules for updating citizen person details
+/// <summary>
+/// Validator defining validation rules for <see cref="UpdatePersonDataCommand"/>.
+/// </summary>
 public class UpdatePersonDataCommandValidator : AbstractValidator<UpdatePersonDataCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpdatePersonDataCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public UpdatePersonDataCommandValidator()
     {
         RuleFor(x => x.NationalNumber)

@@ -27,7 +27,10 @@ public interface IFileStorageService
     Task<bool> DeleteFileAsync(string relativePath, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Alias method to delete a photo file by relative path.
+    /// Alias method to delete an existing photo file from storage by its relative path.
     /// </summary>
+    /// <param name="relativePath">The relative URL path of the photo to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>True if the photo was deleted or did not exist; false otherwise.</returns>
     Task<bool> DeletePhotoAsync(string relativePath, CancellationToken cancellationToken = default);
 }

@@ -11,6 +11,9 @@ using Huwiyati.Application.Notifications.EventHandlers.Documents;
 using Huwiyati.Application.Notifications.EventHandlers.Family;
 using Huwiyati.Domain.Enums;
 
+/// <summary>
+/// Background hosted service that monitors document validity and expiration milestones, dispatching reminder events and expiring outdated records.
+/// </summary>
 public class DocumentExpirationMonitorJob : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
@@ -21,6 +24,11 @@ public class DocumentExpirationMonitorJob : BackgroundService
     private static readonly int[] NationalIdMilestones = { 90, 60, 30, 7, 1 };
     private static readonly int[] FamilyCardMilestones = { 90, 60, 30, 7, 1 };
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DocumentExpirationMonitorJob"/> class.
+    /// </summary>
+    /// <param name="scopeFactory">The service scope factory to create scoped dependency contexts.</param>
+    /// <param name="logger">The logger instance.</param>
     public DocumentExpirationMonitorJob(
         IServiceScopeFactory scopeFactory,
         ILogger<DocumentExpirationMonitorJob> logger)
@@ -29,6 +37,11 @@ public class DocumentExpirationMonitorJob : BackgroundService
         _logger = logger;
     }
 
+    /// <summary>
+    /// Executes the background document expiration check periodically.
+    /// </summary>
+    /// <param name="stoppingToken">A token triggered when the background service host is stopping.</param>
+    /// <returns>A task representing the background execution lifecycle.</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Document Expiration Monitor Job started.");

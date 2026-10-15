@@ -5,16 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.Passport.DTOs;
 
-// Handler returning full lifetime travel history for a citizen by National Number across all passports
+/// <summary>
+/// Handles querying lifetime border travel history for a citizen across all past and active passports.
+/// </summary>
 public class GetPersonTravelHistoryHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetPersonTravelHistoryHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetPersonTravelHistoryHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all travel records associated with the citizen identified by national number.
+    /// </summary>
+    /// <param name="nationalNumber">The 11-digit national number of the citizen.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="TravelRecordDto"/>.</returns>
     public async Task<ApiResponse<List<TravelRecordDto>>> GetTravelHistoryByNationalNumberAsync(
         string nationalNumber,
         CancellationToken cancellationToken = default)

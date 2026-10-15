@@ -6,16 +6,27 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.Passport.DTOs;
 using Huwiyati.Domain.Enums;
 
-// Handler returning list of active Passports using AsNoTracking and Select projection
+/// <summary>
+/// Handles querying all active passports registered in the system.
+/// </summary>
 public class GetActivePassportsHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetActivePassportsHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetActivePassportsHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all active passports ordered chronologically by creation timestamp.
+    /// </summary>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="PassportDto"/>.</returns>
     public async Task<ApiResponse<List<PassportDto>>> GetActivePassportsAsync(
         CancellationToken cancellationToken = default)
     {

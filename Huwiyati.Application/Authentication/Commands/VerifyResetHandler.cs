@@ -4,15 +4,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Huwiyati.Application.Authentication.Commands;
 
+/// <summary>
+/// Handles pre-validation of password reset OTP codes without consuming them.
+/// </summary>
 public class VerifyResetHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VerifyResetHandler"/> class.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="identityService">The identity management service.</param>
     public VerifyResetHandler(IApplicationDbContext context, IIdentityService identityService)
     {
         _context = context;
         _identityService = identityService;
     }
+
+    /// <summary>
+    /// Checks if the supplied password reset code is valid and not expired.
+    /// </summary>
+    /// <param name="command">The verification command parameters.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response indicating code validity.</returns>
     public async Task<ApiResponse<bool>> VerifyResetCodeAsync(VerifyResetCommand command, CancellationToken cancellationToken = default)
     {
         // 1. Get UserId by National Number

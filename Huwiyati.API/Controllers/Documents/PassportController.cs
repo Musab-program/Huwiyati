@@ -6,6 +6,9 @@ using Huwiyati.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Provides administrative endpoints for issuing, renewing, and querying passport records and citizen passport histories.
+/// </summary>
 [ApiController]
 [Route("api/v1/passports")]
 //[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
@@ -17,6 +20,9 @@ public class PassportController : ControllerBase
     private readonly GetPassportByIdHandler _getPassportByIdHandler;
     private readonly GetPersonPassportHistoryHandler _getPersonPassportHistoryHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PassportController"/> class.
+    /// </summary>
     public PassportController(
         IssuePassportHandler issuePassportHandler,
         RenewPassportHandler renewPassportHandler,

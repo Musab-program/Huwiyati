@@ -9,6 +9,9 @@ using Huwiyati.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Provides administrative and employee endpoints for processing, reviewing, approving, rejecting, and tracking branch service requests.
+/// </summary>
 [ApiController]
 [Route("api/v1/employee/service-requests")]
 [Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
@@ -22,6 +25,9 @@ public class EmployeeServiceRequestsController : ControllerBase
     private readonly GetServiceTypesHandler _getServiceTypesHandler;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EmployeeServiceRequestsController"/> class.
+    /// </summary>
     public EmployeeServiceRequestsController(
         CreateServiceRequestHandler createHandler,
         ChangeServiceRequestStatusHandler changeStatusHandler,
@@ -40,6 +46,12 @@ public class EmployeeServiceRequestsController : ControllerBase
         _identityService = identityService;
     }
 
+    /// <summary>
+    /// Creates a service request on behalf of a citizen directly by an employee.
+    /// </summary>
+    /// <param name="command">Service request creation command.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response with created request details.</returns>
     [HttpPost]
     public async Task<IActionResult> CreateRequestOnBehalf([FromBody] CreateServiceRequestCommand command, CancellationToken cancellationToken)
     {
@@ -47,6 +59,12 @@ public class EmployeeServiceRequestsController : ControllerBase
         return StatusCode(result.StatusCode, result);
     }
 
+    /// <summary>
+    /// Updates the review/fulfillment status of a service request and appends an audit status history note.
+    /// </summary>
+    /// <param name="command">Status update command containing new status and note.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response with updated request information.</returns>
     [HttpPost("change-status")]
     public async Task<IActionResult> ChangeRequestStatus([FromBody] ChangeServiceRequestStatusCommand command, CancellationToken cancellationToken)
     {
@@ -60,6 +78,12 @@ public class EmployeeServiceRequestsController : ControllerBase
         return StatusCode(result.StatusCode, result);
     }
 
+    /// <summary>
+    /// Cancels a service request administratively on behalf of the branch authority.
+    /// </summary>
+    /// <param name="command">Cancellation payload including reason.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response confirming cancellation.</returns>
     [HttpPost("cancel")]
     public async Task<IActionResult> CancelRequestOnBehalf([FromBody] CancelServiceRequestCommand command, CancellationToken cancellationToken)
     {
@@ -73,6 +97,12 @@ public class EmployeeServiceRequestsController : ControllerBase
         return StatusCode(result.StatusCode, result);
     }
 
+    /// <summary>
+    /// Retrieves a paginated list of service requests assigned to the logged-in employee's branch.
+    /// </summary>
+    /// <param name="query">Pagination and status filter parameters.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of service requests for the branch.</returns>
     [HttpGet]
     public async Task<IActionResult> GetBranchRequests([FromQuery] GetBranchServiceRequestsQuery query, CancellationToken cancellationToken)
     {
@@ -86,6 +116,12 @@ public class EmployeeServiceRequestsController : ControllerBase
         return StatusCode(result.StatusCode, result);
     }
 
+    /// <summary>
+    /// Retrieves full details of a specific service request assigned to the employee's branch.
+    /// </summary>
+    /// <param name="id">The unique identifier of the service request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response with detailed service request information.</returns>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetRequestById(Guid id, CancellationToken cancellationToken)
     {
@@ -99,6 +135,12 @@ public class EmployeeServiceRequestsController : ControllerBase
         return StatusCode(result.StatusCode, result);
     }
 
+    /// <summary>
+    /// Retrieves available service types for the employee's administrative organization.
+    /// </summary>
+    /// <param name="organizationId">Optional organization ID filter.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response with the list of service types.</returns>
     [HttpGet("service-types")]
     public async Task<IActionResult> GetServiceTypes([FromQuery] Guid? organizationId, CancellationToken cancellationToken)
     {

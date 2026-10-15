@@ -6,15 +6,27 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Family.DTOs;
 using Huwiyati.Domain.Enums;
 
+/// <summary>
+/// Handles querying all active family units across the civil registry.
+/// </summary>
 public class GetActiveFamiliesHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetActiveFamiliesHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetActiveFamiliesHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all active family summaries including head of family details and member counts.
+    /// </summary>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="FamilySummaryDto"/>.</returns>
     public async Task<ApiResponse<List<FamilySummaryDto>>> GetActiveFamiliesAsync(CancellationToken cancellationToken = default)
     {
         var activeFamilies = await _context.Families

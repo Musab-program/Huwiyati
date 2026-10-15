@@ -6,15 +6,28 @@ using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.Passport.DTOs;
 using Huwiyati.Domain.Enums;
 
+/// <summary>
+/// Handles querying the currently active passport for a citizen identified by person ID.
+/// </summary>
 public class GetActivePassportByPersonIdHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetActivePassportByPersonIdHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetActivePassportByPersonIdHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves active passport details projected into <see cref="PassportDto"/> for a specified person.
+    /// </summary>
+    /// <param name="personId">The unique person identifier of the citizen.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the active <see cref="PassportDto"/> or a 404 response.</returns>
     public async Task<ApiResponse<PassportDto>> GetByPersonIdAsync(
         Guid personId,
         CancellationToken cancellationToken = default)

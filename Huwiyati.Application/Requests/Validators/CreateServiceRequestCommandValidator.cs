@@ -3,9 +3,14 @@ namespace Huwiyati.Application.Requests.Validators;
 using FluentValidation;
 using Huwiyati.Application.Requests.Commands;
 
-// Validator defining FluentValidation rules for CreateServiceRequestCommand
+/// <summary>
+/// Validator for validating input parameters of <see cref="CreateServiceRequestCommand"/>.
+/// </summary>
 public class CreateServiceRequestCommandValidator : AbstractValidator<CreateServiceRequestCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateServiceRequestCommandValidator"/> class.
+    /// </summary>
     public CreateServiceRequestCommandValidator()
     {
         RuleFor(v => v.ServiceTypeId)

@@ -3,9 +3,14 @@ namespace Huwiyati.Application.Family.Validators;
 using FluentValidation;
 using Huwiyati.Application.Family.Commands;
 
-// Validator defining validation rules for creating a new Family Card command
+/// <summary>
+/// Validator defining validation rules for <see cref="CreateFamilyCardCommand"/>.
+/// </summary>
 public class CreateFamilyCardCommandValidator : AbstractValidator<CreateFamilyCardCommand>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateFamilyCardCommandValidator"/> class and configures validation rules.
+    /// </summary>
     public CreateFamilyCardCommandValidator()
     {
         RuleFor(x => x.HusbandNationalNumber)

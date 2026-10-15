@@ -5,15 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.DeathCertificate.DTOs;
 
+/// <summary>
+/// Handles querying a specific death certificate record by its unique identifier.
+/// </summary>
 public class GetDeathCertificateByIdHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetDeathCertificateByIdHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetDeathCertificateByIdHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves death certificate details projected into <see cref="DeathCertificateDto"/> by ID.
+    /// </summary>
+    /// <param name="id">The unique identifier of the death certificate.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the matching <see cref="DeathCertificateDto"/> or a 404 response.</returns>
     public async Task<ApiResponse<DeathCertificateDto>> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)

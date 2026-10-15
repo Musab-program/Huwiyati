@@ -8,11 +8,19 @@ using Huwiyati.Application.Documents.DeathCertificate.DTOs;
 
 using Huwiyati.Domain.Events.Documents;
 
+/// <summary>
+/// Handles updating registered death certificate records and synchronizing family member departure dates.
+/// </summary>
 public class UpdateDeathCertificateHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDomainEventHandler<DeathCertificateUpdatedEvent> _deathCertificateUpdatedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpdateDeathCertificateHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="deathCertificateUpdatedEventHandler">The domain event handler for death certificate update notifications.</param>
     public UpdateDeathCertificateHandler(
         IApplicationDbContext context,
         IDomainEventHandler<DeathCertificateUpdatedEvent> deathCertificateUpdatedEventHandler)
@@ -21,6 +29,12 @@ public class UpdateDeathCertificateHandler
         _deathCertificateUpdatedEventHandler = deathCertificateUpdatedEventHandler;
     }
 
+    /// <summary>
+    /// Updates death record details, synchronizes family records, and notifies relatives.
+    /// </summary>
+    /// <param name="command">The command carrying updated death certificate attributes.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the updated <see cref="DeathCertificateDto"/>.</returns>
     public async Task<ApiResponse<DeathCertificateDto>> UpdateAsync(
         UpdateDeathCertificateCommand command,
         CancellationToken cancellationToken = default)

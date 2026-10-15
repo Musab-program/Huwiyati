@@ -5,15 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Family.DTOs;
 
+/// <summary>
+/// Handles querying the issuance and renewal history of a family card identified by its family number.
+/// </summary>
 public class GetFamilyHistoryByFamilyNumberHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetFamilyHistoryByFamilyNumberHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetFamilyHistoryByFamilyNumberHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves all historical and active family cards matching the given family register number.
+    /// </summary>
+    /// <param name="familyNumber">The unique family register number.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing a list of <see cref="FamilyDto"/>.</returns>
     public async Task<ApiResponse<List<FamilyDto>>> GetHistoryAsync(string familyNumber, CancellationToken cancellationToken = default)
     {
         var history = await _context.Families

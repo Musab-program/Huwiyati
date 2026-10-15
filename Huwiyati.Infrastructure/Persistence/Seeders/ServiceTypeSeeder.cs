@@ -3,8 +3,16 @@ namespace Huwiyati.Infrastructure.Persistence.Seeders;
 using Huwiyati.Domain.Entities.CivilRegistry;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Provides seeding logic for default civil and identity service types.
+/// </summary>
 public static class ServiceTypeSeeder
 {
+    /// <summary>
+    /// Seeds the default citizen service types (e.g., national ID renewal, passport renewal) into the database.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task SeedServiceTypesAsync(ApplicationDbContext context)
     {
         // Fetch Organizations to associate ServiceTypes with correct authorities

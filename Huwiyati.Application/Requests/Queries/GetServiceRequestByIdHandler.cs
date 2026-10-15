@@ -5,16 +5,30 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Huwiyati.Application.Requests.Queries;
 
-// Handler responsible for retrieving single ServiceRequest by ID with authorization verification
+/// <summary>
+/// Handles querying a single service request by its unique identifier, enforcing access control permissions.
+/// </summary>
 public class GetServiceRequestByIdHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetServiceRequestByIdHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public GetServiceRequestByIdHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves a service request by its unique identifier asynchronously.
+    /// </summary>
+    /// <param name="requestId">The service request unique identifier.</param>
+    /// <param name="currentPersonId">Optional person identifier if called by a citizen.</param>
+    /// <param name="currentEmployeeUserId">Optional employee user identifier if called by branch staff.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the resulting <see cref="ServiceRequestDto"/>.</returns>
     public async Task<ApiResponse<ServiceRequestDto>> GetByIdAsync(
         Guid requestId,
         Guid? currentPersonId = null,

@@ -5,15 +5,28 @@ using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Organizations.Branches.DTOs;
 
+/// <summary>
+/// Handles updating configuration and contact details for an existing organization branch.
+/// </summary>
 public class UpdateBranchHandler
 {
     private readonly IApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpdateBranchHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
     public UpdateBranchHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Updates the details of an organization branch asynchronously.
+    /// </summary>
+    /// <param name="command">The update branch command payload.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the updated <see cref="BranchDto"/>.</returns>
     public async Task<ApiResponse<BranchDto>> UpdateBranchAsync(
         UpdateBranchCommand command,
         CancellationToken cancellationToken = default)

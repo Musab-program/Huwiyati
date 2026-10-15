@@ -8,6 +8,9 @@ using Huwiyati.Domain.Constants;
 using Huwiyati.Application.Organizations.Employees.Commands;
 using Huwiyati.Application.Organizations.Employees.Queries;
 
+/// <summary>
+/// Provides branch administrator endpoints for managing branch employees, assignments, branch transfers, and activation statuses.
+/// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize(Roles = AppRoles.Admin)]
@@ -21,6 +24,9 @@ public class EmployeesController : ControllerBase
     private readonly ActivateEmployeeHandler _activateEmployeeHandler;
     private readonly IIdentityService _identityService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EmployeesController"/> class.
+    /// </summary>
     public EmployeesController(
         AssignEmployeeHandler assignEmployeeHandler,
         UpdateEmployeeHandler updateEmployeeHandler,

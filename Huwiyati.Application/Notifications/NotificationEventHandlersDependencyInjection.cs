@@ -15,8 +15,16 @@ using Huwiyati.Domain.Events.Passport;
 using Huwiyati.Domain.Events.Requests;
 using Microsoft.Extensions.DependencyInjection;
 
+/// <summary>
+/// Provides extension methods for registering all notification domain event handlers into the dependency injection container.
+/// </summary>
 public static class NotificationEventHandlersDependencyInjection
 {
+    /// <summary>
+    /// Registers all domain event handlers responsible for dispatching in-app notifications.
+    /// </summary>
+    /// <param name="services">The service collection to populate.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddNotificationEventHandlers(this IServiceCollection services)
     {
         // 1. Passport Event Handlers

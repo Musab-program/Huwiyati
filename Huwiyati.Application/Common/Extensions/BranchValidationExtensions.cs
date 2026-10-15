@@ -4,8 +4,18 @@ using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Common.Models;
 
+/// <summary>
+/// Provides extension methods for validating organization branches and their operational status against business requirements.
+/// </summary>
 public static class BranchValidationExtensions
 {
+    /// <summary>
+    /// Validates whether a given organization branch exists and whether both it and its parent organization are active.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="branchId">The unique identifier of the branch to validate.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A <see cref="BranchValidationModel"/> describing the validation result and branch metadata.</returns>
     public static async Task<BranchValidationModel> ValidateActiveBranchAsync(
         this IApplicationDbContext context,
         Guid branchId,
@@ -56,6 +66,13 @@ public static class BranchValidationExtensions
         };
     }
 
+    /// <summary>
+    /// Validates whether a given organization branch belongs specifically to the Civil Registry authority and is active.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="branchId">The unique identifier of the branch to validate.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A <see cref="BranchValidationModel"/> describing the validation result and branch metadata.</returns>
     public static async Task<BranchValidationModel> ValidateCivilRegistryBranchAsync(
         this IApplicationDbContext context,
         Guid branchId,
@@ -116,6 +133,13 @@ public static class BranchValidationExtensions
         };
     }
 
+    /// <summary>
+    /// Validates whether a given organization branch belongs specifically to the Immigration and Passport Authority and is active.
+    /// </summary>
+    /// <param name="context">The database context instance.</param>
+    /// <param name="branchId">The unique identifier of the branch to validate.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A <see cref="BranchValidationModel"/> describing the validation result and branch metadata.</returns>
     public static async Task<BranchValidationModel> ValidateImmigrationBranchAsync(
         this IApplicationDbContext context,
         Guid branchId,

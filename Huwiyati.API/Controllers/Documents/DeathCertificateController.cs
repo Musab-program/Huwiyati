@@ -6,6 +6,9 @@ using Huwiyati.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Provides administrative endpoints for issuing, updating, and querying official death certificates.
+/// </summary>
 [ApiController]
 [Route("api/v1/death-certificates")]
 [Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
@@ -16,6 +19,9 @@ public class DeathCertificateController : ControllerBase
     private readonly GetAllDeathCertificatesHandler _getAllDeathCertificatesHandler;
     private readonly GetDeathCertificateByIdHandler _getDeathCertificateByIdHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DeathCertificateController"/> class.
+    /// </summary>
     public DeathCertificateController(
         IssueDeathCertificateHandler issueDeathCertificateHandler,
         UpdateDeathCertificateHandler updateDeathCertificateHandler,

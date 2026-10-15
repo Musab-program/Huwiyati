@@ -4,8 +4,15 @@ using Huwiyati.Domain.Entities.CivilRegistry;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="ServiceType"/> entity.
+/// </summary>
 public class ServiceTypeConfiguration : IEntityTypeConfiguration<ServiceType>
 {
+    /// <summary>
+    /// Configures primary keys, unique service code indexes, and parent organization mapping for <see cref="ServiceType"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
     public void Configure(EntityTypeBuilder<ServiceType> builder)
     {
         builder.HasKey(x => x.Id);

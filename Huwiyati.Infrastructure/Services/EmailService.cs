@@ -6,15 +6,30 @@ using MimeKit;
 using Microsoft.Extensions.Configuration;
 using Huwiyati.Application.Common.Interfaces;
 
+/// <summary>
+/// Infrastructure service for sending emails and OTP verification messages via SMTP.
+/// </summary>
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _configuration;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EmailService"/> class.
+    /// </summary>
+    /// <param name="configuration">The application configuration root containing email credentials.</param>
     public EmailService(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// Sends an email message asynchronously via SMTP.
+    /// </summary>
+    /// <param name="toEmail">The destination recipient email address.</param>
+    /// <param name="subject">The email subject header.</param>
+    /// <param name="body">The HTML or plain text body content.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns><c>true</c> if successfully transmitted; otherwise, <c>false</c>.</returns>
     public async Task<bool> SendEmailAsync(string toEmail, string subject, string body, CancellationToken cancellationToken = default)
     {
         var emailSettings = _configuration.GetSection("EmailSettings");
@@ -66,6 +81,15 @@ public class EmailService : IEmailService
         }
     }
 
+    /// <summary>
+    /// Sends an OTP verification code inside a stylized email template asynchronously.
+    /// </summary>
+    /// <param name="toEmail">The destination recipient email address.</param>
+    /// <param name="subject">The email subject header.</param>
+    /// <param name="otpCode">The one-time numerical passcode.</param>
+    /// <param name="purposeTitle">The operation or action title requiring verification.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns><c>true</c> if successfully sent; otherwise, <c>false</c>.</returns>
     public async Task<bool> SendOtpEmailAsync(string toEmail, string subject, string otpCode, string purposeTitle, CancellationToken cancellationToken = default)
     {
         var htmlBody = $@"

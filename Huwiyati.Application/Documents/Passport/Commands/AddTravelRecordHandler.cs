@@ -10,12 +10,19 @@ using Huwiyati.Domain.Enums;
 
 using Huwiyati.Domain.Events.Passport;
 
-// Handler carrying out the business logic for adding a travel record
+/// <summary>
+/// Handles registering travel departure and arrival movements recorded at border ports and airports.
+/// </summary>
 public class AddTravelRecordHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDomainEventHandler<TravelRecordAddedEvent> _travelRecordAddedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AddTravelRecordHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="travelRecordAddedEventHandler">The domain event handler for travel record notifications.</param>
     public AddTravelRecordHandler(
         IApplicationDbContext context,
         IDomainEventHandler<TravelRecordAddedEvent> travelRecordAddedEventHandler)
@@ -24,6 +31,12 @@ public class AddTravelRecordHandler
         _travelRecordAddedEventHandler = travelRecordAddedEventHandler;
     }
 
+    /// <summary>
+    /// Validates immigration branch, verifies active passport status, persists travel movement, and raises domain events.
+    /// </summary>
+    /// <param name="command">The command carrying passport number and travel movement details.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the created <see cref="TravelRecordDto"/>.</returns>
     public async Task<ApiResponse<TravelRecordDto>> AddAsync(
         AddTravelRecordCommand command,
         CancellationToken cancellationToken = default)

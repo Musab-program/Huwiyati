@@ -7,11 +7,19 @@ using Huwiyati.Application.Documents.BirthCertificate.DTOs;
 
 using Huwiyati.Domain.Events.Documents;
 
+/// <summary>
+/// Handles updating newborn or child personal records attached to an existing birth certificate.
+/// </summary>
 public class UpdateChildDataHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IDomainEventHandler<ChildDataUpdatedEvent> _childDataUpdatedEventHandler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpdateChildDataHandler"/> class.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="childDataUpdatedEventHandler">The domain event handler for child data update notifications.</param>
     public UpdateChildDataHandler(
         IApplicationDbContext context,
         IDomainEventHandler<ChildDataUpdatedEvent> childDataUpdatedEventHandler)
@@ -20,6 +28,12 @@ public class UpdateChildDataHandler
         _childDataUpdatedEventHandler = childDataUpdatedEventHandler;
     }
 
+    /// <summary>
+    /// Updates the child's demographic and personal information, saving changes and notifying parents.
+    /// </summary>
+    /// <param name="command">The command carrying updated child attributes.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the operation to complete.</param>
+    /// <returns>An <see cref="ApiResponse{T}"/> containing the updated <see cref="BirthCertificateDto"/>.</returns>
     public async Task<ApiResponse<BirthCertificateDto>> UpdateAsync(
         UpdateChildDataCommand command,
         CancellationToken cancellationToken = default)

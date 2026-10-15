@@ -11,6 +11,10 @@ public class QRCodeService : IQRCodeService
 {
     private readonly string _baseUrl;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="QRCodeService"/> class.
+    /// </summary>
+    /// <param name="configuration">The application configuration root containing base URL settings.</param>
     public QRCodeService(IConfiguration configuration)
     {
         // Step 1: Retrieve the application base URL from configuration or fallback to default
