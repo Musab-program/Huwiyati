@@ -66,6 +66,12 @@ public class AddTravelRecordHandler
                 "Travel record can only be added to an active Passport.", statusCode: 400);
         }
 
+        if (passport.Person.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<TravelRecordDto>.Failure(
+                "Cannot add a travel record for a deceased citizen.", statusCode: 400);
+        }
+
         // 4. Create TravelRecord entity
         var travelRecord = new TravelRecord
         {

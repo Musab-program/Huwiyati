@@ -60,6 +60,12 @@ public class RenewNationalIdCardHandler
                 "No citizen record found with the provided National Number.", statusCode: 404);
         }
 
+        if (person.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<NationalIdCardDto>.Failure(
+                "Cannot renew a national ID card for a deceased citizen.", statusCode: 400);
+        }
+
         // 2. Verify issuing branch exists
         var branch = await _context.ValidateCivilRegistryBranchAsync(command.IssuingBranchId, cancellationToken);
         if (!branch.IsValid)

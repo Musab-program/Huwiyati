@@ -66,6 +66,16 @@ public class RenewFamilyCardHandler
                 "No Family record found with the provided Family Number.", statusCode: 404);
         }
 
+        // 2.1 Verify Head of Family is not deceased in Civil Registry
+        var headOfFamily = await _context.Persons
+            .FirstOrDefaultAsync(p => p.Id == existingFamily.HeadOfFamilyPersonId, cancellationToken);
+
+        if (headOfFamily != null && headOfFamily.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<FamilyDto>.Failure(
+                "Cannot renew family card because the registered head of family is deceased in Civil Registry.", statusCode: 400);
+        }
+
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
         // 3. If the card is currently Active, check if it is within 90 days of expiry

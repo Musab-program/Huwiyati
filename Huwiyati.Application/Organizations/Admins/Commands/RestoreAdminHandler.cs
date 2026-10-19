@@ -15,6 +15,7 @@ public class RestoreAdminHandler
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IDomainEventHandler<AdminRestoredEvent> _adminRestoredEventHandler;
+    private readonly IBranchAdminValidator _branchAdminValidator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestoreAdminHandler"/> class.
@@ -22,14 +23,17 @@ public class RestoreAdminHandler
     /// <param name="context">The application database context.</param>
     /// <param name="identityService">The identity management service.</param>
     /// <param name="adminRestoredEventHandler">The event handler for admin restored domain events.</param>
+    /// <param name="branchAdminValidator">The validator ensuring single admin per branch.</param>
     public RestoreAdminHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
-        IDomainEventHandler<AdminRestoredEvent> adminRestoredEventHandler)
+        IDomainEventHandler<AdminRestoredEvent> adminRestoredEventHandler,
+        IBranchAdminValidator branchAdminValidator)
     {
         _context = context;
         _identityService = identityService;
         _adminRestoredEventHandler = adminRestoredEventHandler;
+        _branchAdminValidator = branchAdminValidator;
     }
 
     /// <summary>
@@ -50,6 +54,44 @@ public class RestoreAdminHandler
             return ApiResponse<bool>.Failure(
                 "Admin / Employee record was not found.",
                 statusCode: 404);
+        }
+
+        // Verify employee record is active
+        if (!emp.IsActive)
+        {
+            return ApiResponse<bool>.Failure(
+                "Cannot restore Admin role to a deactivated employee record.",
+                statusCode: 400);
+        }
+
+        // Verify user account is active
+        if (!await _identityService.IsUserActiveAsync(emp.UserId, cancellationToken))
+        {
+            return ApiResponse<bool>.Failure(
+                "The user account is not active.",
+                statusCode: 400);
+        }
+
+        // Verify administrator is not deceased in Civil Registry
+        var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(emp.UserId, cancellationToken);
+        var person = contactInfo.HasValue && contactInfo.Value.PersonId != Guid.Empty
+            ? await _context.Persons.FirstOrDefaultAsync(p => p.Id == contactInfo.Value.PersonId, cancellationToken)
+            : null;
+
+        if (person != null && person.PersonStatus == Huwiyati.Domain.Enums.PersonStatus.Deceased)
+        {
+            return ApiResponse<bool>.Failure(
+                "Cannot restore Admin role to a deceased citizen.",
+                statusCode: 400);
+        }
+
+        // Verify branch does not already have an active admin
+        bool branchHasAdmin = await _branchAdminValidator.HasActiveBranchAdminAsync(emp.BranchId, emp.UserId, cancellationToken);
+        if (branchHasAdmin)
+        {
+            return ApiResponse<bool>.Failure(
+                "Cannot restore Admin role because the branch already has an active administrator.",
+                statusCode: 400);
         }
 
         // Re-assign Admin role to user

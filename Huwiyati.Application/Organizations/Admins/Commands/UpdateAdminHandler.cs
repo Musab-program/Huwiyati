@@ -17,6 +17,7 @@ public class UpdateAdminHandler
     private readonly IIdentityService _identityService;
     private readonly IEmployeeNumberGenerator _employeeNumberGenerator;
     private readonly IDomainEventHandler<AdminUpdatedEvent> _adminUpdatedEventHandler;
+    private readonly IBranchAdminValidator _branchAdminValidator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UpdateAdminHandler"/> class.
@@ -25,16 +26,19 @@ public class UpdateAdminHandler
     /// <param name="identityService">The identity management service.</param>
     /// <param name="employeeNumberGenerator">The generator for standardized employee numbers.</param>
     /// <param name="adminUpdatedEventHandler">The event handler for admin update domain events.</param>
+    /// <param name="branchAdminValidator">The validator ensuring single admin per branch.</param>
     public UpdateAdminHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
         IEmployeeNumberGenerator employeeNumberGenerator,
-        IDomainEventHandler<AdminUpdatedEvent> adminUpdatedEventHandler)
+        IDomainEventHandler<AdminUpdatedEvent> adminUpdatedEventHandler,
+        IBranchAdminValidator branchAdminValidator)
     {
         _context = context;
         _identityService = identityService;
         _employeeNumberGenerator = employeeNumberGenerator;
         _adminUpdatedEventHandler = adminUpdatedEventHandler;
+        _branchAdminValidator = branchAdminValidator;
     }
 
     /// <summary>
@@ -57,6 +61,35 @@ public class UpdateAdminHandler
             return ApiResponse<AdminDto>.Failure(
                 "Admin record was not found.",
                 statusCode: 404);
+        }
+
+        // Verify that the employee record is active
+        if (!emp.IsActive)
+        {
+            return ApiResponse<AdminDto>.Failure(
+                "Cannot update an inactive administrator record.",
+                statusCode: 400);
+        }
+
+        // Verify that the user account is active
+        if (!await _identityService.IsUserActiveAsync(emp.UserId, cancellationToken))
+        {
+            return ApiResponse<AdminDto>.Failure(
+                "The user account associated with this administrator is not active.",
+                statusCode: 400);
+        }
+
+        // Verify that the administrator is not deceased in Civil Registry
+        var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(emp.UserId, cancellationToken);
+        var person = contactInfo.HasValue
+            ? await _context.Persons.FirstOrDefaultAsync(p => p.Id == contactInfo.Value.PersonId, cancellationToken)
+            : null;
+
+        if (person != null && person.PersonStatus == Huwiyati.Domain.Enums.PersonStatus.Deceased)
+        {
+            return ApiResponse<AdminDto>.Failure(
+                "Cannot update a deceased administrator record.",
+                statusCode: 400);
         }
 
         // Verify that this employee has the Admin role
@@ -92,6 +125,15 @@ public class UpdateAdminHandler
                 statusCode: 404);
         }
 
+        // Verify target branch does not already have an active admin
+        bool targetBranchHasAdmin = await _branchAdminValidator.HasActiveBranchAdminAsync(command.BranchId, emp.UserId, cancellationToken);
+        if (targetBranchHasAdmin)
+        {
+            return ApiResponse<AdminDto>.Failure(
+                "The target branch already has an active administrator. Please relieve the administrator of that branch first.",
+                statusCode: 400);
+        }
+
         // Generate new employee number for the new branch
         string newEmployeeNumber = await _employeeNumberGenerator.GenerateEmployeeNumberAsync(command.BranchId, cancellationToken);
 
@@ -105,11 +147,6 @@ public class UpdateAdminHandler
         // 4.1 Trigger Domain Event to notify user
         var updateEvent = new AdminUpdatedEvent(emp.UserId, newBranchData.Branch.BranchName);
         await _adminUpdatedEventHandler.HandleAsync(updateEvent, cancellationToken);
-
-        var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(emp.UserId, cancellationToken);
-        var person = contactInfo.HasValue
-            ? await _context.Persons.FirstOrDefaultAsync(p => p.Id == contactInfo.Value.PersonId, cancellationToken)
-            : null;
 
         var adminDto = new AdminDto
         {

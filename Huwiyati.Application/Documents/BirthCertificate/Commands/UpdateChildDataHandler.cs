@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Documents.BirthCertificate.DTOs;
+using Huwiyati.Domain.Enums;
 
 using Huwiyati.Domain.Events.Documents;
 

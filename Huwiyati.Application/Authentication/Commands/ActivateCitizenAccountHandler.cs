@@ -49,6 +49,13 @@ public class ActivateCitizenAccountHandler
                 statusCode: 404);
         }
 
+        if (person.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<CitizenAccountStatusDto>.Failure(
+                "Cannot activate an account for a citizen registered as deceased in Civil Registry.",
+                statusCode: 400);
+        }
+
         // 2. Find User Account for Person via Identity Service
         var userDetails = await _identityService.GetUserAccountDetailsByPersonIdAsync(person.Id, cancellationToken);
 

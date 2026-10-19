@@ -96,39 +96,41 @@ public class LoginHandler
         Guid? validatedOrganizationId = null;
         Guid? validatedBranchId = null;
 
-        // 5. Role & Branch Context Validation for Employee and Admin (WITHOUT using Include)
+        // 5. Role & Organization Context Validation for Employee and Admin
         if (string.Equals(matchedRole, AppRoles.Employee, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(matchedRole, AppRoles.Admin, StringComparison.OrdinalIgnoreCase))
         {
-            if (!command.BranchId.HasValue || command.BranchId.Value == Guid.Empty)
-            {
-                return ApiResponse<LoginResultDto>.Failure(
-                    "Branch ID is required for staff authentication.",
-                    statusCode: 400);
-            }
-
             var employeeRecord = await _context.Employees
                 .AsNoTracking()
-                .FirstOrDefaultAsync(e => e.UserId == userLoginInfo.UserId
-                                       && e.BranchId == command.BranchId.Value
-                                       && e.IsActive, cancellation);
+                .FirstOrDefaultAsync(e => e.UserId == userLoginInfo.UserId && e.IsActive, cancellation);
 
             if (employeeRecord == null)
             {
                 return ApiResponse<LoginResultDto>.Failure(
-                    "Access Denied: You are not assigned as an active staff member for this branch.",
+                    "Access Denied: You are not assigned as an active staff member.",
                     statusCode: 403);
             }
 
             var branch = await _context.OrganizationBranches
                 .AsNoTracking()
-                .FirstOrDefaultAsync(b => b.Id == command.BranchId.Value && b.IsActive, cancellation);
+                .FirstOrDefaultAsync(b => b.Id == employeeRecord.BranchId && b.IsActive, cancellation);
 
             if (branch == null)
             {
                 return ApiResponse<LoginResultDto>.Failure(
-                    "Access Denied: The specified branch is inactive or does not exist.",
+                    "Access Denied: Your assigned branch is inactive or does not exist.",
                     statusCode: 403);
+            }
+
+            // If an organization portal context was specified, ensure the employee belongs to this organization
+            if (command.OrganizationId.HasValue && command.OrganizationId.Value != Guid.Empty)
+            {
+                if (branch.OrganizationId != command.OrganizationId.Value)
+                {
+                    return ApiResponse<LoginResultDto>.Failure(
+                        "Access Denied: Your staff account is not affiliated with the selected organization.",
+                        statusCode: 403);
+                }
             }
 
             validatedBranchId = branch.Id;

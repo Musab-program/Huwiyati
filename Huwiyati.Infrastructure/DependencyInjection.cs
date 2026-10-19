@@ -83,6 +83,9 @@ public static class DependencyInjection
         // 11.1 Register ServiceRequestFulfillmentService Implementation
         services.AddScoped<IServiceRequestFulfillmentService, ServiceRequestFulfillmentService>();
 
+        // 11.2 Register BranchAdminValidator Implementation
+        services.AddScoped<IBranchAdminValidator, BranchAdminValidator>();
+
         // 12. Register QRCodeService Implementation
         services.AddTransient<IQRCodeService, QRCodeService>();
 

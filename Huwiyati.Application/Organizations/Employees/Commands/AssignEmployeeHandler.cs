@@ -74,6 +74,13 @@ public class AssignEmployeeHandler
                 statusCode: 404);
         }
 
+        if (person.PersonStatus == Huwiyati.Domain.Enums.PersonStatus.Deceased)
+        {
+            return ApiResponse<EmployeeDto>.Failure(
+                "Cannot assign a deceased citizen as an employee.",
+                statusCode: 400);
+        }
+
         // 3. Get target UserId and verify user account exists and is Active
         var userId = await _identityService.GetUserIdByNationalNumberAsync(command.NationalNumber, cancellationToken);
 
@@ -81,6 +88,15 @@ public class AssignEmployeeHandler
         {
             return ApiResponse<EmployeeDto>.Failure(
                 "Citizen does not have an active user account in the system.",
+                statusCode: 400);
+        }
+
+        // 3.1 Verify target user does not possess the SuperAdmin role
+        var targetUserRoles = await _identityService.GetUserRolesAsync(userId.Value, cancellationToken);
+        if (targetUserRoles.Contains(AppRoles.SuperAdmin))
+        {
+            return ApiResponse<EmployeeDto>.Failure(
+                "Users with SuperAdmin role cannot be assigned as branch employees.",
                 statusCode: 400);
         }
 

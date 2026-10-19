@@ -54,6 +54,12 @@ public class UpdatePersonDataHandler
                 "No citizen record found with the provided National Number.", statusCode: 404);
         }
 
+        if (person.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<NationalIdCardDto>.Failure(
+                "Cannot update civil registry data for a deceased citizen.", statusCode: 400);
+        }
+
         // 2. Project active National ID Card details using Select instead of Include for optimal performance
         var activeCardDto = await _context.NationalIdCards
             .Where(c => c.PersonId == person.Id && c.Status == NationalIdCardStatus.Active)

@@ -3,6 +3,7 @@ namespace Huwiyati.API.Controllers.Organizations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Huwiyati.Domain.Constants;
+using Huwiyati.Application.Common.Interfaces;
 using Huwiyati.Application.Organizations.Admins.Commands;
 using Huwiyati.Application.Organizations.Admins.Queries;
 
@@ -20,6 +21,9 @@ public class AdminsController : ControllerBase
     private readonly UpdateAdminHandler _updateAdminHandler;
     private readonly RemoveAdminHandler _removeAdminHandler;
     private readonly RestoreAdminHandler _restoreAdminHandler;
+    private readonly RequestTransferSuperAdminHandler _requestTransferSuperAdminHandler;
+    private readonly ConfirmTransferSuperAdminHandler _confirmTransferSuperAdminHandler;
+    private readonly IIdentityService _identityService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AdminsController"/> class.
@@ -30,7 +34,10 @@ public class AdminsController : ControllerBase
         GetAdminByIdHandler getAdminByIdHandler,
         UpdateAdminHandler updateAdminHandler,
         RemoveAdminHandler removeAdminHandler,
-        RestoreAdminHandler restoreAdminHandler)
+        RestoreAdminHandler restoreAdminHandler,
+        RequestTransferSuperAdminHandler requestTransferSuperAdminHandler,
+        ConfirmTransferSuperAdminHandler confirmTransferSuperAdminHandler,
+        IIdentityService identityService)
     {
         _assignAdminHandler = assignAdminHandler;
         _getAdminsHandler = getAdminsHandler;
@@ -38,6 +45,9 @@ public class AdminsController : ControllerBase
         _updateAdminHandler = updateAdminHandler;
         _removeAdminHandler = removeAdminHandler;
         _restoreAdminHandler = restoreAdminHandler;
+        _requestTransferSuperAdminHandler = requestTransferSuperAdminHandler;
+        _confirmTransferSuperAdminHandler = confirmTransferSuperAdminHandler;
+        _identityService = identityService;
     }
 
     /// <summary>
@@ -100,6 +110,32 @@ public class AdminsController : ControllerBase
     public async Task<IActionResult> RestoreAdmin(Guid id, CancellationToken cancellationToken)
     {
         var result = await _restoreAdminHandler.RestoreAdminRoleAsync(id, cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    /// <summary>
+    /// Request transferring SuperAdmin privileges by verifying credentials and dispatching an email OTP.
+    /// </summary>
+    [HttpPost("transfer-superadmin/request")]
+    public async Task<IActionResult> RequestTransferSuperAdmin(
+        [FromBody] RequestTransferSuperAdminCommand command,
+        CancellationToken cancellationToken)
+    {
+        var currentUserId = _identityService.GetUserIdFromClaims(User);
+        var result = await _requestTransferSuperAdminHandler.RequestTransferAsync(currentUserId, command, cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    /// <summary>
+    /// Confirm and execute transferring SuperAdmin privileges to a new citizen using OTP verification.
+    /// </summary>
+    [HttpPost("transfer-superadmin/confirm")]
+    public async Task<IActionResult> ConfirmTransferSuperAdmin(
+        [FromBody] ConfirmTransferSuperAdminCommand command,
+        CancellationToken cancellationToken)
+    {
+        var currentUserId = _identityService.GetUserIdFromClaims(User);
+        var result = await _confirmTransferSuperAdminHandler.ConfirmTransferAsync(currentUserId, command, cancellationToken);
         return StatusCode(result.StatusCode, result);
     }
 }

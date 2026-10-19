@@ -304,4 +304,69 @@ public class IdentityService : IIdentityService
             })
             .ToListAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Verifies whether the provided password matches the user's current password.
+    /// </summary>
+    public async Task<bool> VerifyUserPasswordAsync(Guid userId, string password, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return false;
+        return await _userManager.CheckPasswordAsync(user, password);
+    }
+
+    /// <summary>
+    /// Changes the email address for a user in ASP.NET Core Identity.
+    /// </summary>
+    public async Task<bool> ChangeEmailAsync(Guid userId, string newEmail, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return false;
+
+        user.Email = newEmail;
+        user.NormalizedEmail = newEmail.ToUpperInvariant();
+        user.EmailConfirmed = true;
+
+        var result = await _userManager.UpdateAsync(user);
+        return result.Succeeded;
+    }
+
+    /// <summary>
+    /// Changes the phone number for a user in ASP.NET Core Identity.
+    /// </summary>
+    public async Task<bool> ChangePhoneNumberAsync(Guid userId, string newPhoneNumber, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return false;
+
+        user.PhoneNumber = newPhoneNumber;
+        var result = await _userManager.UpdateAsync(user);
+        return result.Succeeded;
+    }
+
+    /// <summary>
+    /// Updates unverified citizen account details (Email, Phone, Password) before activation.
+    /// </summary>
+    public async Task<bool> UpdateUnverifiedAccountAsync(Guid userId, string newEmail, string phoneNumber, string newPassword, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return false;
+
+        user.Email = newEmail;
+        user.NormalizedEmail = newEmail.ToUpperInvariant();
+        user.PhoneNumber = phoneNumber;
+
+        if (!string.IsNullOrWhiteSpace(newPassword))
+        {
+            var hasPassword = await _userManager.HasPasswordAsync(user);
+            if (hasPassword)
+            {
+                await _userManager.RemovePasswordAsync(user);
+            }
+            await _userManager.AddPasswordAsync(user, newPassword);
+        }
+
+        var result = await _userManager.UpdateAsync(user);
+        return result.Succeeded;
+    }
 }

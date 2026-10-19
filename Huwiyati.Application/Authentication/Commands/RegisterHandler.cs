@@ -53,6 +53,14 @@ public class RegisterHandler
                 statusCode: 404);
         }
 
+        // 1.1 Verify citizen is not deceased
+        if (person.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<RegisterResultDto>.Failure(
+                "Cannot register an account for a citizen registered as deceased in Civil Registry.",
+                statusCode: 400);
+        }
+
         // 2. Validate Date of Birth matching
         if (person.DateOfBirth != command.DateOfBirth)
         {
@@ -62,45 +70,88 @@ public class RegisterHandler
         }
 
         // 3. Check if an account already exists for this National Number
-        var nationalNumberExists = await _identityService.UserExistsWithNationalNumberAsync(person.NationalNumber, cancellationToken);
-        if (nationalNumberExists)
+        var existingUserId = await _identityService.GetUserIdByNationalNumberAsync(person.NationalNumber, cancellationToken);
+        Guid targetUserId;
+
+        if (existingUserId.HasValue && existingUserId.Value != Guid.Empty)
         {
-            return ApiResponse<RegisterResultDto>.Failure(
-                "An account with this National Number already exists.",
-                statusCode: 400);
+            var accountDetails = await _identityService.GetUserAccountDetailsByPersonIdAsync(person.Id, cancellationToken);
+            if (accountDetails != null && accountDetails.Status == AccountStatus.Active)
+            {
+                return ApiResponse<RegisterResultDto>.Failure(
+                    "An account with this National Number already exists and is active. Please login.",
+                    statusCode: 400);
+            }
+
+            // Account exists but not active (e.g. email typo) -> allow updating email/phone/password
+            var emailTaken = await _identityService.UserExistsWithEmailAsync(command.Email, cancellationToken);
+            if (emailTaken && accountDetails?.Email != command.Email)
+            {
+                return ApiResponse<RegisterResultDto>.Failure(
+                    "An account with this email address already exists.",
+                    statusCode: 400);
+            }
+
+            var updateSuccess = await _identityService.UpdateUnverifiedAccountAsync(
+                existingUserId.Value,
+                command.Email,
+                command.PhoneNumber,
+                command.Password,
+                cancellationToken);
+
+            if (!updateSuccess)
+            {
+                return ApiResponse<RegisterResultDto>.Failure("Failed to update unverified account details.", statusCode: 500);
+            }
+
+            targetUserId = existingUserId.Value;
+
+            // Invalidate previous OTP codes
+            var oldCodes = await _context.VerificationCodes
+                .Where(vc => vc.UserId == targetUserId && !vc.IsUsed)
+                .ToListAsync(cancellationToken);
+
+            foreach (var c in oldCodes)
+            {
+                c.IsUsed = true;
+            }
         }
-
-        // 4. Check if an account already exists for this email
-        var emailExists = await _identityService.UserExistsWithEmailAsync(command.Email, cancellationToken);
-        if (emailExists)
+        else
         {
-            return ApiResponse<RegisterResultDto>.Failure(
-                "An account with this email address already exists.",
-                statusCode: 400);
-        }
+            // 4. Check if an account already exists for this email
+            var emailExists = await _identityService.UserExistsWithEmailAsync(command.Email, cancellationToken);
+            if (emailExists)
+            {
+                return ApiResponse<RegisterResultDto>.Failure(
+                    "An account with this email address already exists.",
+                    statusCode: 400);
+            }
 
-        // 5. Create ApplicationUser account using IIdentityService
-        var createUserResult = await _identityService.CreateUserAsync(
-             person.Id,
-             person.NationalNumber,
-             command.Email,
-             command.PhoneNumber,
-             command.Password,
-             cancellationToken);
+            // 5. Create ApplicationUser account using IIdentityService
+            var createUserResult = await _identityService.CreateUserAsync(
+                 person.Id,
+                 person.NationalNumber,
+                 command.Email,
+                 command.PhoneNumber,
+                 command.Password,
+                 cancellationToken);
 
-        if (!createUserResult.Succeeded)
-        {
-            return ApiResponse<RegisterResultDto>.Failure(
-                "Failed to create user account.",
-                createUserResult.Errors,
-                statusCode: 400);
+            if (!createUserResult.Succeeded)
+            {
+                return ApiResponse<RegisterResultDto>.Failure(
+                    "Failed to create user account.",
+                    createUserResult.Errors,
+                    statusCode: 400);
+            }
+
+            targetUserId = createUserResult.UserId;
         }
 
         // 6. Generate 6-digit OTP verification code valid for 5 minutes
         var otpCode = new Random().Next(100000, 999999).ToString();
         var verificationCode = new VerificationCode
         {
-            UserId = createUserResult.UserId,
+            UserId = targetUserId,
             Code = otpCode,
             ExpirationTime = DateTime.UtcNow.AddMinutes(5),
             IsUsed = false,
@@ -129,7 +180,7 @@ public class RegisterHandler
         return ApiResponse<RegisterResultDto>.Success(
             new RegisterResultDto
             {
-                UserId = createUserResult.UserId,
+                UserId = targetUserId,
                 NationalNumber = person.NationalNumber,
                 AccountStatus = AccountStatus.PendingActivation.ToString()
             },

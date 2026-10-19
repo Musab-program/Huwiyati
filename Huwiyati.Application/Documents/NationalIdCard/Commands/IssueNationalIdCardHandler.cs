@@ -73,6 +73,12 @@ public class IssueNationalIdCardHandler
                     "Person with the provided ID was not found.", statusCode: 404);
             }
 
+            if (existingPerson.PersonStatus == PersonStatus.Deceased)
+            {
+                return ApiResponse<NationalIdCardDto>.Failure(
+                    "Cannot issue a national ID card for a deceased citizen.", statusCode: 400);
+            }
+
             person = existingPerson;
         }
         else // Case B: Create new Person and Generate 11-digit National Number

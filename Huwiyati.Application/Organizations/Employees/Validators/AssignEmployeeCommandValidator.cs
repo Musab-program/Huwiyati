@@ -15,6 +15,6 @@ public class AssignEmployeeCommandValidator : AbstractValidator<AssignEmployeeCo
     {
         RuleFor(x => x.NationalNumber)
             .NotEmpty().WithMessage("National number is required.")
-            .Length(10).WithMessage("National number must be 10 digits.");
+            .Length(11).WithMessage("National number must be 11 digits.");
     }
 }

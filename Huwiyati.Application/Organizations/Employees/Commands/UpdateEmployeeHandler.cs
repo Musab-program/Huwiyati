@@ -74,6 +74,29 @@ public class UpdateEmployeeHandler
             return ApiResponse<EmployeeDto>.Failure("Employee record was not found.", statusCode: 404);
         }
 
+        // 3.1 Verify employee record is active
+        if (!employee.IsActive)
+        {
+            return ApiResponse<EmployeeDto>.Failure("Cannot transfer an inactive employee.", statusCode: 400);
+        }
+
+        // 3.2 Verify user account is active
+        if (!await _identityService.IsUserActiveAsync(employee.UserId, cancellationToken))
+        {
+            return ApiResponse<EmployeeDto>.Failure("The user account associated with this employee is not active.", statusCode: 400);
+        }
+
+        // 3.3 Verify employee is not deceased in Civil Registry
+        var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(employee.UserId, cancellationToken);
+        var person = contactInfo.HasValue && contactInfo.Value.PersonId != Guid.Empty
+            ? await _context.Persons.FirstOrDefaultAsync(p => p.Id == contactInfo.Value.PersonId, cancellationToken)
+            : null;
+
+        if (person != null && person.PersonStatus == Huwiyati.Domain.Enums.PersonStatus.Deceased)
+        {
+            return ApiResponse<EmployeeDto>.Failure("Cannot transfer a deceased employee.", statusCode: 400);
+        }
+
         // 4. Verify target new branch exists and is active
         var targetBranch = await _context.OrganizationBranches
             .Where(b => b.Id == command.NewBranchId)
@@ -112,22 +135,13 @@ public class UpdateEmployeeHandler
         await _employeeUpdatedEventHandler.HandleAsync(updateEvent, cancellationToken);
 
         // 8. Resolve Person details via IdentityService
-        var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(employee.UserId, cancellationToken);
-        
         string nationalNumber = string.Empty;
         string fullName = string.Empty;
 
-        if (contactInfo.HasValue && contactInfo.Value.PersonId != Guid.Empty)
+        if (person != null)
         {
-            var person = await _context.Persons
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == contactInfo.Value.PersonId, cancellationToken);
-
-            if (person != null)
-            {
-                nationalNumber = person.NationalNumber;
-                fullName = $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}";
-            }
+            nationalNumber = person.NationalNumber;
+            fullName = $"{person.FirstName} {person.FatherName} {person.GrandfatherName} {person.FamilyName}";
         }
 
         // 9. Construct response DTO

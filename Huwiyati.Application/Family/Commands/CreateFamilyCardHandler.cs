@@ -69,6 +69,12 @@ public class CreateFamilyCardHandler
                 "Husband citizen record was not found in Civil Registry.", statusCode: 404);
         }
 
+        if (husband.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<FamilyDto>.Failure(
+                "Cannot issue a family card because the husband is registered as deceased in Civil Registry.", statusCode: 400);
+        }
+
         // 3. Fetch Wife record from Civil Registry
         var wife = await _context.Persons
             .FirstOrDefaultAsync(p => p.NationalNumber == command.WifeNationalNumber, cancellationToken);
@@ -77,6 +83,12 @@ public class CreateFamilyCardHandler
         {
             return ApiResponse<FamilyDto>.Failure(
                 "Wife citizen record was not found in Civil Registry.", statusCode: 404);
+        }
+
+        if (wife.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<FamilyDto>.Failure(
+                "Cannot issue a family card because the wife is registered as deceased in Civil Registry.", statusCode: 400);
         }
 
         // 4. Verify Husband does not already possess an active Family Record as Head

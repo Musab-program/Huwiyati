@@ -12,18 +12,22 @@ using Huwiyati.Domain.Events.Organizations;
 public class ActivateEmployeeHandler
 {
     private readonly IApplicationDbContext _context;
+    private readonly IIdentityService _identityService;
     private readonly IDomainEventHandler<EmployeeActivatedEvent> _employeeActivatedEventHandler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ActivateEmployeeHandler"/> class.
     /// </summary>
     /// <param name="context">The application database context.</param>
+    /// <param name="identityService">The identity management service.</param>
     /// <param name="employeeActivatedEventHandler">The event handler for employee activated domain events.</param>
     public ActivateEmployeeHandler(
         IApplicationDbContext context,
+        IIdentityService identityService,
         IDomainEventHandler<EmployeeActivatedEvent> employeeActivatedEventHandler)
     {
         _context = context;
+        _identityService = identityService;
         _employeeActivatedEventHandler = employeeActivatedEventHandler;
     }
 
@@ -62,6 +66,23 @@ public class ActivateEmployeeHandler
         if (emp.IsActive)
         {
             return ApiResponse<bool>.Failure("Employee is already active.", statusCode: 400);
+        }
+
+        // 2.1 Verify user account is active
+        if (!await _identityService.IsUserActiveAsync(emp.UserId, cancellationToken))
+        {
+            return ApiResponse<bool>.Failure("The user account associated with this employee is not active.", statusCode: 400);
+        }
+
+        // 2.2 Verify employee is not deceased in Civil Registry
+        var contactInfo = await _identityService.GetUserContactAndPersonIdAsync(emp.UserId, cancellationToken);
+        var person = contactInfo.HasValue && contactInfo.Value.PersonId != Guid.Empty
+            ? await _context.Persons.FirstOrDefaultAsync(p => p.Id == contactInfo.Value.PersonId, cancellationToken)
+            : null;
+
+        if (person != null && person.PersonStatus == Huwiyati.Domain.Enums.PersonStatus.Deceased)
+        {
+            return ApiResponse<bool>.Failure("Cannot activate a deceased employee.", statusCode: 400);
         }
 
         // 3. Update IsActive status to true

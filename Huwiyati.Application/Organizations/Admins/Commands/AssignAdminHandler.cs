@@ -18,6 +18,7 @@ public class AssignAdminHandler
     private readonly IIdentityService _identityService;
     private readonly IEmployeeNumberGenerator _employeeNumberGenerator;
     private readonly IDomainEventHandler<AdminAssignedEvent> _adminAssignedEventHandler;
+    private readonly IBranchAdminValidator _branchAdminValidator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssignAdminHandler"/> class.
@@ -26,16 +27,19 @@ public class AssignAdminHandler
     /// <param name="identityService">The identity management service.</param>
     /// <param name="employeeNumberGenerator">The generator for standardized employee numbers.</param>
     /// <param name="adminAssignedEventHandler">The event handler for admin assignment domain events.</param>
+    /// <param name="branchAdminValidator">The validator ensuring single admin per branch.</param>
     public AssignAdminHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
         IEmployeeNumberGenerator employeeNumberGenerator,
-        IDomainEventHandler<AdminAssignedEvent> adminAssignedEventHandler)
+        IDomainEventHandler<AdminAssignedEvent> adminAssignedEventHandler,
+        IBranchAdminValidator branchAdminValidator)
     {
         _context = context;
         _identityService = identityService;
         _employeeNumberGenerator = employeeNumberGenerator;
         _adminAssignedEventHandler = adminAssignedEventHandler;
+        _branchAdminValidator = branchAdminValidator;
     }
 
     /// <summary>
@@ -59,6 +63,13 @@ public class AssignAdminHandler
                 statusCode: 404);
         }
 
+        if (person.PersonStatus == Huwiyati.Domain.Enums.PersonStatus.Deceased)
+        {
+            return ApiResponse<AdminDto>.Failure(
+                "Cannot assign a deceased citizen as an administrator.",
+                statusCode: 400);
+        }
+
         // 2. Get UserId and verify that user account exists and is Active
         var userId = await _identityService.GetUserIdByNationalNumberAsync(command.NationalNumber, cancellationToken);
 
@@ -66,6 +77,15 @@ public class AssignAdminHandler
         {
             return ApiResponse<AdminDto>.Failure(
                 "Citizen does not have an active user account in the system.",
+                statusCode: 400);
+        }
+
+        // 2.1 Verify target user does not possess the SuperAdmin role
+        var targetUserRoles = await _identityService.GetUserRolesAsync(userId.Value, cancellationToken);
+        if (targetUserRoles.Contains(AppRoles.SuperAdmin))
+        {
+            return ApiResponse<AdminDto>.Failure(
+                "Users with SuperAdmin role cannot be assigned as branch administrators.",
                 statusCode: 400);
         }
 
@@ -88,14 +108,22 @@ public class AssignAdminHandler
                 statusCode: 404);
         }
 
+        // 3.1 Verify target branch does not already have an active admin
+        bool hasActiveAdmin = await _branchAdminValidator.HasActiveBranchAdminAsync(command.BranchId, userId.Value, cancellationToken);
+        if (hasActiveAdmin)
+        {
+            return ApiResponse<AdminDto>.Failure(
+                "This branch already has an active administrator. Please relieve or transfer the current administrator first.",
+                statusCode: 400);
+        }
+
         // 4. Check if citizen is already assigned as an employee/admin
         var existingEmployee = await _context.Employees
             .FirstOrDefaultAsync(e => e.UserId == userId.Value, cancellationToken);
 
         if (existingEmployee != null)
         {
-            var userRoles = await _identityService.GetUserRolesAsync(userId.Value, cancellationToken);
-            bool isAlreadyAdmin = userRoles.Contains(AppRoles.Admin);
+            bool isAlreadyAdmin = targetUserRoles.Contains(AppRoles.Admin);
 
             if (existingEmployee.BranchId == command.BranchId)
             {
