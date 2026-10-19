@@ -70,6 +70,12 @@ public class RenewPassportHandler
                 "No person record found with the provided National Number.", statusCode: 404);
         }
 
+        if (person.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<PassportDto>.Failure(
+                "Cannot renew a passport for a deceased citizen.", statusCode: 400);
+        }
+
         // 3. Find existing Active Passport
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var activePassport = await _context.Passports

@@ -107,4 +107,24 @@ public interface IIdentityService
     /// Retrieves all registered application user accounts.
     /// </summary>
     Task<List<Huwiyati.Application.Authentication.DTOs.RegisteredUserAccountDto>> GetAllUserAccountsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Verifies whether the provided password matches the user's current password.
+    /// </summary>
+    Task<bool> VerifyUserPasswordAsync(Guid userId, string password, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Changes the email address for a user in ASP.NET Core Identity.
+    /// </summary>
+    Task<bool> ChangeEmailAsync(Guid userId, string newEmail, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Changes the phone number for a user in ASP.NET Core Identity.
+    /// </summary>
+    Task<bool> ChangePhoneNumberAsync(Guid userId, string newPhoneNumber, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates unverified citizen account details (Email, Phone, Password) before activation.
+    /// </summary>
+    Task<bool> UpdateUnverifiedAccountAsync(Guid userId, string newEmail, string phoneNumber, string newPassword, CancellationToken cancellationToken = default);
 }

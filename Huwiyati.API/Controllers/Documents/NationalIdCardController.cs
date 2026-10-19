@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 /// </summary>
 [ApiController]
 [Route("api/v1/national-id-cards")]
-//[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
+[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
 public class NationalIdCardController : ControllerBase
 {
     private readonly IssueNationalIdCardHandler _issueNationalIdCardHandler;

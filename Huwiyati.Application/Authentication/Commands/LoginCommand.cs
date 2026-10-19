@@ -23,9 +23,9 @@ public class LoginCommand
     public string RequestedRole { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the optional branch identifier if logging in as branch staff.
+    /// Gets or sets the optional organization identifier when authenticating staff through a specific organization portal.
     /// </summary>
-    public Guid? BranchId { get; set; }
+    public Guid? OrganizationId { get; set; }
 
     /// <summary>
     /// Gets or sets the unique hardware or fingerprint device identifier.

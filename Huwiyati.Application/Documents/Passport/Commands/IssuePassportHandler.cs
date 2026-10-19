@@ -66,6 +66,12 @@ public class IssuePassportHandler
                 "Person with the provided ID was not found.", statusCode: 404);
         }
 
+        if (person.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<PassportDto>.Failure(
+                "Cannot issue a passport for a deceased citizen.", statusCode: 400);
+        }
+
         // 3. Ensure Person does not already have an Active Passport
         var activePassportExists = await _context.Passports
             .AnyAsync(p => p.PersonId == person.Id && p.Status == PassportStatus.Active, cancellationToken);

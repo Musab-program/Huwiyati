@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 /// </summary>
 [ApiController]
 [Route("api/v1/passports")]
-//[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
+[Authorize(Roles = $"{AppRoles.Employee},{AppRoles.Admin}")]
 public class PassportController : ControllerBase
 {
     private readonly IssuePassportHandler _issuePassportHandler;

@@ -45,6 +45,9 @@ public static class DependencyInjection
             // Register FluentValidation Validators
             services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
+            // Register Memory Cache
+            services.AddMemoryCache();
+
             // Register Authentication Handlers
             services.AddScoped<RegisterHandler>();
             services.AddScoped<VerifyOTPHandler>();
@@ -62,6 +65,10 @@ public static class DependencyInjection
             services.AddScoped<ActivateCitizenAccountHandler>();
             services.AddScoped<GetAllUserAccountsHandler>();
             services.AddScoped<RefreshTokenHandler>();
+            services.AddScoped<ChangeEmailHandler>();
+            services.AddScoped<ConfirmChangeEmailHandler>();
+            services.AddScoped<ChangePhoneHandler>();
+            services.AddScoped<ConfirmChangePhoneHandler>();
 
             // Register Civil Registry Handlers
             services.AddScoped<Huwiyati.Application.CivilRegistry.Queries.GetAllCitizensHandler>();
@@ -82,6 +89,8 @@ public static class DependencyInjection
             services.AddScoped<UpdateAdminHandler>();
             services.AddScoped<RemoveAdminHandler>();
             services.AddScoped<RestoreAdminHandler>();
+            services.AddScoped<RequestTransferSuperAdminHandler>();
+            services.AddScoped<ConfirmTransferSuperAdminHandler>();
 
             // Register Organization Employee Handlers
             services.AddScoped<AssignEmployeeHandler>();

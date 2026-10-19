@@ -61,6 +61,12 @@ public class AddWifeHandler
                 "Husband citizen record was not found in Civil Registry.", statusCode: 404);
         }
 
+        if (husband.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<FamilyMemberDto>.Failure(
+                "Cannot add a wife because the husband is registered as deceased in Civil Registry.", statusCode: 400);
+        }
+
         // 3. Fetch Husband's active Family record
         var family = await _context.Families
             .FirstOrDefaultAsync(f => f.HeadOfFamilyPersonId == husband.Id && f.Status == FamilyStatus.Active, cancellationToken);
@@ -79,6 +85,12 @@ public class AddWifeHandler
         {
             return ApiResponse<FamilyMemberDto>.Failure(
                 "Wife citizen record was not found in Civil Registry.", statusCode: 404);
+        }
+
+        if (wife.PersonStatus == PersonStatus.Deceased)
+        {
+            return ApiResponse<FamilyMemberDto>.Failure(
+                "Cannot add a wife who is registered as deceased in Civil Registry.", statusCode: 400);
         }
 
         // 5. Verify Wife is not currently registered as an active wife in another family card

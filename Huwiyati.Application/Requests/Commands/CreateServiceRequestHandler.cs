@@ -91,6 +91,12 @@ public class CreateServiceRequestHandler
                 "Target Person record associated with the request was not found.", statusCode: 404);
         }
 
+        if (person.PersonStatus == Huwiyati.Domain.Enums.PersonStatus.Deceased)
+        {
+            return ApiResponse<ServiceRequestDto>.Failure(
+                "Cannot submit a service request for a deceased citizen.", statusCode: 400);
+        }
+
         // 3. Validate ServiceType existence and active state
         var serviceType = await _context.ServiceTypes
             .FirstOrDefaultAsync(st => st.Id == command.ServiceTypeId && st.IsActive, cancellationToken);

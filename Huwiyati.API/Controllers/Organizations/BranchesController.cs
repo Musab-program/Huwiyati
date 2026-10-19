@@ -45,9 +45,10 @@ public class BranchesController : ControllerBase
     }
 
     /// <summary>
-    /// Get list of main organizations
+    /// Get list of main organizations accessible to citizens and staff for service routing.
     /// </summary>
     [HttpGet("organizations")]
+    [Authorize(Roles = $"{AppRoles.Citizen},{AppRoles.Employee},{AppRoles.Admin},{AppRoles.SuperAdmin}")]
     public async Task<IActionResult> GetOrganizations(CancellationToken cancellationToken)
     {
         var result = await _getOrganizationsQueryHandler.GetOrganizationsAsync(cancellationToken);
@@ -55,9 +56,10 @@ public class BranchesController : ControllerBase
     }
 
     /// <summary>
-    /// Get all branches across all organizations (or filter by organizationId if provided)
+    /// Get all branches across all organizations (or filter by organizationId if provided) for service routing.
     /// </summary>
     [HttpGet]
+    [Authorize(Roles = $"{AppRoles.Citizen},{AppRoles.Employee},{AppRoles.Admin},{AppRoles.SuperAdmin}")]
     public async Task<IActionResult> GetBranches([FromQuery] Guid? organizationId, CancellationToken cancellationToken)
     {
         var result = await _getBranchesQueryHandler.GetBranchesAsync(organizationId, cancellationToken);
