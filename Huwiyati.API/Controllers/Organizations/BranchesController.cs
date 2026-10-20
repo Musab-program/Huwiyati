@@ -12,7 +12,7 @@ using Huwiyati.Application.Organizations.Branches.Queries;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize(Roles = AppRoles.SuperAdmin)]
+
 public class BranchesController : ControllerBase
 {
     private readonly CreateBranchHandler _createBranchHandler;
@@ -70,6 +70,7 @@ public class BranchesController : ControllerBase
     /// Get single branch details by ID
     /// </summary>
     [HttpGet("{id}")]
+    [Authorize(Roles = $"{AppRoles.Citizen},{AppRoles.Employee},{AppRoles.Admin},{AppRoles.SuperAdmin}")]
     public async Task<IActionResult> GetBranchById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _getBranchByIdHandler.GetBranchByIdAsync(id, cancellationToken);
@@ -80,6 +81,7 @@ public class BranchesController : ControllerBase
     /// Create a new organization branch
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> CreateBranch([FromBody] CreateBranchCommand command, CancellationToken cancellationToken)
     {
         var result = await _createBranchHandler.CreateBranchAsync(command, cancellationToken);
@@ -90,6 +92,7 @@ public class BranchesController : ControllerBase
     /// Update existing organization branch details
     /// </summary>
     [HttpPut("{id}")]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> UpdateBranch(Guid id, [FromBody] UpdateBranchCommand command, CancellationToken cancellationToken)
     {
         command.Id = id;
@@ -101,6 +104,7 @@ public class BranchesController : ControllerBase
     /// Delete organization branch (Soft delete: deactivates branch)
     /// </summary>
     [HttpDelete("{id}")]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> DeleteBranch(Guid id, CancellationToken cancellationToken)
     {
         var result = await _deleteBranchHandler.DeleteBranchAsync(id, cancellationToken);
@@ -111,6 +115,7 @@ public class BranchesController : ControllerBase
     /// Restore organization branch (Reactivates soft-deleted branch)
     /// </summary>
     [HttpPost("{id}/restore")]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> RestoreBranch(Guid id, CancellationToken cancellationToken)
     {
         var result = await _restoreBranchHandler.RestoreBranchAsync(id, cancellationToken);
