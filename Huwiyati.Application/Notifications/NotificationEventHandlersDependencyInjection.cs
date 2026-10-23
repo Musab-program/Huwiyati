@@ -39,6 +39,7 @@ public static class NotificationEventHandlersDependencyInjection
         services.AddScoped<IDomainEventHandler<PasswordResetSuccessEvent>, PasswordResetSuccessEventHandler>();
         services.AddScoped<IDomainEventHandler<AccountDeactivatedEvent>, AccountDeactivatedEventHandler>();
         services.AddScoped<IDomainEventHandler<AccountReactivatedEvent>, AccountReactivatedEventHandler>();
+        services.AddScoped<IDomainEventHandler<UserContactUpdatedEvent>, UserContactUpdatedEventHandler>();
 
         // 3. Organization (Admin & Employee) Event Handlers
         services.AddScoped<IDomainEventHandler<AdminAssignedEvent>, AdminAssignedEventHandler>();

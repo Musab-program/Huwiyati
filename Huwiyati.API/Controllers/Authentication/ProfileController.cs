@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Huwiyati.Domain.Constants;
 using Huwiyati.Application.Authentication.Commands;
+using Huwiyati.Application.Authentication.Queries;
 
 /// <summary>
 /// Handles authenticated citizen profile updates, contact credentials (email, phone), device management, and account lifecycle.
-/// Previously part of AccountController.
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -21,6 +21,8 @@ public class ProfileController : ControllerBase
     private readonly DeactivateAccountHandler _deactivateAccountHandler;
     private readonly ReactivateAccountHandler _reactivateAccountHandler;
     private readonly RequestAccountOtpHandler _requestAccountOtpHandler;
+    private readonly GetUserDevicesHandler _getUserDevicesHandler;
+    private readonly GetUserDeviceByIdHandler _getUserDeviceByIdHandler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProfileController"/> class.
@@ -33,7 +35,9 @@ public class ProfileController : ControllerBase
         RemoveDeviceHandler removeDeviceHandler,
         DeactivateAccountHandler deactivateAccountHandler,
         ReactivateAccountHandler reactivateAccountHandler,
-        RequestAccountOtpHandler requestAccountOtpHandler)
+        RequestAccountOtpHandler requestAccountOtpHandler,
+        GetUserDevicesHandler getUserDevicesHandler,
+        GetUserDeviceByIdHandler getUserDeviceByIdHandler)
     {
         _changeEmailHandler = changeEmailHandler;
         _confirmChangeEmailHandler = confirmChangeEmailHandler;
@@ -43,6 +47,8 @@ public class ProfileController : ControllerBase
         _deactivateAccountHandler = deactivateAccountHandler;
         _reactivateAccountHandler = reactivateAccountHandler;
         _requestAccountOtpHandler = requestAccountOtpHandler;
+        _getUserDevicesHandler = getUserDevicesHandler;
+        _getUserDeviceByIdHandler = getUserDeviceByIdHandler;
     }
 
     /// <summary>
@@ -148,16 +154,46 @@ public class ProfileController : ControllerBase
     }
 
     /// <summary>
-    /// Removes a trusted device from the authenticated user's account.
+    /// Retrieves all registered hardware devices belonging to the authenticated citizen.
+    /// Route: GET api/v1/profile/devices
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response containing the list of registered user devices.</returns>
+    [HttpGet("devices")]
+    [Authorize(Roles = AppRoles.Citizen)]
+    public async Task<IActionResult> GetMyDevices(CancellationToken cancellationToken)
+    {
+        var result = await _getUserDevicesHandler.HandleAsync(User, cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    /// <summary>
+    /// Retrieves details for a specific device by ID belonging to the authenticated citizen.
+    /// Route: GET api/v1/profile/devices/{id}
+    /// </summary>
+    /// <param name="id">The unique ID of the device.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An API response containing the specific device details.</returns>
+    [HttpGet("devices/{id:guid}")]
+    [Authorize(Roles = AppRoles.Citizen)]
+    public async Task<IActionResult> GetDeviceById(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _getUserDeviceByIdHandler.HandleAsync(id, User, cancellationToken);
+        return StatusCode(result.StatusCode, result);
+    }
+
+    /// <summary>
+    /// Revokes trust for a registered device owned by the authenticated citizen.
     /// Route: POST api/v1/profile/remove-device
     /// </summary>
-    /// <param name="command">Device removal details.</param>
+    /// <param name="command">Device removal details containing the device identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>An API response confirming device revocation.</returns>
     [HttpPost("remove-device")]
+    [Authorize(Roles = AppRoles.Citizen)]
     public async Task<IActionResult> RemoveDevice([FromBody] RemoveDeviceCommand command, CancellationToken cancellationToken)
     {
-        var result = await _removeDeviceHandler.RemoveDeviceAsync(command, cancellationToken);
+        var result = await _removeDeviceHandler.RemoveDeviceAsync(User, command, cancellationToken);
         return StatusCode(result.StatusCode, result);
     }
 }
