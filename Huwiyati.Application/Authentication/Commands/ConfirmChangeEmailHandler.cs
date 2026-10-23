@@ -78,6 +78,19 @@ public class ConfirmChangeEmailHandler
             return ApiResponse<bool>.Failure("Failed to update email address.", statusCode: 500);
         }
 
+        // 5. Create in-system notification for the user
+        var notification = new Huwiyati.Domain.Entities.Notifications.Notification
+        {
+            UserId = userId,
+            Title = "تحديث البريد الإلكتروني",
+            Message = $"تم تحديث بريدك الإلكتروني المسجل في نظام هويتي بنجاح إلى ({command.NewEmail}).",
+            IsRead = false,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _context.Notifications.AddAsync(notification, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
         return ApiResponse<bool>.Success(true, message: "Email address has been updated successfully.");
     }
 }
