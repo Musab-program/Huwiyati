@@ -26,4 +26,8 @@
     <ProjectReference Include="..\Huwiyati.Infrastructure\Huwiyati.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\documents\" />
+  </ItemGroup>
+
 </Project>

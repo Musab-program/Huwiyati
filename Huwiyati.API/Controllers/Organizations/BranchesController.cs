@@ -12,6 +12,7 @@ using Huwiyati.Application.Organizations.Branches.Queries;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
+[Authorize(Roles = AppRoles.SuperAdmin)]
 
 public class BranchesController : ControllerBase
 {

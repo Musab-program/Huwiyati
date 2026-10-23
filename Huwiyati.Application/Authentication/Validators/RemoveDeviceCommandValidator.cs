@@ -13,9 +13,6 @@ public class RemoveDeviceCommandValidator : AbstractValidator<RemoveDeviceComman
     /// </summary>
     public RemoveDeviceCommandValidator()
     {
-        RuleFor(x => x.NationalNumber)
-            .NotEmpty().WithMessage("National Number is required.");
-
         RuleFor(x => x.DeviceIdentifier)
             .NotEmpty().WithMessage("Device Identifier is required.");
     }

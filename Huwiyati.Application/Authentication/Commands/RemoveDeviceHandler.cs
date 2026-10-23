@@ -1,5 +1,6 @@
 namespace Huwiyati.Application.Authentication.Commands;
 
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
@@ -24,25 +25,32 @@ public class RemoveDeviceHandler
     }
 
     /// <summary>
-    /// Revokes trust for a registered user device asynchronously.
+    /// Revokes trust for a registered user device belonging to the authenticated user.
     /// </summary>
-    /// <param name="command">The remove device command details.</param>
+    /// <param name="userClaims">Current authenticated user claims from JWT.</param>
+    /// <param name="command">The remove device command details containing the device identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>An API response with the operation status message.</returns>
     public async Task<ApiResponse<string>> RemoveDeviceAsync(
+        ClaimsPrincipal userClaims,
         RemoveDeviceCommand command,
         CancellationToken cancellationToken = default)
     {
-        // 1. Get UserId by National Number
-        var userId = await _identityService.GetUserIdByNationalNumberAsync(command.NationalNumber, cancellationToken);
-        if (!userId.HasValue || userId.Value == Guid.Empty)
+        // 1. Resolve UserId securely from JWT claims
+        var userId = _identityService.GetUserIdFromClaims(userClaims);
+        if (userId == Guid.Empty)
         {
-            return ApiResponse<string>.Failure("User not found.", statusCode: 404);
+            return ApiResponse<string>.Failure("User security context is invalid or missing.", statusCode: 401);
         }
 
-        // 2. Search for the device in UserDevices table
+        if (string.IsNullOrWhiteSpace(command.DeviceIdentifier))
+        {
+            return ApiResponse<string>.Failure("Device identifier is required.", statusCode: 400);
+        }
+
+        // 2. Search for the device in UserDevices table belonging specifically to this authenticated user
         var device = await _context.UserDevices
-            .FirstOrDefaultAsync(d => d.UserId == userId.Value && d.DeviceIdentifier == command.DeviceIdentifier, cancellationToken);
+            .FirstOrDefaultAsync(d => d.UserId == userId && d.DeviceIdentifier == command.DeviceIdentifier, cancellationToken);
 
         if (device == null)
         {

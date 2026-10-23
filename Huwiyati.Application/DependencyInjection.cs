@@ -56,6 +56,8 @@ public static class DependencyInjection
             services.AddScoped<VerifyResetHandler>();
             services.AddScoped<ResetPasswordHandler>();
             services.AddScoped<VerifyDeviceHandler>();
+            services.AddScoped<GetUserDevicesHandler>();
+            services.AddScoped<GetUserDeviceByIdHandler>();
             services.AddScoped<RemoveDeviceHandler>();
             services.AddScoped<DeactivateAccountHandler>();
             services.AddScoped<ReactivateAccountHandler>();
@@ -81,6 +83,8 @@ public static class DependencyInjection
             services.AddScoped<GetOrganizationsQueryHandler>();
             services.AddScoped<GetBranchesQueryHandler>();
             services.AddScoped<GetBranchByIdHandler>();
+            services.AddScoped<GetActiveBranchesByOrganizationHandler>();
+            services.AddScoped<GetActiveBranchByIdHandler>();
 
             // Register Organization Admin Handlers
             services.AddScoped<AssignAdminHandler>();

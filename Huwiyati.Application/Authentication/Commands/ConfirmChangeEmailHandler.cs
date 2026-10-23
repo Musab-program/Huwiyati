@@ -4,6 +4,7 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
+using Huwiyati.Domain.Events.Authentication;
 
 /// <summary>
 /// Handles confirming email address changes by validating OTP and applying the new email address.
@@ -12,18 +13,22 @@ public class ConfirmChangeEmailHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
+    private readonly IDomainEventHandler<UserContactUpdatedEvent> _userContactUpdatedEventHandler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConfirmChangeEmailHandler"/> class.
     /// </summary>
     /// <param name="context">The database context instance.</param>
     /// <param name="identityService">The identity management service.</param>
+    /// <param name="userContactUpdatedEventHandler">The domain event handler for contact update notifications.</param>
     public ConfirmChangeEmailHandler(
         IApplicationDbContext context,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        IDomainEventHandler<UserContactUpdatedEvent> userContactUpdatedEventHandler)
     {
         _context = context;
         _identityService = identityService;
+        _userContactUpdatedEventHandler = userContactUpdatedEventHandler;
     }
 
     /// <summary>
@@ -78,18 +83,9 @@ public class ConfirmChangeEmailHandler
             return ApiResponse<bool>.Failure("Failed to update email address.", statusCode: 500);
         }
 
-        // 5. Create in-system notification for the user
-        var notification = new Huwiyati.Domain.Entities.Notifications.Notification
-        {
-            UserId = userId,
-            Title = "تحديث البريد الإلكتروني",
-            Message = $"تم تحديث بريدك الإلكتروني المسجل في نظام هويتي بنجاح إلى ({command.NewEmail}).",
-            IsRead = false,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        await _context.Notifications.AddAsync(notification, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        // 5. Trigger UserContactUpdatedEvent to persist in-system notification
+        var contactUpdatedEvent = new UserContactUpdatedEvent(userId, "Email", command.NewEmail);
+        await _userContactUpdatedEventHandler.HandleAsync(contactUpdatedEvent, cancellationToken);
 
         return ApiResponse<bool>.Success(true, message: "Email address has been updated successfully.");
     }

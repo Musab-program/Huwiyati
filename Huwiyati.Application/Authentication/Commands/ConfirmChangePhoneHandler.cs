@@ -4,6 +4,7 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Huwiyati.Application.Common;
 using Huwiyati.Application.Common.Interfaces;
+using Huwiyati.Domain.Events.Authentication;
 
 /// <summary>
 /// Handles confirming phone number changes by validating OTP and applying the new phone number to the account.
@@ -12,18 +13,22 @@ public class ConfirmChangePhoneHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
+    private readonly IDomainEventHandler<UserContactUpdatedEvent> _userContactUpdatedEventHandler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConfirmChangePhoneHandler"/> class.
     /// </summary>
     /// <param name="context">The database context instance.</param>
     /// <param name="identityService">The identity management service.</param>
+    /// <param name="userContactUpdatedEventHandler">The domain event handler for contact update notifications.</param>
     public ConfirmChangePhoneHandler(
         IApplicationDbContext context,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        IDomainEventHandler<UserContactUpdatedEvent> userContactUpdatedEventHandler)
     {
         _context = context;
         _identityService = identityService;
+        _userContactUpdatedEventHandler = userContactUpdatedEventHandler;
     }
 
     /// <summary>
@@ -70,6 +75,10 @@ public class ConfirmChangePhoneHandler
         {
             return ApiResponse<bool>.Failure("Failed to update phone number.", statusCode: 500);
         }
+
+        // 4. Trigger UserContactUpdatedEvent to persist in-system notification
+        var contactUpdatedEvent = new UserContactUpdatedEvent(userId, "PhoneNumber", command.NewPhoneNumber);
+        await _userContactUpdatedEventHandler.HandleAsync(contactUpdatedEvent, cancellationToken);
 
         return ApiResponse<bool>.Success(true, message: "Phone number has been updated successfully.");
     }
