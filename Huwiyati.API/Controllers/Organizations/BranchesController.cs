@@ -96,6 +96,7 @@ public class BranchesController : ControllerBase
         return StatusCode(result.StatusCode, result);
     }
 
+
     /// <summary>
     /// Delete organization branch (Soft delete: deactivates branch)
     /// </summary>
