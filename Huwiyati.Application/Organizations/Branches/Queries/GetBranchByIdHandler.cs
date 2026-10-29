@@ -20,7 +20,9 @@ public class GetBranchByIdHandler
     {
         var branchDto = await _context.OrganizationBranches
             .AsNoTracking()
-            .Where(b => b.Id == id)
+            .Where(b => b.Id == id &&
+                        b.IsActive &&
+                        b.Organization.IsActive)
             .Select(b => new BranchDto
             {
                 Id = b.Id,

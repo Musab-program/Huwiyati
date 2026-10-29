@@ -65,8 +65,11 @@ public class LoginHandler
                 statusCode: 403);
         }
 
-        // 4. Validate that the user actually possesses the requested role in Identity
-        if (!userLoginInfo.Roles.Contains(command.RequestedRole))
+        // 4. Validate that the user actually possesses the requested role in Identity (case-insensitive check)
+        var matchedRole = userLoginInfo.Roles
+            .FirstOrDefault(r => string.Equals(r, command.RequestedRole, StringComparison.OrdinalIgnoreCase));
+
+        if (matchedRole == null)
         {
             return ApiResponse<LoginResultDto>.Failure(
                 $"Access Denied: You do not possess the '{command.RequestedRole}' role.",
@@ -77,7 +80,8 @@ public class LoginHandler
         Guid? validatedBranchId = null;
 
         // 5. Role & Branch Context Validation for Employee and Admin (WITHOUT using Include)
-        if (command.RequestedRole == AppRoles.Employee || command.RequestedRole == AppRoles.Admin)
+        if (string.Equals(matchedRole, AppRoles.Employee, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(matchedRole, AppRoles.Admin, StringComparison.OrdinalIgnoreCase))
         {
             if (!command.BranchId.HasValue || command.BranchId.Value == Guid.Empty)
             {
@@ -126,7 +130,7 @@ public class LoginHandler
         var device = await _context.UserDevices
             .FirstOrDefaultAsync(d => d.UserId == userLoginInfo.UserId && d.DeviceIdentifier == command.DeviceIdentifier, cancellation);
 
-        var activeRoles = new List<string> { command.RequestedRole };
+        var activeRoles = new List<string> { matchedRole };
 
         // Case A: Device exists and is trusted -> Direct Login
         if (device != null && device.IsTrusted)

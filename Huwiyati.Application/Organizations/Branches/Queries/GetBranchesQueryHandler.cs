@@ -18,7 +18,9 @@ public class GetBranchesQueryHandler
         Guid? organizationId = null,
         CancellationToken cancellationToken = default)
     {
-        var query = _context.OrganizationBranches.AsNoTracking();
+        var query = _context.OrganizationBranches
+            .AsNoTracking()
+            .Where(b => b.IsActive && b.Organization.IsActive);
 
         if (organizationId.HasValue)
         {
